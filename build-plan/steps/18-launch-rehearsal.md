@@ -12,7 +12,7 @@ Cohort A is the rehearsal: 45 builders with four different reasons to be there (
 
 ## 1. You do first
 
-1. **The tunnel** from Step 17 is still running, and its URL is the one in Clerk › Webhooks.
+1. **The ngrok tunnel** from Step 17 is still running (`ngrok http --url=<your domain> 3000`).
 
 ## 2. Read first
 

@@ -14,7 +14,7 @@ An experiment is only as good as its setup, so this step is strict about three t
 
 1. **Make room in Clerk.** Cohort B signs up 80 builders, and the development instance holds 100 users. In your own terminal, run `node --env-file=.env.local swarm/cleanup.mjs --cohort=A`, check the list, then the same command with `--yes`. Run it once more without `--cohort` to see whether any other swarm users are left, and delete them too if so.
 2. **Credits.** In the Neon Console › `placard` › `swarm` › AI Gateway, make sure the balance is at least $25 (80 builds; Step 10's cost table in `notes/decisions.md` has your cost per build).
-3. **The tunnel** from Step 17 is still running, with its URL in Clerk › Webhooks.
+3. **The ngrok tunnel** from Step 17 is still running (`ngrok http --url=<your domain> 3000`).
 
 ## 2. Read first
 

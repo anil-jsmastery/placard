@@ -17,7 +17,7 @@
 4. **PostHog:** create a project named `Placard` on **US cloud** (the MCP server and the links in this plan assume it). Paste the project API key into `.env.local` (the host is already set).
 5. **Neon:** create a free account at neon.com, then in VS Code's terminal (Terminal › New Terminal, in the `placard` folder) run `npx neon login` and approve it in the browser. Claude Code creates the project and its branches (3.5).
 6. **Sign in to three MCP servers:** type `/mcp` in Claude Code, choose `clerk` › Authenticate and pick the workspace with the new application, then `posthog` › Authenticate and pick the new project, then `neon` › Authenticate with your Neon account (`build-plan/mcp.md` §3).
-7. **Webhooks:** install `cloudflared` and run `cloudflared tunnel --url http://localhost:3000` in its own terminal; keep it running while you work. In Clerk › Webhooks, add `<tunnel URL>/api/webhooks/clerk` subscribed to `user.created`, and paste its signing secret into `CLERK_WEBHOOK_SIGNING_SECRET`.
+7. **Webhooks:** Clerk can't reach `localhost`, so its webhook comes in through an ngrok tunnel. Create a free account at ngrok.com, install ngrok, run `ngrok config add-authtoken <your token>` once (the token is in ngrok's dashboard), and copy your free static domain from ngrok › Domains (it looks like `<name>.ngrok-free.app` and never changes). Run `ngrok http --url=<your domain> 3000` in its own terminal and keep it running while you work. In Clerk › Webhooks, add `https://<your domain>/api/webhooks/clerk` subscribed to `user.created`, and paste its signing secret into `CLERK_WEBHOOK_SIGNING_SECRET`. The domain stays the same every time you start ngrok, so you set this endpoint once.
 8. **CodeRabbit:** install the CodeRabbit plugin for Claude Code, and the CodeRabbit GitHub app on your `placard` repository (Step 0 pushed it).
 
 Claude Code then checks through `clerk` that the development instance has Email, Google and GitHub sign-in turned on, through `posthog` that the project exists on US cloud and matches the key's project, and with `npx neon me` that the Neon CLI is signed in. It tells you exactly what to change if not.
@@ -56,7 +56,7 @@ Claude Code then checks through `clerk` that the development instance has Email,
 Build from the reference markup (design-system §5): `components/app/logo.tsx`, `app-header.tsx`, `usage-meter.tsx`, `status-badge.tsx`, `empty-state.tsx`, and edit `components/ui/button.tsx` to the variants and sizes in §5. The header's avatar is Clerk's `<UserButton />`. The usage meter reads `getAiUsage()` (below) through a server component.
 
 ### 3.3 Pages
-- `app/(main)/(marketing)/layout.tsx`: marketing header and footer (`marketing-header`, `marketing-footer` partials). `app/(main)/(marketing)/page.tsx`: only the first block of `landing.html` (headline, lead, two buttons, note). The rest of the landing page is Step 13.
+- `app/(main)/(marketing)/layout.tsx`: marketing header and footer (`marketing-header`, `marketing-footer` partials). `app/(main)/(marketing)/page.tsx`: only the first block of `landing.html`. Port its hero `<section class="pt-16 sm:pt-24">` and the `<div class="mx-auto max-w-6xl px-5 sm:px-8">` inside it (the same column as the header, so the headline lines up with the logo), with the headline, lead, two buttons and note in it, every class exactly as in the reference; leave out only the demo below them. The rest of the landing page is Step 13.
 - `app/(main)/(auth)/sign-in/[[...sign-in]]/page.tsx` and `sign-up/[[...sign-up]]/page.tsx`: Clerk `<SignIn fallbackRedirectUrl="/dashboard" />` / `<SignUp forceRedirectUrl="/dashboard" />` centred on `bg-background`, logo above, `py-16`. (Step 4 sends new sign-ups to `/onboarding` instead.)
 - `app/(main)/(app)/layout.tsx`: `<AppHeader />` + children. Calls `ensureUser()` (below).
 - `app/(main)/(app)/dashboard/page.tsx`: title "Sites" and the empty state from `dashboard-empty.html`, without the "New site" button (Step 3 adds it, when there is an editor to open). Keep the empty state's text and the "Free includes…" line.
@@ -254,7 +254,7 @@ Commit `lib/db/` and `drizzle/`. If the schema changes in a later step: edit `sc
 ### 3.6 Users
 - `lib/users.ts`: `ensureUser()` reads the Clerk user (`currentUser()`) and creates the `users` row if it's missing (`db.insert(users).values({ id, email }).onConflictDoNothing()`). Also `isSimulatedEmail(email)` → `email.includes("+clerk_test")` (test-script users always use Clerk test emails).
 - `app/api/webhooks/clerk/route.ts`: verify with `verifyWebhook` from `@clerk/nextjs/webhooks`. On `user.created`: create the user (the same upsert) and send `signed_up` from the server. Other event types: return 200 and do nothing (billing events arrive in Step 10).
-- Local webhooks reach the app through the tunnel the person started in section 1.
+- Local webhooks reach the app through the ngrok tunnel the person started in section 1 (`ngrok http --url=<their domain> 3000`).
 
 ### 3.7 PostHog
 - `next.config.ts`: rewrites so events go through our domain: `/ingest/static/:path*` → `${assetsHost}/static/:path*` and `/ingest/:path*` → `${NEXT_PUBLIC_POSTHOG_HOST}/:path*`, where `assetsHost` is the host with `.i.posthog.com` replaced by `-assets.i.posthog.com`. Add `skipTrailingSlashRedirect: true`.
@@ -311,6 +311,7 @@ Every later step runs this on the pages it touched (design-system §13).
 ## 5. Check it works
 
 - [ ] Signing up with email (through `playwright`, with `E2E_USER_EMAIL`), Google and GitHub (you do these two) each works and lands on `/dashboard`; signing in lands on `/dashboard`
+- [ ] `/` matches the part of `landing-1440.png`, `-768.png` and `-390.png` above the demo (header, headline, lead, buttons, note)
 - [ ] `/dashboard` matches `dashboard-empty-1440.png`, `-768.png` and `-390.png` apart from the "New site" button (Step 3): header, "10 of 10 AI requests left", empty state
 - [ ] Signed out, `/dashboard` redirects to `/sign-in`
 - [ ] The browser tab on `/` and `/dashboard` shows the Placard mark, and `app/favicon.ico` is gone
@@ -334,7 +335,7 @@ Every later step runs this on the pages it touched (design-system §13).
 - Clerk sign-in works (Email, Google and GitHub, development instance); signed-in pages have the app header, the dashboard and the usage meter.
 - The Neon project `placard` has `main` and `dev`; `.neon` and `.env.local` point at `dev`.
 - The Drizzle schema (`lib/db/schema.ts`) has 7 tables: `users`, `sites`, `snapshots`, `ai_runs`, `uploads`, `page_views_daily`, `referrers_daily` (migration `drizzle/0000_init.sql`).
-- Clerk's webhook (`/api/webhooks/clerk`, reached through the `cloudflared` tunnel on this machine) creates the `users` row and sends `signed_up`.
+- Clerk's webhook (`/api/webhooks/clerk`, reached through the ngrok tunnel on this machine, at the person's static ngrok domain) creates the `users` row and sends `signed_up`.
 - PostHog events go only through `lib/analytics/events.ts`, and every event carries `environment` and `simulated`.
 - `scripts/check-responsive.mjs` checks pages at six widths against `screens/screenshots/`.
 ```

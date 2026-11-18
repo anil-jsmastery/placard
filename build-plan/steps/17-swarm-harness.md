@@ -14,7 +14,7 @@ Everything happens on its own Neon branch, `swarm`: the agents' accounts, sites,
 
 ## 1. You do first
 
-1. **The webhook tunnel.** Sign-ups reach PostHog (`signed_up`) through Clerk's webhook, so start the tunnel in its own terminal and keep it running through Step 20: `cloudflared tunnel --url http://localhost:3000`. If its URL is new, update the endpoint in Clerk › Webhooks (development instance) to `<tunnel URL>/api/webhooks/clerk`.
+1. **The webhook tunnel.** Sign-ups reach PostHog (`signed_up`) through Clerk's webhook, so start the ngrok tunnel from Step 1 in its own terminal and keep it running through Step 20: `ngrok http --url=<your domain> 3000`. Its domain is the same as in Step 1, so Clerk › Webhooks (development instance) already points at it.
 2. **Room on your machine.** The swarm opens up to 20 browsers next to the app. With 16 GB of memory that's fine; with 8 GB, tell Claude Code to use `--concurrency=8` in Steps 17–20.
 
 Midway (3.0), Claude Code asks you to check the AI Gateway credits on the new branch.
