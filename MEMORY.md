@@ -21,3 +21,9 @@ What the project has so far, one block per finished step. `/step` adds each step
 - PostHog events go only through `lib/analytics/events.ts`, and every event carries `environment` and `simulated`.
 - `scripts/check-responsive.mjs` checks pages at six widths against `screens/screenshots/`.
 - Not in the plan: PostHog is on EU cloud and Clerk's username and password are off (the person's choices), `APP_ENV` reaches `PostHogProvider` from the server, `lib/simulated.ts`, `components/app/app-nav.tsx` and `authCardAppearance` (40 px Clerk targets on phones) were added, CodeRabbit ran through its CLI, the webhook used a random ngrok URL instead of a static domain, and Google and GitHub sign-up weren't tested in this step.
+
+## Step 2 · Sections, themes and the image library
+- 11 section types with their schemas (`lib/sections/schemas.ts`, tested in `lib/sections/schemas.test.ts`) and catalog (`lib/sections/catalog.ts`).
+- 6 themes and 3 heading fonts (`lib/site/themes.ts`); the section components are in `components/site/sections/`.
+- A page is one validated page object; `/dev/sections` shows every section in every theme.
+- Not in the plan: `PageData` types `content` per section in `lib/site/types.ts` (the schema's `as never` union infers `never[]`), the sample page uses real `https`/`mailto`/`tel` links instead of the reference's `#menu`/`#visit` anchors (which `Link` rejects) and the library's alt text for each photo, `SafeLink` keeps the styling on a span when a link is invalid, the catalog's list items use neutral placeholder copy, and `/dev/sections` also shows the reference's centered Hero variant and reads `#theme-font` from the URL.
