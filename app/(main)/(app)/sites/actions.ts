@@ -1,16 +1,12 @@
 "use server";
 
-import { randomInt } from "node:crypto";
 import { auth } from "@clerk/nextjs/server";
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { db, sites } from "@/lib/db";
 import { isUniqueViolation } from "@/lib/db/errors";
+import { randomSlug, slugify, uniqueSlug } from "@/lib/domains";
 import { EMPTY_PAGE } from "@/lib/sections/schemas";
-
-const ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789";
-const randomSlug = () => `site-${Array.from({ length: 6 }, () => ALPHABET[randomInt(ALPHABET.length)]).join("")}`;
 
 async function requireUserId() {
   const { userId } = await auth();
@@ -18,11 +14,14 @@ async function requireUserId() {
   return userId;
 }
 
-/** Inserts a site with a fresh `site-xxxxxx` slug, trying again if the slug is taken. */
-async function insertSite(values: Omit<typeof sites.$inferInsert, "slug">) {
+/** Inserts a site with a fresh slug (`site-xxxxxx` unless `makeSlug` says otherwise), trying again if the slug is taken. */
+async function insertSite(
+  values: Omit<typeof sites.$inferInsert, "slug">,
+  makeSlug: () => string | Promise<string> = randomSlug,
+) {
   for (let attempt = 0; ; attempt++) {
     try {
-      const [row] = await db.insert(sites).values({ ...values, slug: randomSlug() }).returning({ id: sites.id });
+      const [row] = await db.insert(sites).values({ ...values, slug: await makeSlug() }).returning({ id: sites.id });
       return row;
     } catch (err) {
       if (attempt < 4 && isUniqueViolation(err, "sites_slug_key")) continue;
@@ -31,11 +30,22 @@ async function insertSite(values: Omit<typeof sites.$inferInsert, "slug">) {
   }
 }
 
-/** "New site": a blank page, then the editor. */
-export async function createSite() {
+/**
+ * A blank page for the prompt box. With a business name, the site name and the page title are that
+ * name and the slug comes from it ("Ember & Rye" → `ember-and-rye`, then `ember-and-rye-2` …);
+ * without one, "Untitled site" and a random slug.
+ */
+export async function createSite(input?: { businessName?: string }) {
   const userId = await requireUserId();
-  const site = await insertSite({ userId, name: "Untitled site", draft: EMPTY_PAGE });
-  redirect(`/sites/${site.id}/edit`);
+  const businessName = input?.businessName?.trim().slice(0, 80);
+  if (!businessName) {
+    const site = await insertSite({ userId, name: "Untitled site", draft: EMPTY_PAGE });
+    return { id: site.id };
+  }
+  const draft = { ...EMPTY_PAGE, root: { props: { ...EMPTY_PAGE.root.props, title: businessName.slice(0, 60) } } };
+  const base = slugify(businessName);
+  const site = await insertSite({ userId, name: businessName, draft }, () => uniqueSlug(base));
+  return { id: site.id };
 }
 
 /** A copy of the draft, named "{name} copy", with a new address. Not published. */

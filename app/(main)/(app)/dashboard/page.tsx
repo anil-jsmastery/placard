@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import Link from "next/link";
 import { desc, eq } from "drizzle-orm";
 import { Plus } from "lucide-react";
 import { EmptyState } from "@/components/app/empty-state";
@@ -7,7 +8,6 @@ import { SiteCard, type SiteCardData } from "@/components/app/site-card";
 import { Button } from "@/components/ui/button";
 import { db, sites } from "@/lib/db";
 import type { PageData } from "@/lib/site/types";
-import { createSite } from "../sites/actions";
 
 async function getSites(userId: string): Promise<SiteCardData[]> {
   const rows = await db.query.sites.findMany({
@@ -40,12 +40,12 @@ export default async function DashboardPage() {
           title="Build your first site"
           text="Describe your business, portfolio or event in a sentence. The AI builds the page in about 30 seconds."
         >
-          <form action={createSite} className="mt-8">
-            <Button type="submit" size="lg">
+          <Button asChild size="lg" className="mt-8">
+            <Link href="/new">
               <Plus aria-hidden="true" />
               New site
-            </Button>
-          </form>
+            </Link>
+          </Button>
           <p className="mt-4 text-sm text-muted-foreground">Free includes 1 site and 10 AI requests a month.</p>
         </EmptyState>
       </main>
@@ -58,12 +58,12 @@ export default async function DashboardPage() {
         <div>
           <h1 className="font-display text-3xl font-bold sm:text-4xl">Sites</h1>
         </div>
-        <form action={createSite}>
-          <Button type="submit">
+        <Button asChild>
+          <Link href="/new">
             <Plus aria-hidden="true" />
             New site
-          </Button>
-        </form>
+          </Link>
+        </Button>
       </div>
       <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {userSites.map((site) => (

@@ -33,3 +33,8 @@ What the project has so far, one block per finished step. `/step` adds each step
 - The Puck editor (`lib/sections/puck-config.tsx`) is at `/sites/{id}/edit`: add, edit, reorder and delete sections, site settings, device sizes, the image field and picker, and autosave.
 - The dashboard lists the user's sites, and "New site" creates a blank one.
 - Not in the plan: `vitest.config.mts` resolves the `@/` alias so the field-key test can import the sections, link, URL and email fields are one-line text inputs as in the reference, the editor scales `<Puck.Preview />` itself (Puck's composition API doesn't zoom) and `components/editor/section-overlay.tsx` counter-scales the outline and action bar, Add tiles are `div role="button"` because Puck's drag engine won't start a drag from a native button, the image picker composes `DialogPortal`/`DialogOverlay` for the reference's `bg-black/45` backdrop, `lib/images/library.ts` gained `listImages` and `getImageTag`, and `site_edited` wasn't confirmed in PostHog because the automated browser sends no capture requests.
+
+## Step 4 · Onboarding and the prompt box
+- `/onboarding` asks "What are you building?" and stores `use_case`; `/new` shows example prompts for it.
+- Submitting a prompt creates the site and opens its editor with the prompt waiting (in `sessionStorage`) for the AI.
+- Not in the plan: the "Sites" nav item is also active on `/new` (as in `new.html`), the pending build stores `tone` as its label ("Bold") and the textarea keeps the reference's `text-lg`, `slugify` normalizes (NFKD) before lowercasing after the CodeRabbit review, and the person's own browser run sent `onboarding_completed` but not `prompt_submitted` (that check used the Playwright user's events).

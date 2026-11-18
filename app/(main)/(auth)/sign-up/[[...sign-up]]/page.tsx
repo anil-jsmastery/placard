@@ -6,7 +6,7 @@ export default function SignUpPage() {
   return (
     <main className="flex min-h-dvh flex-col items-center gap-8 bg-background px-4 py-16">
       <Logo />
-      <SignUp forceRedirectUrl="/dashboard" appearance={authCardAppearance} />
+      <SignUp forceRedirectUrl="/onboarding" appearance={authCardAppearance} />
     </main>
   );
 }
