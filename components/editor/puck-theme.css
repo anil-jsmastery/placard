@@ -1,0 +1,108 @@
+/*
+ * Maps Puck's CSS variables (node_modules/@puckeditor/core/dist/index.css) to our tokens,
+ * so fields, the outline and hover states look like the rest of the app: Figtree,
+ * ink instead of Puck's azure scale, our greys and our radius.
+ * `:root:root` outranks Puck's own `:root` definitions whatever order the sheets load in.
+ */
+:root:root {
+  --puck-font-family: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+
+  /* azure scale → ink (primary) */
+  --puck-color-azure-01: var(--primary);
+  --puck-color-azure-02: var(--primary);
+  --puck-color-azure-03: color-mix(in srgb, var(--primary) 90%, transparent);
+  --puck-color-azure-04: var(--primary);
+  --puck-color-azure-05: var(--ring);
+  --puck-color-azure-06: var(--input);
+  --puck-color-azure-07: var(--input);
+  --puck-color-azure-08: var(--primary);
+  --puck-color-azure-09: var(--border);
+  --puck-color-azure-10: var(--muted);
+  --puck-color-azure-11: var(--muted);
+  --puck-color-azure-12: var(--accent);
+
+  /* greys → muted / border / input */
+  --puck-color-grey-01: var(--foreground);
+  --puck-color-grey-02: var(--foreground);
+  --puck-color-grey-03: var(--muted-foreground);
+  --puck-color-grey-04: var(--muted-foreground);
+  --puck-color-grey-05: var(--input);
+  --puck-color-grey-06: var(--input);
+  --puck-color-grey-07: var(--input);
+  --puck-color-grey-08: var(--border);
+  --puck-color-grey-09: var(--border);
+  --puck-color-grey-10: var(--muted);
+  --puck-color-grey-11: var(--muted);
+  --puck-color-grey-12: var(--background);
+
+  --puck-color-text: var(--foreground);
+  --puck-color-surface: var(--card);
+  --puck-color-border: var(--border);
+  --puck-color-border-hover: var(--input);
+  --puck-color-focus-ring: color-mix(in srgb, var(--ring) 30%, transparent);
+  --puck-color-selection-border: var(--primary);
+  --puck-color-selection-bg: transparent;
+  --puck-color-line-placeholder: var(--primary);
+
+  --puck-field-color-border: var(--input);
+  --puck-field-color-border-hover: var(--input);
+  --puck-field-color-bg-hover: var(--card);
+
+  /* fields: labels text-sm font-medium with mt-2 to the control; inputs h-9 px-3 */
+  --puck-field-label-color-text: var(--foreground);
+  --puck-field-label-font-weight: 500;
+  --puck-field-label-space-y: 0.5rem;
+  --puck-field-space-y: 7px;
+  --puck-field-space-x: 11px;
+
+  /* radius */
+  --puck-radius-s: var(--radius-sm);
+  --puck-radius-m: var(--radius-md);
+  --puck-radius-l: var(--radius-lg);
+}
+
+/* Inputs: 16 px on phones so focusing doesn't zoom, 14 px from sm (design-system §13). */
+.Puck input,
+.Puck textarea,
+.Puck select {
+  font-size: 16px;
+}
+@media (min-width: 640px) {
+  .Puck input,
+  .Puck textarea,
+  .Puck select {
+    font-size: 14px;
+  }
+}
+
+/* Fields panel: no type icons before labels, 24 px between fields (space-y-6). */
+[data-fields-panel] [class*="_Input-labelIcon_"] {
+  display: none;
+}
+[data-fields-panel] [class*="PuckFields-rows"] > * + * {
+  margin-top: 1.5rem !important;
+}
+
+/*
+ * The selected section's action bar sits top-left inside the section, at screen size
+ * (components/editor/section-overlay.tsx draws it and undoes the canvas scale).
+ */
+[data-puck-overlay] [class*="DraggableComponent-actionsOverlay"] {
+  top: 0 !important;
+}
+[data-puck-overlay] [class*="DraggableComponent-actions_"] {
+  top: 0 !important;
+  left: 0 !important;
+  right: auto !important;
+  padding: 0 !important;
+  transform: none !important;
+  min-height: 0;
+  cursor: default;
+}
+
+/* Add panel: Puck's drawer as the 2-column tile grid (editor-settings.html). */
+[data-add-panel] [data-puck-drawer] {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}

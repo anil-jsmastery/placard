@@ -19,3 +19,13 @@ export function getImageById(id: string): LibraryImage | undefined {
   const entry = ENTRIES.find((e) => e.id === id);
   return entry ? toImage(entry) : undefined;
 }
+
+/** Every library photo with its tag, for the image picker (all tags when `tag` is omitted). */
+export function listImages(tag?: ImageTag): (LibraryImage & { tag: ImageTag })[] {
+  return ENTRIES.filter((e) => !tag || e.tag === tag).map((e) => ({ ...toImage(e), tag: e.tag as ImageTag }));
+}
+
+/** The tag of a library photo, from its path. */
+export function getImageTag(src: string): ImageTag | undefined {
+  return ENTRIES.find((e) => e.src === src)?.tag as ImageTag | undefined;
+}

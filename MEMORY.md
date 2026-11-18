@@ -27,3 +27,9 @@ What the project has so far, one block per finished step. `/step` adds each step
 - 6 themes and 3 heading fonts (`lib/site/themes.ts`); the section components are in `components/site/sections/`.
 - A page is one validated page object; `/dev/sections` shows every section in every theme.
 - Not in the plan: `PageData` types `content` per section in `lib/site/types.ts` (the schema's `as never` union infers `never[]`), the sample page uses real `https`/`mailto`/`tel` links instead of the reference's `#menu`/`#visit` anchors (which `Link` rejects) and the library's alt text for each photo, `SafeLink` keeps the styling on a span when a link is invalid, the catalog's list items use neutral placeholder copy, and `/dev/sections` also shows the reference's centered Hero variant and reads `#theme-font` from the URL.
+
+## Step 3 · The editor and the sites grid
+- `lib/plans.ts` holds the Free and Pro limits that every later step uses.
+- The Puck editor (`lib/sections/puck-config.tsx`) is at `/sites/{id}/edit`: add, edit, reorder and delete sections, site settings, device sizes, the image field and picker, and autosave.
+- The dashboard lists the user's sites, and "New site" creates a blank one.
+- Not in the plan: `vitest.config.mts` resolves the `@/` alias so the field-key test can import the sections, link, URL and email fields are one-line text inputs as in the reference, the editor scales `<Puck.Preview />` itself (Puck's composition API doesn't zoom) and `components/editor/section-overlay.tsx` counter-scales the outline and action bar, Add tiles are `div role="button"` because Puck's drag engine won't start a drag from a native button, the image picker composes `DialogPortal`/`DialogOverlay` for the reference's `bg-black/45` backdrop, `lib/images/library.ts` gained `listImages` and `getImageTag`, and `site_edited` wasn't confirmed in PostHog because the automated browser sends no capture requests.
