@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Image picker dialog: Upload tab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Figtree:wght@400..800&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500..800&family=Fraunces:opsz,wght@9..144,500..700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400..600&display=swap">
+<link rel="stylesheet" href="reference.css">
+</head>
+<body class="overflow-hidden">
+<!--
+  Route: /sites/[id]/edit  ·  Built with Puck composition: <Puck> + custom layout (components/editor/editor-layout.tsx)
+  Left: tabs AI | Add | Layers (AI is the default).  Centre: <Puck.Preview /> on the canvas.  Right: <Puck.Fields /> for the selected section, or Site settings when nothing is selected.
+  State shown: Upload tab (Step 13). One image just uploaded and selected; storage line under the grid.
+-->
+<div class="flex h-screen flex-col">
+  <header class="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-card px-3">
+  <a href="dashboard.html" class="grid size-10 shrink-0 place-items-center rounded-md sm:size-9 text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Back to sites"><svg class="lucide shrink-0 size-4" data-icon="arrow-left" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg></a>
+  <div class="hidden h-6 w-px bg-border sm:block" aria-hidden="true"></div>
+  <div class="flex min-w-0 items-center gap-2.5">
+    <span class="truncate text-sm font-semibold">Ember &amp; Rye</span>
+    <span class="hidden shrink-0 items-center gap-1.5 rounded-full bg-live-soft sm:inline-flex px-2 py-0.5 text-xs font-semibold text-live"><span class="size-1.5 rounded-full bg-live"></span>Live</span>
+    
+    <span class="hidden items-center gap-1 text-xs text-muted-foreground lg:inline-flex" role="status"><svg class="lucide shrink-0 size-3.5" data-icon="check" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 6 9 17l-5-5" /></svg>Saved</span>
+  </div>
+  <div class="mx-auto hidden items-center rounded-lg bg-muted p-0.5 md:flex" role="group" aria-label="Preview size">
+    <button type="button" aria-pressed="true" class="grid h-8 w-9 place-items-center rounded-md bg-card text-foreground shadow-sm" aria-label="Desktop"><svg class="lucide shrink-0 size-4" data-icon="monitor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="20" height="14" x="2" y="3" rx="2" /><line x1="8" x2="16" y1="21" y2="21" /><line x1="12" x2="12" y1="17" y2="21" /></svg></button>
+    <button type="button" aria-pressed="false" class="grid h-8 w-9 place-items-center rounded-md text-muted-foreground hover:text-foreground" aria-label="Tablet"><svg class="lucide shrink-0 size-4" data-icon="tablet" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><line x1="12" x2="12.01" y1="18" y2="18" /></svg></button>
+    <button type="button" aria-pressed="false" class="grid h-8 w-9 place-items-center rounded-md text-muted-foreground hover:text-foreground" aria-label="Phone"><svg class="lucide shrink-0 size-4" data-icon="smartphone" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /><path d="M12 18h.01" /></svg></button>
+  </div>
+  <div class="ml-auto flex shrink-0 items-center gap-1 md:ml-0">
+    <button type="button" class="grid size-10 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground sm:size-9" aria-label="Undo"><svg class="lucide shrink-0 size-4" data-icon="undo-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" /></svg></button>
+    <button type="button" class="grid size-10 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground sm:size-9" aria-label="Redo"><svg class="lucide shrink-0 size-4" data-icon="redo-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="m15 14 5-5-5-5" /><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5A5.5 5.5 0 0 0 9.5 20H13" /></svg></button>
+    <div class="mx-1 hidden h-6 w-px bg-border sm:block" aria-hidden="true"></div>
+    <button type="button"  class="inline-flex h-10 items-center sm:h-9 gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-40">Publish</button>
+  </div>
+</header>
+
+  <div class="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)_280px] xl:grid-cols-[340px_minmax(0,1fr)_320px]">
+
+    <!-- Left panel: AI -->
+    <aside class="hidden min-h-0 flex-col border-r border-border bg-card lg:flex" aria-label="AI">
+      <div class="border-b border-border p-3"><div class="grid grid-cols-3 gap-1 rounded-lg bg-muted p-1 text-sm font-medium" role="tablist" aria-label="Editor panels">
+  <button type="button" role="tab" aria-selected="false" class="inline-flex h-8 items-center justify-center gap-1.5 rounded-md aria-selected:bg-card aria-selected:shadow-sm aria-[selected=false]:text-muted-foreground"><svg class="lucide shrink-0 size-4" data-icon="sparkles" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /><path d="M20 2v4" /><path d="M22 4h-4" /><circle cx="4" cy="20" r="2" /></svg>AI</button>
+  <button type="button" role="tab" aria-selected="true" class="inline-flex h-8 items-center justify-center gap-1.5 rounded-md aria-selected:bg-card aria-selected:shadow-sm aria-[selected=false]:text-muted-foreground"><svg class="lucide shrink-0 size-4" data-icon="plus" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M5 12h14" /><path d="M12 5v14" /></svg>Add</button>
+  <button type="button" role="tab" aria-selected="false" class="inline-flex h-8 items-center justify-center gap-1.5 rounded-md aria-selected:bg-card aria-selected:shadow-sm aria-[selected=false]:text-muted-foreground"><svg class="lucide shrink-0 size-4" data-icon="layers" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" /><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" /><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" /></svg>Layers</button>
+</div>
+</div>
+      <div class="flex-1 overflow-y-auto p-4">
+        <p class="text-sm text-muted-foreground">Drag a section onto the page, or click to add it at the end.</p>
+        <div class="mt-4 grid grid-cols-2 gap-2">
+          <button type="button" class="flex flex-col items-start gap-3 rounded-lg border border-border bg-card p-3 text-left hover:border-input hover:bg-accent" draggable="true"><svg class="lucide shrink-0 size-5 text-muted-foreground" data-icon="layout-template" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="7" x="3" y="3" rx="1" /><rect width="9" height="7" x="3" y="14" rx="1" /><rect width="5" height="7" x="16" y="14" rx="1" /></svg><span class="text-sm font-medium">Hero</span></button>
+          <button type="button" class="flex flex-col items-start gap-3 rounded-lg border border-border bg-card p-3 text-left hover:border-input hover:bg-accent" draggable="true"><svg class="lucide shrink-0 size-5 text-muted-foreground" data-icon="user-round" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><circle cx="12" cy="8" r="5" /><path d="M20 21a8 8 0 0 0-16 0" /></svg><span class="text-sm font-medium">About</span></button>
+          <button type="button" class="flex flex-col items-start gap-3 rounded-lg border border-border bg-card p-3 text-left hover:border-input hover:bg-accent" draggable="true"><svg class="lucide shrink-0 size-5 text-muted-foreground" data-icon="layout-grid" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="7" height="7" x="3" y="3" rx="1" /><rect width="7" height="7" x="14" y="3" rx="1" /><rect width="7" height="7" x="14" y="14" rx="1" /><rect width="7" height="7" x="3" y="14" rx="1" /></svg><span class="text-sm font-medium">Features</span></button>
+          <button type="button" class="flex flex-col items-start gap-3 rounded-lg border border-border bg-card p-3 text-left hover:border-input hover:bg-accent" draggable="true"><svg class="lucide shrink-0 size-5 text-muted-foreground" data-icon="list" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M3 5h.01" /><path d="M3 12h.01" /><path d="M3 19h.01" /><path d="M8 5h13" /><path d="M8 12h13" /><path d="M8 19h13" /></svg><span class="text-sm font-medium">Services</span></button>
+          <button type="button" class="flex flex-col items-start gap-3 rounded-lg border border-border bg-card p-3 text-left hover:border-input hover:bg-accent" draggable="true"><svg class="lucide shrink-0 size-5 text-muted-foreground" data-icon="images" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="m22 11-1.296-1.296a2.4 2.4 0 0 0-3.408 0L11 16" /><path d="M4 8a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2" /><circle cx="13" cy="7" r="1" fill="currentColor" /><rect x="8" y="2" width="14" height="14" rx="2" /></svg><span class="text-sm font-medium">Gallery</span></button>
+          <button type="button" class="flex flex-col items-start gap-3 rounded-lg border border-border bg-card p-3 text-left hover:border-input hover:bg-accent" draggable="true"><svg class="lucide shrink-0 size-5 text-muted-foreground" data-icon="quote" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z" /><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z" /></svg><span class="text-sm font-medium">Testimonials</span></button>
+          <button type="button" class="flex flex-col items-start gap-3 rounded-lg border border-border bg-card p-3 text-left hover:border-input hover:bg-accent" draggable="true"><svg class="lucide shrink-0 size-5 text-muted-foreground" data-icon="badge-dollar-sign" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" /><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" /><path d="M12 18V6" /></svg><span class="text-sm font-medium">Pricing</span></button>
+          <button type="button" class="flex flex-col items-start gap-3 rounded-lg border border-border bg-card p-3 text-left hover:border-input hover:bg-accent" draggable="true"><svg class="lucide shrink-0 size-5 text-muted-foreground" data-icon="circle-help" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><circle cx="12" cy="12" r="10" /><path d="M9 9.5a3 2.5 0 016 0c0 2-2 2-3 3.5" /><path d="M12 17h.01" /></svg><span class="text-sm font-medium">FAQ</span></button>
+          <button type="button" class="flex flex-col items-start gap-3 rounded-lg border border-border bg-card p-3 text-left hover:border-input hover:bg-accent" draggable="true"><svg class="lucide shrink-0 size-5 text-muted-foreground" data-icon="megaphone" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M11 6a13 13 0 0 0 8.4-2.8A1 1 0 0 1 21 4v12a1 1 0 0 1-1.6.8A13 13 0 0 0 11 14H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" /><path d="M6 14a12 12 0 0 0 2.4 7.2 2 2 0 0 0 3.2-2.4A8 8 0 0 1 10 14" /><path d="M8 6v8" /></svg><span class="text-sm font-medium">Call to action</span></button>
+          <button type="button" class="flex flex-col items-start gap-3 rounded-lg border border-border bg-card p-3 text-left hover:border-input hover:bg-accent" draggable="true"><svg class="lucide shrink-0 size-5 text-muted-foreground" data-icon="mail" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" /><rect x="2" y="4" width="20" height="16" rx="2" /></svg><span class="text-sm font-medium">Contact</span></button>
+          <button type="button" class="flex flex-col items-start gap-3 rounded-lg border border-border bg-card p-3 text-left hover:border-input hover:bg-accent" draggable="true"><svg class="lucide shrink-0 size-5 text-muted-foreground" data-icon="link" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg><span class="text-sm font-medium">Links</span></button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Canvas -->
+    <main id="canvas" class="min-w-0 overflow-y-auto bg-canvas p-4 sm:p-6" aria-label="Page preview">
+      <div class="mx-auto max-w-[1280px] overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-black/5" data-frame data-phone data-width="1280" data-fit="height">
+        <div class="site" data-site-theme="sunset" data-site-font="serif">
+          <!-- Hero · layout: split -->
+  <section data-section="Hero" class="px-6 pt-16 pb-20 @2xl:pt-24 @2xl:pb-28">
+    <div class="mx-auto grid max-w-5xl items-center gap-12 @5xl:grid-cols-2">
+      <div>
+        <h1 class="text-4xl font-bold leading-[1.05] @2xl:text-6xl">Sourdough baked at dawn in Patan</h1>
+        <p class="mt-5 max-w-md text-lg leading-relaxed text-site-muted">Slow-fermented loaves, cardamom buns and a weekend brunch worth waking up for.</p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="#menu" class="inline-flex h-11 items-center rounded-site bg-site-accent px-5 font-semibold text-site-accent-fg hover:opacity-90">See the menu</a>
+          <a href="#visit" class="inline-flex h-11 items-center rounded-site border border-site-border bg-site-surface px-5 font-semibold hover:opacity-90">Find us</a>
+        </div>
+      </div>
+      <div class="grid aspect-[4/3] place-items-center rounded-site bg-site-border text-site-muted" data-image-tag="food" role="img" aria-label="Fresh sourdough loaves on a wooden counter">
+        <span class="flex items-center gap-2 text-sm"><svg class="lucide shrink-0 size-4" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>food</span>
+      </div>
+    </div>
+  </section>
+
+          <!-- About -->
+  <section data-section="About" class="px-6 py-16 @2xl:py-20">
+    <div class="mx-auto grid max-w-5xl items-center gap-12 @5xl:grid-cols-[5fr_6fr]">
+      <div class="grid aspect-[4/3] place-items-center rounded-site bg-site-border text-site-muted @5xl:aspect-square" data-image-tag="people" role="img" aria-label="Two bakers shaping dough">
+        <span class="flex items-center gap-2 text-sm"><svg class="lucide shrink-0 size-4" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>people</span>
+      </div>
+      <div>
+        <h2 class="text-3xl font-bold @2xl:text-4xl">Baked by two friends who missed real bread</h2>
+        <p class="mt-5 max-w-prose text-lg leading-relaxed text-site-muted">Ember &amp; Rye started in a home kitchen in 2021. Today we bake every loaf by hand from local flour, a five-year-old starter and a lot of patience. Come early: the cardamom buns are usually gone by ten.</p>
+      </div>
+    </div>
+  </section>
+
+          <!-- Features · columns: 3 -->
+  <section data-section="Features" class="px-6 py-16 @2xl:py-20">
+    <div class="mx-auto max-w-5xl">
+      <h2 class="max-w-2xl text-3xl font-bold @2xl:text-4xl">Why people come back</h2>
+      <div class="mt-12 grid gap-6 @2xl:grid-cols-2 @5xl:grid-cols-3">
+        <div class="rounded-site border border-site-border bg-site-surface p-6">
+          <span class="grid size-10 place-items-center rounded-site bg-site-accent text-site-accent-fg"><svg class="lucide shrink-0 size-5" data-icon="wheat" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M2 22 16 8" /><path d="M3.47 12.53 5 11l1.53 1.53a3.5 3.5 0 0 1 0 4.94L5 19l-1.53-1.53a3.5 3.5 0 0 1 0-4.94Z" /><path d="M7.47 8.53 9 7l1.53 1.53a3.5 3.5 0 0 1 0 4.94L9 15l-1.53-1.53a3.5 3.5 0 0 1 0-4.94Z" /><path d="M11.47 4.53 13 3l1.53 1.53a3.5 3.5 0 0 1 0 4.94L13 11l-1.53-1.53a3.5 3.5 0 0 1 0-4.94Z" /><path d="M20 2h2v2a4 4 0 0 1-4 4h-2V6a4 4 0 0 1 4-4Z" /><path d="M11.47 17.47 13 19l-1.53 1.53a3.5 3.5 0 0 1-4.94 0L5 19l1.53-1.53a3.5 3.5 0 0 1 4.94 0Z" /><path d="M15.47 13.47 17 15l-1.53 1.53a3.5 3.5 0 0 1-4.94 0L9 15l1.53-1.53a3.5 3.5 0 0 1 4.94 0Z" /><path d="M19.47 9.47 21 11l-1.53 1.53a3.5 3.5 0 0 1-4.94 0L13 11l1.53-1.53a3.5 3.5 0 0 1 4.94 0Z" /></svg></span>
+          <h3 class="mt-5 text-xl font-semibold">48-hour dough</h3>
+          <p class="mt-2 leading-relaxed text-site-muted">Long, slow fermentation for a crackly crust and an open, tangy crumb.</p>
+        </div>
+        <div class="rounded-site border border-site-border bg-site-surface p-6">
+          <span class="grid size-10 place-items-center rounded-site bg-site-accent text-site-accent-fg"><svg class="lucide shrink-0 size-5" data-icon="leaf" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M11 20a10 10 0 0010-10 25.9 25.9 0 00-1.04-7.281 1 1 0 00-1.755-.325C15.833 5.5 13 5.5 9.8 6.1A7 7 0 0011 20" /><path d="M2 21a5 5 0 012.911-4.544C7.613 15.212 8.351 15.24 11 13" /></svg></span>
+          <h3 class="mt-5 text-xl font-semibold">Local flour</h3>
+          <p class="mt-2 leading-relaxed text-site-muted">Stone-milled wheat and rye from farms in the valley, delivered every week.</p>
+        </div>
+        <div class="rounded-site border border-site-border bg-site-surface p-6">
+          <span class="grid size-10 place-items-center rounded-site bg-site-accent text-site-accent-fg"><svg class="lucide shrink-0 size-5" data-icon="clock" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg></span>
+          <h3 class="mt-5 text-xl font-semibold">Fresh at 7 am</h3>
+          <p class="mt-2 leading-relaxed text-site-muted">The first loaves come out of the oven as we open the doors.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+          <!-- Services -->
+  <section id="menu" data-section="Services" class="px-6 py-16 @2xl:py-20">
+    <div class="mx-auto max-w-5xl">
+      <h2 class="max-w-2xl text-3xl font-bold @2xl:text-4xl">On the counter</h2>
+      <div class="mt-10 divide-y divide-site-border border-y border-site-border">
+        <div class="flex flex-col gap-1 py-6 @2xl:flex-row @2xl:items-baseline @2xl:gap-8">
+          <h3 class="text-xl font-semibold @2xl:w-64 @2xl:shrink-0">Country sourdough</h3>
+          <p class="leading-relaxed text-site-muted">Our everyday loaf. Wheat, a little rye, water, salt.</p>
+          <p class="font-semibold tabular-nums @2xl:ml-auto @2xl:pl-6">Rs 450</p>
+        </div>
+        <div class="flex flex-col gap-1 py-6 @2xl:flex-row @2xl:items-baseline @2xl:gap-8">
+          <h3 class="text-xl font-semibold @2xl:w-64 @2xl:shrink-0">Cardamom buns</h3>
+          <p class="leading-relaxed text-site-muted">Box of four, rolled with brown butter and fresh cardamom.</p>
+          <p class="font-semibold tabular-nums @2xl:ml-auto @2xl:pl-6">Rs 380</p>
+        </div>
+        <div class="flex flex-col gap-1 py-6 @2xl:flex-row @2xl:items-baseline @2xl:gap-8">
+          <h3 class="text-xl font-semibold @2xl:w-64 @2xl:shrink-0">Weekend brunch plate</h3>
+          <p class="leading-relaxed text-site-muted">Saturday and Sunday, 8 am to 1 pm. Eggs, greens, toast and coffee.</p>
+          <p class="font-semibold tabular-nums @2xl:ml-auto @2xl:pl-6">Rs 950</p>
+        </div>
+        <div class="flex flex-col gap-1 py-6 @2xl:flex-row @2xl:items-baseline @2xl:gap-8">
+          <h3 class="text-xl font-semibold @2xl:w-64 @2xl:shrink-0">Celebration cakes</h3>
+          <p class="leading-relaxed text-site-muted">Order three days ahead. Chocolate rye, lemon and seasonal fruit.</p>
+          <p class="font-semibold tabular-nums @2xl:ml-auto @2xl:pl-6">from Rs 2,400</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+          <!-- Gallery · 6 images -->
+  <section data-section="Gallery" class="px-6 py-16 @2xl:py-20">
+    <div class="mx-auto max-w-5xl">
+      <h2 class="max-w-2xl text-3xl font-bold @2xl:text-4xl">From the oven</h2>
+      <div class="mt-10 grid grid-cols-2 gap-4 @5xl:grid-cols-3">
+        <figure><div class="grid aspect-[4/3] place-items-center rounded-site bg-site-border text-site-muted" data-image-tag="food" role="img" aria-label="Loaves cooling"><svg class="lucide shrink-0 size-4" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg></div><figcaption class="mt-2 text-sm text-site-muted">Morning loaves</figcaption></figure>
+        <figure><div class="grid aspect-[4/3] place-items-center rounded-site bg-site-border text-site-muted" data-image-tag="food" role="img" aria-label="Cardamom buns"><svg class="lucide shrink-0 size-4" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg></div><figcaption class="mt-2 text-sm text-site-muted">Cardamom buns</figcaption></figure>
+        <figure><div class="grid aspect-[4/3] place-items-center rounded-site bg-site-border text-site-muted" data-image-tag="office" role="img" aria-label="The café counter"><svg class="lucide shrink-0 size-4" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg></div><figcaption class="mt-2 text-sm text-site-muted">The counter</figcaption></figure>
+        <figure><div class="grid aspect-[4/3] place-items-center rounded-site bg-site-border text-site-muted" data-image-tag="food" role="img" aria-label="Brunch plate"><svg class="lucide shrink-0 size-4" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg></div><figcaption class="mt-2 text-sm text-site-muted">Weekend brunch</figcaption></figure>
+        <figure><div class="grid aspect-[4/3] place-items-center rounded-site bg-site-border text-site-muted" data-image-tag="people" role="img" aria-label="Baker at work"><svg class="lucide shrink-0 size-4" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg></div><figcaption class="mt-2 text-sm text-site-muted">Shaping at 4 am</figcaption></figure>
+        <figure><div class="grid aspect-[4/3] place-items-center rounded-site bg-site-border text-site-muted" data-image-tag="food" role="img" aria-label="Chocolate rye cake"><svg class="lucide shrink-0 size-4" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg></div><figcaption class="mt-2 text-sm text-site-muted">Chocolate rye cake</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+          <!-- FAQ -->
+  <section data-section="FAQ" class="px-6 py-16 @2xl:py-20">
+    <div class="mx-auto max-w-3xl">
+      <h2 class="text-3xl font-bold @2xl:text-4xl">Questions</h2>
+      <div class="mt-8 divide-y divide-site-border border-y border-site-border">
+        <details class="group" open>
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-lg font-semibold">Do you have gluten-free bread?<svg class="lucide shrink-0 size-5 transition-transform group-open:rotate-45" data-icon="plus" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M5 12h14" /><path d="M12 5v14" /></svg></summary>
+          <p class="-mt-2 pb-5 leading-relaxed text-site-muted">Not yet. Our kitchen handles a lot of wheat flour, so we can’t promise anything is gluten-free.</p>
+        </details>
+        <details class="group">
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-lg font-semibold">Can I order ahead?<svg class="lucide shrink-0 size-5 transition-transform group-open:rotate-45" data-icon="plus" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M5 12h14" /><path d="M12 5v14" /></svg></summary>
+          <p class="-mt-2 pb-5 leading-relaxed text-site-muted">Yes. Call before 5 pm and we’ll hold your order for the next morning.</p>
+        </details>
+        <details class="group">
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-lg font-semibold">Do you deliver?<svg class="lucide shrink-0 size-5 transition-transform group-open:rotate-45" data-icon="plus" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M5 12h14" /><path d="M12 5v14" /></svg></summary>
+          <p class="-mt-2 pb-5 leading-relaxed text-site-muted">Bread club members in Patan get free delivery. Everyone else can pick up at the shop.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+          <!-- Pricing -->
+  <section data-section="Pricing" class="px-6 py-16 @2xl:py-20">
+    <div class="mx-auto max-w-5xl">
+      <h2 class="max-w-2xl text-3xl font-bold @2xl:text-4xl">Join the bread club</h2>
+      <div class="mt-10 grid items-start gap-6 @3xl:grid-cols-3">
+        <div class="rounded-site border border-site-border bg-site-surface p-6">
+          <h3 class="text-lg font-semibold">Weekly loaf</h3>
+          <p class="mt-4"><span class="text-4xl font-bold tabular-nums">Rs 1,600</span> <span class="text-site-muted">/ month</span></p>
+          <ul class="mt-6 space-y-3 text-sm">
+            <li class="flex gap-2"><svg class="lucide shrink-0 mt-0.5 size-4 text-site-accent" data-icon="check" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 6 9 17l-5-5" /></svg>One loaf a week</li>
+            <li class="flex gap-2"><svg class="lucide shrink-0 mt-0.5 size-4 text-site-accent" data-icon="check" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 6 9 17l-5-5" /></svg>Pick up any day</li>
+          </ul>
+          <a href="#" class="mt-8 flex h-11 items-center justify-center rounded-site border border-site-border font-semibold hover:opacity-90">Join</a>
+        </div>
+        <div class="rounded-site border-2 border-site-accent bg-site-surface p-6">
+          <h3 class="text-lg font-semibold">Family box</h3>
+          <p class="mt-4"><span class="text-4xl font-bold tabular-nums">Rs 3,200</span> <span class="text-site-muted">/ month</span></p>
+          <ul class="mt-6 space-y-3 text-sm">
+            <li class="flex gap-2"><svg class="lucide shrink-0 mt-0.5 size-4 text-site-accent" data-icon="check" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 6 9 17l-5-5" /></svg>Two loaves and a box of buns a week</li>
+            <li class="flex gap-2"><svg class="lucide shrink-0 mt-0.5 size-4 text-site-accent" data-icon="check" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 6 9 17l-5-5" /></svg>Free delivery in Patan</li>
+            <li class="flex gap-2"><svg class="lucide shrink-0 mt-0.5 size-4 text-site-accent" data-icon="check" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 6 9 17l-5-5" /></svg>10% off cakes</li>
+          </ul>
+          <a href="#" class="mt-8 flex h-11 items-center justify-center rounded-site bg-site-accent font-semibold text-site-accent-fg hover:opacity-90">Join</a>
+        </div>
+        <div class="rounded-site border border-site-border bg-site-surface p-6">
+          <h3 class="text-lg font-semibold">Office box</h3>
+          <p class="mt-4"><span class="text-4xl font-bold tabular-nums">Rs 6,500</span> <span class="text-site-muted">/ month</span></p>
+          <ul class="mt-6 space-y-3 text-sm">
+            <li class="flex gap-2"><svg class="lucide shrink-0 mt-0.5 size-4 text-site-accent" data-icon="check" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 6 9 17l-5-5" /></svg>Bread and pastries for 15 people</li>
+            <li class="flex gap-2"><svg class="lucide shrink-0 mt-0.5 size-4 text-site-accent" data-icon="check" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 6 9 17l-5-5" /></svg>Monday delivery</li>
+          </ul>
+          <a href="#" class="mt-8 flex h-11 items-center justify-center rounded-site border border-site-border font-semibold hover:opacity-90">Join</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+          <!-- Contact -->
+  <section id="visit" data-section="Contact" class="px-6 py-16 @2xl:py-20">
+    <div class="mx-auto grid max-w-5xl gap-10 @5xl:grid-cols-2">
+      <h2 class="text-3xl font-bold @2xl:text-4xl">Visit us</h2>
+      <div class="space-y-5 text-lg">
+        <p class="flex items-start gap-3"><svg class="lucide shrink-0 mt-1 size-5 text-site-muted" data-icon="map-pin" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" /><circle cx="12" cy="10" r="3" /></svg>Mangal Bazaar, Patan, Lalitpur</p>
+        <p class="flex items-start gap-3"><svg class="lucide shrink-0 mt-1 size-5 text-site-muted" data-icon="phone" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384" /></svg><a href="tel:+97715550142" class="underline decoration-site-border underline-offset-4 hover:decoration-current">+977 1-555-0142</a></p>
+        <p class="flex items-start gap-3"><svg class="lucide shrink-0 mt-1 size-5 text-site-muted" data-icon="mail" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" /><rect x="2" y="4" width="20" height="16" rx="2" /></svg><a href="mailto:hello@emberandrye.example" class="underline decoration-site-border underline-offset-4 hover:decoration-current">hello@emberandrye.example</a></p>
+        <div class="flex flex-wrap gap-2 pt-2">
+          <a href="#" class="inline-flex h-9 items-center rounded-site border border-site-border bg-site-surface px-4 text-sm font-semibold">Instagram</a>
+          <a href="#" class="inline-flex h-9 items-center rounded-site border border-site-border bg-site-surface px-4 text-sm font-semibold">Facebook</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+          <!-- Footer (added automatically, not a section) -->
+  <footer class="border-t border-site-border px-6 py-8">
+    <div class="mx-auto flex max-w-5xl flex-wrap items-center gap-4 text-sm text-site-muted">
+      <p>© 2026 Ember &amp; Rye</p>
+      <a href="landing.html" data-small-target class="ml-auto inline-flex items-center gap-2 rounded-full border border-[#e3e5ea] bg-white px-3 py-2 font-sans text-xs font-semibold text-[#16181d] shadow-sm">
+        <span class="grid size-4 place-items-center rounded-[4px] bg-[#16181d]" aria-hidden="true"><svg viewBox="0 0 16 16" class="size-3"><rect x="3" y="3" width="10" height="2.2" rx="1.1" fill="#ffd43b"/><rect x="3" y="6.9" width="7.5" height="2.2" rx="1.1" fill="#fff"/><rect x="3" y="10.8" width="4.8" height="2.2" rx="1.1" fill="#fff" fill-opacity=".55"/></svg></span>
+        Made with Placard
+      </a>
+    </div>
+  </footer>
+
+        </div>
+      </div>
+    </main>
+
+    <!-- Right panel: Site settings (nothing selected) -->
+    <aside class="hidden min-h-0 overflow-y-auto border-l border-border bg-card lg:block" aria-label="Site settings">
+      <div class="flex h-12 items-center gap-2 border-b border-border px-4"><svg class="lucide shrink-0 size-4 text-muted-foreground" data-icon="settings-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M14 17H5" /><path d="M19 7h-9" /><circle cx="17" cy="17" r="3" /><circle cx="7" cy="7" r="3" /></svg><h2 class="text-sm font-semibold">Site settings</h2></div>
+      <div class="space-y-6 p-4">
+        <div>
+          <label for="s-title" class="text-sm font-medium">Site title</label>
+          <input id="s-title" value="Ember &amp; Rye" class="mt-2 h-9 w-full rounded-md border border-input bg-card px-3 text-base sm:text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/30">
+        </div>
+        <fieldset>
+          <legend class="text-sm font-medium">Theme</legend>
+          <div class="mt-2 grid grid-cols-3 gap-2">
+            <label class="cursor-pointer"><input type="radio" name="theme" value="paper" class="peer sr-only"><span class="block rounded-lg border-2 border-transparent p-0.5 peer-focus-visible:outline-2"><span class="flex h-12 flex-col justify-end gap-1 rounded-md border border-black/10 p-2" style="background:#fbfaf7"><span class="h-1.5 w-8 rounded-full" style="background:#1d1c1a"></span><span class="h-1.5 w-5 rounded-full" style="background:#2847c9"></span></span></span><span class="mt-1 block text-center text-xs text-muted-foreground">Paper</span></label>
+            <label class="cursor-pointer"><input type="radio" name="theme" value="midnight" class="peer sr-only"><span class="block rounded-lg border-2 border-transparent p-0.5 peer-focus-visible:outline-2"><span class="flex h-12 flex-col justify-end gap-1 rounded-md border border-black/10 p-2" style="background:#0d1120"><span class="h-1.5 w-8 rounded-full" style="background:#eceff7"></span><span class="h-1.5 w-5 rounded-full" style="background:#8ea6ff"></span></span></span><span class="mt-1 block text-center text-xs text-muted-foreground">Midnight</span></label>
+            <label class="cursor-pointer"><input type="radio" name="theme" value="sunset" class="peer sr-only" checked><span class="block rounded-lg border-2 border-primary p-0.5 peer-focus-visible:outline-2"><span class="flex h-12 flex-col justify-end gap-1 rounded-md border border-black/10 p-2" style="background:#fff3ea"><span class="h-1.5 w-8 rounded-full" style="background:#2a1812"></span><span class="h-1.5 w-5 rounded-full" style="background:#c23e22"></span></span></span><span class="mt-1 block text-center text-xs font-semibold">Sunset</span></label>
+            <label class="cursor-pointer"><input type="radio" name="theme" value="forest" class="peer sr-only"><span class="block rounded-lg border-2 border-transparent p-0.5 peer-focus-visible:outline-2"><span class="flex h-12 flex-col justify-end gap-1 rounded-md border border-black/10 p-2" style="background:#eff3ec"><span class="h-1.5 w-8 rounded-full" style="background:#15241a"></span><span class="h-1.5 w-5 rounded-full" style="background:#2e6a3e"></span></span></span><span class="mt-1 block text-center text-xs text-muted-foreground">Forest</span></label>
+            <label class="cursor-pointer"><input type="radio" name="theme" value="ocean" class="peer sr-only"><span class="block rounded-lg border-2 border-transparent p-0.5 peer-focus-visible:outline-2"><span class="flex h-12 flex-col justify-end gap-1 rounded-md border border-black/10 p-2" style="background:#edf5f9"><span class="h-1.5 w-8 rounded-full" style="background:#0e2431"></span><span class="h-1.5 w-5 rounded-full" style="background:#0b6e99"></span></span></span><span class="mt-1 block text-center text-xs text-muted-foreground">Ocean</span></label>
+            <label class="cursor-pointer"><input type="radio" name="theme" value="mono" class="peer sr-only"><span class="block rounded-lg border-2 border-transparent p-0.5 peer-focus-visible:outline-2"><span class="flex h-12 flex-col justify-end gap-1 rounded-md border border-black/10 p-2" style="background:#ffffff"><span class="h-1.5 w-8 rounded-full" style="background:#000000"></span><span class="h-1.5 w-5 rounded-full" style="background:#000000"></span></span></span><span class="mt-1 block text-center text-xs text-muted-foreground">Mono</span></label>
+          </div>
+        </fieldset>
+        <div>
+          <span id="font-l" class="text-sm font-medium">Heading font</span>
+          <div class="mt-2 grid grid-cols-3 gap-1 rounded-lg bg-muted p-1" role="radiogroup" aria-labelledby="font-l">
+            <button type="button" role="radio" aria-checked="false" class="flex h-12 flex-col items-center justify-center rounded-md text-muted-foreground hover:text-foreground"><span class="text-lg font-bold" style="font-family:var(--font-site-sans)">Aa</span><span class="text-xs">Sans</span></button>
+            <button type="button" role="radio" aria-checked="true" class="flex h-12 flex-col items-center justify-center rounded-md bg-card shadow-sm"><span class="text-lg font-bold" style="font-family:var(--font-site-serif)">Aa</span><span class="text-xs">Serif</span></button>
+            <button type="button" role="radio" aria-checked="false" class="flex h-12 flex-col items-center justify-center rounded-md text-muted-foreground hover:text-foreground"><span class="text-lg font-bold" style="font-family:var(--font-site-mono)">Aa</span><span class="text-xs">Mono</span></button>
+          </div>
+        </div>
+        <div>
+          <label for="s-fav" class="text-sm font-medium">Tab icon</label>
+          <div class="mt-2 flex items-center gap-2">
+            <button id="s-fav" type="button" class="grid size-9 place-items-center rounded-md border border-input text-lg" aria-label="Tab icon: bread. Change">🍞</button>
+            <span class="text-xs text-muted-foreground">An emoji shown in the browser tab</span>
+          </div>
+        </div>
+        <div>
+          <label for="s-desc" class="text-sm font-medium">Search description</label>
+          <textarea id="s-desc" rows="3" maxlength="160" class="mt-2 w-full resize-none rounded-md border border-input px-3 py-2 text-base sm:text-sm leading-relaxed">Sourdough, cardamom buns and weekend brunch, baked every morning in Mangal Bazaar, Patan.</textarea>
+          <p class="mt-1 text-right text-xs tabular-nums text-muted-foreground">88 / 160</p>
+        </div>
+        <div class="flex items-start justify-between gap-3 border-t border-border pt-5">
+          <div>
+            <p class="flex items-center gap-2 text-sm font-medium" id="badge-l">Show “Made with Placard” badge <span class="rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">Pro</span></p>
+            <p class="mt-1 text-xs text-muted-foreground">Shown in your site’s footer.</p>
+          </div>
+          <button type="button" role="switch" aria-checked="true" aria-labelledby="badge-l" class="relative mt-0.5 h-5 w-9 shrink-0 rounded-full bg-primary"><span class="absolute top-0.5 right-0.5 size-4 rounded-full bg-white"></span></button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Below lg: panels open as bottom sheets from this bar (shadcn Sheet side="bottom") -->
+  <nav class="grid grid-cols-4 border-t border-border bg-card lg:hidden" aria-label="Editor panels">
+    <button type="button" class="flex h-14 flex-col items-center justify-center gap-0.5 text-xs font-medium"><svg class="lucide shrink-0 size-5" data-icon="sparkles" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /><path d="M20 2v4" /><path d="M22 4h-4" /><circle cx="4" cy="20" r="2" /></svg>AI</button>
+    <button type="button" class="flex h-14 flex-col items-center justify-center gap-0.5 text-xs font-medium text-muted-foreground"><svg class="lucide shrink-0 size-5" data-icon="plus" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M5 12h14" /><path d="M12 5v14" /></svg>Add</button>
+    <button type="button" class="flex h-14 flex-col items-center justify-center gap-0.5 text-xs font-medium text-muted-foreground"><svg class="lucide shrink-0 size-5" data-icon="layers" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" /><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" /><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" /></svg>Layers</button>
+    <button type="button" class="flex h-14 flex-col items-center justify-center gap-0.5 text-xs font-medium text-muted-foreground"><svg class="lucide shrink-0 size-5" data-icon="sliders-horizontal" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M10 5H3" /><path d="M12 19H3" /><path d="M14 3v4" /><path d="M16 17v4" /><path d="M21 12h-9" /><path d="M21 19h-5" /><path d="M21 5h-7" /><path d="M8 10v4" /><path d="M8 12H3" /></svg>Edit</button>
+  </nav>
+</div>
+
+<!-- Dialog (shadcn Dialog) -->
+<div class="fixed inset-0 z-40 bg-black/45" aria-hidden="true"></div>
+<div role="dialog" aria-modal="true" aria-labelledby="dlg-title" class="fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-card shadow-xl">
+  <button type="button" class="absolute top-2 right-2 grid size-10 place-items-center sm:top-3 sm:right-3 sm:size-8 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Close"><svg class="lucide shrink-0 size-4" data-icon="x" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg></button>
+  <div class="p-6 pb-0">
+    <h2 id="dlg-title" class="font-display text-xl font-bold">Choose an image</h2>
+    <div class="mt-4 flex gap-5 border-b border-border text-sm font-medium" role="tablist">
+      <button type="button" role="tab" aria-selected="false" class="-mb-px flex h-10 items-center border-b-2 border-transparent text-muted-foreground hover:text-foreground">Library</button>
+      <button type="button" role="tab" aria-selected="true" class="-mb-px flex h-10 items-center border-b-2 border-primary">Upload</button>
+    </div>
+  </div>
+  <div class="p-6">
+    <div class="rounded-xl border-2 border-dashed border-input p-8 text-center">
+      <svg class="lucide shrink-0 mx-auto size-6 text-muted-foreground" data-icon="upload" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M12 3v12" /><path d="m17 8-5-5-5 5" /><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /></svg>
+      <p class="mt-3 text-sm">Drop an image here or <button type="button" class="font-semibold underline underline-offset-4">browse</button></p>
+      <p class="mt-1 text-xs text-muted-foreground">JPG, PNG or WebP, up to 5 MB</p>
+    </div>
+    <div class="mt-6 flex items-baseline justify-between"><h3 class="text-sm font-semibold">Your images</h3><p class="text-xs tabular-nums text-muted-foreground">4.2 MB of 20 MB used</p></div>
+    <div class="mt-3 grid grid-cols-2 gap-3 p-1 sm:grid-cols-4"><button type="button" aria-pressed="true" class="relative aspect-[4/3] overflow-hidden rounded-lg bg-[#dfe3ea] ring-[3px] ring-primary ring-offset-2" aria-label="shop-front.jpg, uploaded just now"><span class="grid h-full place-items-center text-muted-foreground"><svg class="lucide shrink-0 size-5" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg></span><span class="absolute top-2 right-2 grid size-6 place-items-center rounded-full bg-primary text-primary-foreground"><svg class="lucide shrink-0 size-3.5" data-icon="check" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 6 9 17l-5-5" /></svg></span></button><button type="button" aria-pressed="false" class="relative aspect-[4/3] overflow-hidden rounded-lg bg-[#dfe3ea] hover:opacity-90" aria-label="team.jpg"><span class="grid h-full place-items-center text-muted-foreground"><svg class="lucide shrink-0 size-5" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg></span></button><button type="button" aria-pressed="false" class="relative aspect-[4/3] overflow-hidden rounded-lg bg-[#dfe3ea] hover:opacity-90" aria-label="oven.jpg"><span class="grid h-full place-items-center text-muted-foreground"><svg class="lucide shrink-0 size-5" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg></span></button></div>
+  </div>
+  <div class="flex items-center justify-end gap-3 border-t border-border px-6 py-4 sm:justify-between">
+    <p class="hidden text-sm text-muted-foreground sm:block">Uploads can be used on any of your sites</p>
+    <div class="flex gap-2 whitespace-nowrap">
+      <button type="button" class="inline-flex h-10 items-center rounded-md border border-input bg-card px-4 text-sm font-semibold hover:bg-accent">Cancel</button>
+      <button type="button" class="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90">Use image</button>
+    </div>
+  </div>
+</div>
+<script>
+  // Reference helper: renders a site at a fixed design width (data-width) and scales it to fit its frame.
+  // In the app this is <SiteFrame width={1280}> (components/site/site-frame.tsx), same math.
+  function fitFrames() {
+    document.querySelectorAll('[data-frame]').forEach((frame) => {
+      const inner = frame.firstElementChild;
+      // editor canvases (data-phone) switch to the phone preview below 768px, like the app
+      const w = frame.dataset.phone !== undefined && innerWidth < 768 ? 390 : Number(frame.dataset.width || 1280);
+      const s = frame.clientWidth / w;
+      inner.style.width = w + 'px';
+      inner.style.transform = 'scale(' + s + ')';
+      inner.style.transformOrigin = 'top left';
+      if (frame.dataset.fit === 'height') frame.style.height = inner.scrollHeight * s + 'px';
+      // editor overlays (outline, action bar) are drawn at screen size, not page size
+      frame.querySelectorAll('[data-ui-overlay]').forEach((o) => { o.style.transformOrigin = 'top left'; o.style.transform = 'scale(' + 1 / s + ')'; });
+      frame.querySelectorAll('[data-ui-outline]').forEach((o) => { const px = o.classList.contains('outline-marker') ? 3 : 2; o.style.outlineWidth = px / s + 'px'; o.style.outlineOffset = -px / s + 'px'; });
+    });
+  }
+  addEventListener('resize', fitFrames);
+  fitFrames();
+  document.fonts && document.fonts.ready.then(fitFrames);
+</script>
+
+<script>
+  // reference only: scroll the canvas so the selected section is in view
+
+  // nothing selected: canvas at the top
+</script>
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Published site: all 11 sections</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Figtree:wght@400..800&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500..800&family=Fraunces:opsz,wght@9..144,500..700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400..600&display=swap">
+<link rel="stylesheet" href="reference.css">
+<style>
+  /* reference-only: theme switcher bar */
+  .ref-bar button[aria-pressed="true"] { background: #16181d; color: #fff; }
+</style>
+</head>
+<body class="bg-card">
+<!--
+  Route: any slug.APP_DOMAIN or verified custom domain (rendered by app/(sites)/s/[host]/page.tsx).
+  Wrapper: <div class="site" data-site-theme="…" data-site-font="…">. Every section uses only --site-* utilities.
+  Image boxes below are placeholders: the app shows the library photo with the same classes plus object-cover.
+-->
+<div id="site" class="site min-h-screen" data-site-theme="sunset" data-site-font="serif">
+
+  <!-- Hero · layout: split -->
+  <section data-section="Hero" class="px-6 pt-16 pb-20 @2xl:pt-24 @2xl:pb-28">
+    <div class="mx-auto grid max-w-5xl items-center gap-12 @5xl:grid-cols-2">
+      <div>
+        <h1 class="text-4xl font-bold leading-[1.05] @2xl:text-6xl">Sourdough baked at dawn in Patan</h1>
+        <p class="mt-5 max-w-md text-lg leading-relaxed text-site-muted">Slow-fermented loaves, cardamom buns and a weekend brunch worth waking up for.</p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="#menu" class="inline-flex h-11 items-center rounded-site bg-site-accent px-5 font-semibold text-site-accent-fg hover:opacity-90">See the menu</a>
+          <a href="#visit" class="inline-flex h-11 items-center rounded-site border border-site-border bg-site-surface px-5 font-semibold hover:opacity-90">Find us</a>
+        </div>
+      </div>
+      <div class="grid aspect-[4/3] place-items-center rounded-site bg-site-border text-site-muted" data-image-tag="food" role="img" aria-label="Fresh sourdough loaves on a wooden counter">
+        <span class="flex items-center gap-2 text-sm"><svg class="lucide shrink-0 size-4" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>food</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section data-section="About" class="px-6 py-16 @2xl:py-20">
+    <div class="mx-auto grid max-w-5xl items-center gap-12 @5xl:grid-cols-[5fr_6fr]">
+      <div class="grid aspect-[4/3] place-items-center rounded-site bg-site-border text-site-muted @5xl:aspect-square" data-image-tag="people" role="img" aria-label="Two bakers shaping dough">
+        <span class="flex items-center gap-2 text-sm"><svg class="lucide shrink-0 size-4" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>people</span>
+      </div>
+      <div>
+        <h2 class="text-3xl font-bold @2xl:text-4xl">Baked by two friends who missed real bread</h2>
+        <p class="mt-5 max-w-prose text-lg leading-relaxed text-site-muted">Ember &amp; Rye started in a home kitchen in 2021. Today we bake every loaf by hand from local flour, a five-year-old starter and a lot of patience. Come early: the cardamom buns are usually gone by ten.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features · columns: 3 -->
+  <section data-section="Features" class="px-6 py-16 @2xl:py-20">
+    <div class="mx-auto max-w-5xl">
+      <h2 class="max-w-2xl text-3xl font-bold @2xl:text-4xl">Why people come back</h2>
+      <div class="mt-12 grid gap-6 @2xl:grid-cols-2 @5xl:grid-cols-3">
+        <div class="rounded-site border border-site-border bg-site-surface p-6">
+          <span class="grid size-10 place-items-center rounded-site bg-site-accent text-site-accent-fg"><svg class="lucide shrink-0 size-5" data-icon="wheat" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M2 22 16 8" /><path d="M3.47 12.53 5 11l1.53 1.53a3.5 3.5 0 0 1 0 4.94L5 19l-1.53-1.53a3.5 3.5 0 0 1 0-4.94Z" /><path d="M7.47 8.53 9 7l1.53 1.53a3.5 3.5 0 0 1 0 4.94L9 15l-1.53-1.53a3.5 3.5 0 0 1 0-4.94Z" /><path d="M11.47 4.53 13 3l1.53 1.53a3.5 3.5 0 0 1 0 4.94L13 11l-1.53-1.53a3.5 3.5 0 0 1 0-4.94Z" /><path d="M20 2h2v2a4 4 0 0 1-4 4h-2V6a4 4 0 0 1 4-4Z" /><path d="M11.47 17.47 13 19l-1.53 1.53a3.5 3.5 0 0 1-4.94 0L5 19l1.53-1.53a3.5 3.5 0 0 1 4.94 0Z" /><path d="M15.47 13.47 17 15l-1.53 1.53a3.5 3.5 0 0 1-4.94 0L9 15l1.53-1.53a3.5 3.5 0 0 1 4.94 0Z" /><path d="M19.47 9.47 21 11l-1.53 1.53a3.5 3.5 0 0 1-4.94 0L13 11l1.53-1.53a3.5 3.5 0 0 1 4.94 0Z" /></svg></span>
+          <h3 class="mt-5 text-xl font-semibold">48-hour dough</h3>
+          <p class="mt-2 leading-relaxed text-site-muted">Long, slow fermentation for a crackly crust and an open, tangy crumb.</p>
+        </div>
+        <div class="rounded-site border border-site-border bg-site-surface p-6">
+          <span class="grid size-10 place-items-center rounded-site bg-site-accent text-site-accent-fg"><svg class="lucide shrink-0 size-5" data-icon="leaf" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M11 20a10 10 0 0010-10 25.9 25.9 0 00-1.04-7.281 1 1 0 00-1.755-.325C15.833 5.5 13 5.5 9.8 6.1A7 7 0 0011 20" /><path d="M2 21a5 5 0 012.911-4.544C7.613 15.212 8.351 15.24 11 13" /></svg></span>
+          <h3 class="mt-5 text-xl font-semibold">Local flour</h3>
+          <p class="mt-2 leading-relaxed text-site-muted">Stone-milled wheat and rye from farms in the valley, delivered every week.</p>
+        </div>
+        <div class="rounded-site border border-site-border bg-site-surface p-6">
+          <span class="grid size-10 place-items-center rounded-site bg-site-accent text-site-accent-fg"><svg class="lucide shrink-0 size-5" data-icon="clock" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg></span>
+          <h3 class="mt-5 text-xl font-semibold">Fresh at 7 am</h3>
+          <p class="mt-2 leading-relaxed text-site-muted">The first loaves come out of the oven as we open the doors.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services -->
+  <section id="menu" data-section="Services" class="px-6 py-16 @2xl:py-20">
+    <div class="mx-auto max-w-5xl">
+      <h2 class="max-w-2xl text-3xl font-bold @2xl:text-4xl">On the counter</h2>
+      <div class="mt-10 divide-y divide-site-border border-y border-site-border">
+        <div class="flex flex-col gap-1 py-6 @2xl:flex-row @2xl:items-baseline @2xl:gap-8">
+          <h3 class="text-xl font-semibold @2xl:w-64 @2xl:shrink-0">Country sourdough</h3>
+          <p class="leading-relaxed text-site-muted">Our everyday loaf. Wheat, a little rye, water, salt.</p>
+          <p class="font-semibold tabular-nums @2xl:ml-auto @2xl:pl-6">Rs 450</p>
+        </div>
+        <div class="flex flex-col gap-1 py-6 @2xl:flex-row @2xl:items-baseline @2xl:gap-8">
+          <h3 class="text-xl font-semibold @2xl:w-64 @2xl:shrink-0">Cardamom buns</h3>
+          <p class="leading-relaxed text-site-muted">Box of four, rolled with brown butter and fresh cardamom.</p>
+          <p class="font-semibold tabular-nums @2xl:ml-auto @2xl:pl-6">Rs 380</p>
+        </div>
+        <div class="flex flex-col gap-1 py-6 @2xl:flex-row @2xl:items-baseline @2xl:gap-8">
+          <h3 class="text-xl font-semibold @2xl:w-64 @2xl:shrink-0">Weekend brunch plate</h3>
+          <p class="leading-relaxed text-site-muted">Saturday and Sunday, 8 am to 1 pm. Eggs, greens, toast and coffee.</p>
+          <p class="font-semibold tabular-nums @2xl:ml-auto @2xl:pl-6">Rs 950</p>
+        </div>
+        <div class="flex flex-col gap-1 py-6 @2xl:flex-row @2xl:items-baseline @2xl:gap-8">
+          <h3 class="text-xl font-semibold @2xl:w-64 @2xl:shrink-0">Celebration cakes</h3>
+          <p class="leading-relaxed text-site-muted">Order three days ahead. Chocolate rye, lemon and seasonal fruit.</p>
+          <p class="font-semibold tabular-nums @2xl:ml-auto @2xl:pl-6">from Rs 2,400</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery · 6 images -->
+  <section data-section="Gallery" class="px-6 py-16 @2xl:py-20">
+    <div class="mx-auto max-w-5xl">
+      <h2 class="max-w-2xl text-3xl font-bold @2xl:text-4xl">From the oven</h2>
+      <div class="mt-10 grid grid-cols-2 gap-4 @5xl:grid-cols-3">
+        <figure><div class="grid aspect-[4/3] place-items-center rounded-site bg-site-border text-site-muted" data-image-tag="food" role="img" aria-label="Loaves cooling"><svg class="lucide shrink-0 size-4" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg></div><figcaption class="mt-2 text-sm text-site-muted">Morning loaves</figcaption></figure>
+        <figure><div class="grid aspect-[4/3] place-items-center rounded-site bg-site-border text-site-muted" data-image-tag="food" role="img" aria-label="Cardamom buns"><svg class="lucide shrink-0 size-4" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg></div><figcaption class="mt-2 text-sm text-site-muted">Cardamom buns</figcaption></figure>
+        <figure><div class="grid aspect-[4/3] place-items-center rounded-site bg-site-border text-site-muted" data-image-tag="office" role="img" aria-label="The café counter"><svg class="lucide shrink-0 size-4" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg></div><figcaption class="mt-2 text-sm text-site-muted">The counter</figcaption></figure>
+        <figure><div class="grid aspect-[4/3] place-items-center rounded-site bg-site-border text-site-muted" data-image-tag="food" role="img" aria-label="Brunch plate"><svg class="lucide shrink-0 size-4" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg></div><figcaption class="mt-2 text-sm text-site-muted">Weekend brunch</figcaption></figure>
+        <figure><div class="grid aspect-[4/3] place-items-center rounded-site bg-site-border text-site-muted" data-image-tag="people" role="img" aria-label="Baker at work"><svg class="lucide shrink-0 size-4" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg></div><figcaption class="mt-2 text-sm text-site-muted">Shaping at 4 am</figcaption></figure>
+        <figure><div class="grid aspect-[4/3] place-items-center rounded-site bg-site-border text-site-muted" data-image-tag="food" role="img" aria-label="Chocolate rye cake"><svg class="lucide shrink-0 size-4" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg></div><figcaption class="mt-2 text-sm text-site-muted">Chocolate rye cake</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section data-section="Testimonials" class="px-6 py-16 @2xl:py-20">
+    <div class="mx-auto max-w-5xl">
+      <h2 class="max-w-2xl text-3xl font-bold @2xl:text-4xl">What regulars say</h2>
+      <div class="mt-10 grid gap-6 @3xl:grid-cols-3">
+        <figure class="flex flex-col rounded-site border border-site-border bg-site-surface p-6">
+          <blockquote class="flex-1 text-lg leading-relaxed">“The best bread in the valley. I plan my Saturday around the brunch plate.”</blockquote>
+          <figcaption class="mt-6 flex items-center gap-3"><span class="grid size-10 place-items-center rounded-full bg-site-border text-sm font-semibold">SM</span><span><span class="block font-semibold">Sita Maharjan</span><span class="block text-sm text-site-muted">Regular since 2022</span></span></figcaption>
+        </figure>
+        <figure class="flex flex-col rounded-site border border-site-border bg-site-surface p-6">
+          <blockquote class="flex-1 text-lg leading-relaxed">“They made our wedding cake on four days’ notice and it was perfect.”</blockquote>
+          <figcaption class="mt-6 flex items-center gap-3"><span class="grid size-10 place-items-center rounded-full bg-site-border text-sm font-semibold">RK</span><span><span class="block font-semibold">Rohan Karki</span><span class="block text-sm text-site-muted">Cake customer</span></span></figcaption>
+        </figure>
+        <figure class="flex flex-col rounded-site border border-site-border bg-site-surface p-6">
+          <blockquote class="flex-1 text-lg leading-relaxed">“Our office orders the bread box every Monday. Nobody skips breakfast now.”</blockquote>
+          <figcaption class="mt-6 flex items-center gap-3"><span class="grid size-10 place-items-center rounded-full bg-site-border text-sm font-semibold">AT</span><span><span class="block font-semibold">Anita Thapa</span><span class="block text-sm text-site-muted">Office manager</span></span></figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section data-section="Pricing" class="px-6 py-16 @2xl:py-20">
+    <div class="mx-auto max-w-5xl">
+      <h2 class="max-w-2xl text-3xl font-bold @2xl:text-4xl">Join the bread club</h2>
+      <div class="mt-10 grid items-start gap-6 @3xl:grid-cols-3">
+        <div class="rounded-site border border-site-border bg-site-surface p-6">
+          <h3 class="text-lg font-semibold">Weekly loaf</h3>
+          <p class="mt-4"><span class="text-4xl font-bold tabular-nums">Rs 1,600</span> <span class="text-site-muted">/ month</span></p>
+          <ul class="mt-6 space-y-3 text-sm">
+            <li class="flex gap-2"><svg class="lucide shrink-0 mt-0.5 size-4 text-site-accent" data-icon="check" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 6 9 17l-5-5" /></svg>One loaf a week</li>
+            <li class="flex gap-2"><svg class="lucide shrink-0 mt-0.5 size-4 text-site-accent" data-icon="check" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 6 9 17l-5-5" /></svg>Pick up any day</li>
+          </ul>
+          <a href="#" class="mt-8 flex h-11 items-center justify-center rounded-site border border-site-border font-semibold hover:opacity-90">Join</a>
+        </div>
+        <div class="rounded-site border-2 border-site-accent bg-site-surface p-6">
+          <h3 class="text-lg font-semibold">Family box</h3>
+          <p class="mt-4"><span class="text-4xl font-bold tabular-nums">Rs 3,200</span> <span class="text-site-muted">/ month</span></p>
+          <ul class="mt-6 space-y-3 text-sm">
+            <li class="flex gap-2"><svg class="lucide shrink-0 mt-0.5 size-4 text-site-accent" data-icon="check" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 6 9 17l-5-5" /></svg>Two loaves and a box of buns a week</li>
+            <li class="flex gap-2"><svg class="lucide shrink-0 mt-0.5 size-4 text-site-accent" data-icon="check" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 6 9 17l-5-5" /></svg>Free delivery in Patan</li>
+            <li class="flex gap-2"><svg class="lucide shrink-0 mt-0.5 size-4 text-site-accent" data-icon="check" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 6 9 17l-5-5" /></svg>10% off cakes</li>
+          </ul>
+          <a href="#" class="mt-8 flex h-11 items-center justify-center rounded-site bg-site-accent font-semibold text-site-accent-fg hover:opacity-90">Join</a>
+        </div>
+        <div class="rounded-site border border-site-border bg-site-surface p-6">
+          <h3 class="text-lg font-semibold">Office box</h3>
+          <p class="mt-4"><span class="text-4xl font-bold tabular-nums">Rs 6,500</span> <span class="text-site-muted">/ month</span></p>
+          <ul class="mt-6 space-y-3 text-sm">
+            <li class="flex gap-2"><svg class="lucide shrink-0 mt-0.5 size-4 text-site-accent" data-icon="check" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 6 9 17l-5-5" /></svg>Bread and pastries for 15 people</li>
+            <li class="flex gap-2"><svg class="lucide shrink-0 mt-0.5 size-4 text-site-accent" data-icon="check" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 6 9 17l-5-5" /></svg>Monday delivery</li>
+          </ul>
+          <a href="#" class="mt-8 flex h-11 items-center justify-center rounded-site border border-site-border font-semibold hover:opacity-90">Join</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section data-section="FAQ" class="px-6 py-16 @2xl:py-20">
+    <div class="mx-auto max-w-3xl">
+      <h2 class="text-3xl font-bold @2xl:text-4xl">Questions</h2>
+      <div class="mt-8 divide-y divide-site-border border-y border-site-border">
+        <details class="group" open>
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-lg font-semibold">Do you have gluten-free bread?<svg class="lucide shrink-0 size-5 transition-transform group-open:rotate-45" data-icon="plus" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M5 12h14" /><path d="M12 5v14" /></svg></summary>
+          <p class="-mt-2 pb-5 leading-relaxed text-site-muted">Not yet. Our kitchen handles a lot of wheat flour, so we can’t promise anything is gluten-free.</p>
+        </details>
+        <details class="group">
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-lg font-semibold">Can I order ahead?<svg class="lucide shrink-0 size-5 transition-transform group-open:rotate-45" data-icon="plus" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M5 12h14" /><path d="M12 5v14" /></svg></summary>
+          <p class="-mt-2 pb-5 leading-relaxed text-site-muted">Yes. Call before 5 pm and we’ll hold your order for the next morning.</p>
+        </details>
+        <details class="group">
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-lg font-semibold">Do you deliver?<svg class="lucide shrink-0 size-5 transition-transform group-open:rotate-45" data-icon="plus" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M5 12h14" /><path d="M12 5v14" /></svg></summary>
+          <p class="-mt-2 pb-5 leading-relaxed text-site-muted">Bread club members in Patan get free delivery. Everyone else can pick up at the shop.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to action -->
+  <section data-section="CallToAction" class="px-6 py-12">
+    <div class="mx-auto max-w-5xl rounded-site bg-site-accent px-8 py-14 text-site-accent-fg @2xl:px-14">
+      <h2 class="max-w-xl text-3xl font-bold @2xl:text-4xl">Pre-order for the weekend</h2>
+      <p class="mt-4 max-w-xl text-lg leading-relaxed opacity-90">Weekend loaves sell out by nine. Reserve yours by Friday evening.</p>
+      <a href="tel:+97715550142" class="mt-8 inline-flex h-11 items-center rounded-site bg-site-accent-fg px-5 font-semibold text-site-accent hover:opacity-90">Call to order</a>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="visit" data-section="Contact" class="px-6 py-16 @2xl:py-20">
+    <div class="mx-auto grid max-w-5xl gap-10 @5xl:grid-cols-2">
+      <h2 class="text-3xl font-bold @2xl:text-4xl">Visit us</h2>
+      <div class="space-y-5 text-lg">
+        <p class="flex items-start gap-3"><svg class="lucide shrink-0 mt-1 size-5 text-site-muted" data-icon="map-pin" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" /><circle cx="12" cy="10" r="3" /></svg>Mangal Bazaar, Patan, Lalitpur</p>
+        <p class="flex items-start gap-3"><svg class="lucide shrink-0 mt-1 size-5 text-site-muted" data-icon="phone" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384" /></svg><a href="tel:+97715550142" class="underline decoration-site-border underline-offset-4 hover:decoration-current">+977 1-555-0142</a></p>
+        <p class="flex items-start gap-3"><svg class="lucide shrink-0 mt-1 size-5 text-site-muted" data-icon="mail" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" /><rect x="2" y="4" width="20" height="16" rx="2" /></svg><a href="mailto:hello@emberandrye.example" class="underline decoration-site-border underline-offset-4 hover:decoration-current">hello@emberandrye.example</a></p>
+        <div class="flex flex-wrap gap-2 pt-2">
+          <a href="#" class="inline-flex h-9 items-center rounded-site border border-site-border bg-site-surface px-4 text-sm font-semibold">Instagram</a>
+          <a href="#" class="inline-flex h-9 items-center rounded-site border border-site-border bg-site-surface px-4 text-sm font-semibold">Facebook</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Links (link-in-bio) -->
+  <section data-section="Links" class="px-6 py-16 @2xl:py-20">
+    <div class="mx-auto flex max-w-md flex-col gap-3">
+      <a href="#" class="flex h-14 items-center justify-center rounded-site bg-site-accent px-6 font-semibold text-site-accent-fg hover:opacity-90">Order on WhatsApp</a>
+      <a href="#" class="flex h-14 items-center justify-center rounded-site border border-site-border bg-site-surface px-6 font-semibold hover:opacity-90">Follow on Instagram</a>
+      <a href="#" class="flex h-14 items-center justify-center rounded-site border border-site-border bg-site-surface px-6 font-semibold hover:opacity-90">Directions on Google Maps</a>
+    </div>
+  </section>
+
+  <!-- Footer (added automatically, not a section) -->
+  <footer class="border-t border-site-border px-6 py-8">
+    <div class="mx-auto flex max-w-5xl flex-wrap items-center gap-4 text-sm text-site-muted">
+      <p>© 2026 Ember &amp; Rye</p>
+      <a href="landing.html" data-small-target class="ml-auto inline-flex items-center gap-2 rounded-full border border-[#e3e5ea] bg-white px-3 py-2 font-sans text-xs font-semibold text-[#16181d] shadow-sm">
+        <span class="grid size-4 place-items-center rounded-[4px] bg-[#16181d]" aria-hidden="true"><svg viewBox="0 0 16 16" class="size-3"><rect x="3" y="3" width="10" height="2.2" rx="1.1" fill="#ffd43b"/><rect x="3" y="6.9" width="7.5" height="2.2" rx="1.1" fill="#fff"/><rect x="3" y="10.8" width="4.8" height="2.2" rx="1.1" fill="#fff" fill-opacity=".55"/></svg></span>
+        Made with Placard
+      </a>
+    </div>
+  </footer>
+
+
+  <!-- Variant: Hero · layout: centered -->
+  <div class="ref-only border-y border-dashed border-site-border py-2 text-center font-sans text-xs text-site-muted">Variant shown for reference: Hero with layout “centered”</div>
+  <section data-section="Hero" class="px-6 pt-20 pb-20 @2xl:pt-28">
+    <div class="mx-auto max-w-3xl text-center">
+      <h1 class="text-4xl font-bold leading-[1.05] @2xl:text-6xl">Sourdough baked at dawn in Patan</h1>
+      <p class="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-site-muted">Slow-fermented loaves, cardamom buns and a weekend brunch worth waking up for.</p>
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <a href="#" class="inline-flex h-11 items-center rounded-site bg-site-accent px-5 font-semibold text-site-accent-fg">See the menu</a>
+        <a href="#" class="inline-flex h-11 items-center rounded-site border border-site-border bg-site-surface px-5 font-semibold">Find us</a>
+      </div>
+      <div class="mt-14 grid aspect-[16/9] place-items-center rounded-site bg-site-border text-site-muted" data-image-tag="food" role="img" aria-label="Bakery counter"><span class="flex items-center gap-2 text-sm"><svg class="lucide shrink-0 size-4" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>food</span></div>
+    </div>
+  </section>
+</div>
+
+<!-- reference-only: switch theme and heading font to check every combination -->
+<div class="ref-bar fixed inset-x-0 bottom-4 z-50 mx-auto flex w-fit max-w-[calc(100%-2rem)] flex-wrap items-center gap-1 rounded-xl border border-border bg-card p-1.5 font-sans text-xs font-medium shadow-lg" role="toolbar" aria-label="Reference theme switcher">
+  <button type="button" data-theme="paper" class="rounded-md px-2.5 py-1.5">Paper</button>
+  <button type="button" data-theme="midnight" class="rounded-md px-2.5 py-1.5">Midnight</button>
+  <button type="button" data-theme="sunset" class="rounded-md px-2.5 py-1.5">Sunset</button>
+  <button type="button" data-theme="forest" class="rounded-md px-2.5 py-1.5">Forest</button>
+  <button type="button" data-theme="ocean" class="rounded-md px-2.5 py-1.5">Ocean</button>
+  <button type="button" data-theme="mono" class="rounded-md px-2.5 py-1.5">Mono</button>
+  <span class="mx-1 h-5 w-px bg-border"></span>
+  <button type="button" data-font="sans" class="rounded-md px-2.5 py-1.5">Sans</button>
+  <button type="button" data-font="serif" class="rounded-md px-2.5 py-1.5">Serif</button>
+  <button type="button" data-font="mono" class="rounded-md px-2.5 py-1.5">Mono</button>
+</div>
+<script>
+  const site = document.getElementById('site');
+  const q = new URLSearchParams(location.search);
+  const hash = location.hash.replace('#', '').split('-');
+  if (['paper','midnight','sunset','forest','ocean','mono'].includes(hash[0])) site.dataset.siteTheme = hash[0];
+  if (['sans','serif','mono'].includes(hash[1])) site.dataset.siteFont = hash[1];
+  function sync() {
+    document.querySelectorAll('[data-theme]').forEach(b => b.setAttribute('aria-pressed', b.dataset.theme === site.dataset.siteTheme));
+    document.querySelectorAll('[data-font]').forEach(b => b.setAttribute('aria-pressed', b.dataset.font === site.dataset.siteFont));
+  }
+  document.querySelectorAll('[data-theme]').forEach(b => b.onclick = () => { site.dataset.siteTheme = b.dataset.theme; sync(); });
+  document.querySelectorAll('[data-font]').forEach(b => b.onclick = () => { site.dataset.siteFont = b.dataset.font; sync(); });
+  sync();
+</script>
+</body>
+</html>

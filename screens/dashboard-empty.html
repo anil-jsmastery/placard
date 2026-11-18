@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard: empty state</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Figtree:wght@400..800&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500..800&family=Fraunces:opsz,wght@9..144,500..700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400..600&display=swap">
+<link rel="stylesheet" href="reference.css">
+</head>
+<body>
+<!-- Route: /dashboard with no sites (Free user, nothing used yet) -->
+<header class="sticky top-0 z-30 border-b border-border bg-card">
+  <div class="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:gap-6 sm:px-6">
+    <a href="landing.html" class="flex h-10 shrink-0 items-center gap-2 rounded-md font-display text-[17px] font-bold tracking-tight text-foreground focus-visible:outline-2 focus-visible:outline-offset-4" aria-label="Placard home">
+  <span class="grid size-7 place-items-center rounded-md bg-primary" aria-hidden="true">
+    <svg viewBox="0 0 16 16" class="size-4"><rect x="3" y="3" width="10" height="2.2" rx="1.1" fill="#ffd43b"/><rect x="3" y="6.9" width="7.5" height="2.2" rx="1.1" fill="#fff"/><rect x="3" y="10.8" width="4.8" height="2.2" rx="1.1" fill="#fff" fill-opacity=".55"/></svg>
+  </span>
+  <span>Placard</span>
+</a>
+
+    <nav aria-label="Main" class="flex items-center gap-1 text-sm font-medium">
+      <a href="dashboard.html" class="inline-flex h-10 items-center rounded-md px-3 sm:h-8 bg-accent text-foreground">Sites</a>
+      <a href="account.html" class="inline-flex h-10 items-center rounded-md px-3 sm:h-8 text-muted-foreground hover:bg-accent hover:text-foreground">Account</a>
+    </nav>
+    <div class="ml-auto flex items-center gap-3">
+      <a href="account.html" class="hidden items-center gap-2.5 rounded-md px-2 py-1.5 text-sm hover:bg-accent sm:flex" aria-label="10 of 10 AI requests left this month">
+        <svg class="lucide shrink-0 size-4 text-muted-foreground" data-icon="sparkles" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /><path d="M20 2v4" /><path d="M22 4h-4" /><circle cx="4" cy="20" r="2" /></svg>
+        <span class="tabular-nums"><span class="font-semibold">10</span><span class="text-muted-foreground"> of 10 AI requests left</span></span>
+        <span class="h-1.5 w-14 overflow-hidden rounded-full bg-muted" aria-hidden="true"><span class="block h-full rounded-full bg-primary" style="width: 100%"></span></span>
+      </a>
+      <a href="pricing.html" class="hidden h-8 sm:inline-flex items-center rounded-md border border-input bg-card px-3 text-sm font-medium hover:bg-accent">Upgrade</a>
+      <button type="button" class="grid size-10 place-items-center rounded-full sm:size-8 bg-[#d6dbe5] text-xs font-semibold text-foreground" aria-label="Account menu">AS</button>
+    </div>
+  </div>
+</header>
+
+<main class="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+  <h1 class="font-display text-3xl font-bold sm:text-4xl">Sites</h1>
+  <div class="mt-8 flex flex-col items-center rounded-2xl border border-dashed border-input bg-card px-6 py-16 text-center sm:py-24">
+    <span class="grid size-14 place-items-center rounded-xl bg-primary" aria-hidden="true">
+      <svg viewBox="0 0 16 16" class="size-8"><rect x="3" y="3" width="10" height="2.2" rx="1.1" fill="#ffd43b"/><rect x="3" y="6.9" width="7.5" height="2.2" rx="1.1" fill="#fff"/><rect x="3" y="10.8" width="4.8" height="2.2" rx="1.1" fill="#fff" fill-opacity=".55"/></svg>
+    </span>
+    <h2 class="mt-6 font-display text-2xl font-bold">Build your first site</h2>
+    <p class="mt-2 max-w-sm text-muted-foreground">Describe your business, portfolio or event in a sentence. The AI builds the page in about 30 seconds.</p>
+    <a href="new.html" class="mt-8 inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 font-semibold text-primary-foreground hover:bg-primary/90"><svg class="lucide shrink-0 size-4" data-icon="plus" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M5 12h14" /><path d="M12 5v14" /></svg>New site</a>
+    <p class="mt-4 text-sm text-muted-foreground">Free includes 1 site and 10 AI requests a month.</p>
+  </div>
+</main>
+</body>
+</html>

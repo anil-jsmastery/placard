@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visitor stats (Pro)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Figtree:wght@400..800&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500..800&family=Fraunces:opsz,wght@9..144,500..700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400..600&display=swap">
+<link rel="stylesheet" href="reference.css">
+</head>
+<body>
+<!-- Route: /sites/[id]/stats  ·  Pro: 30-day chart, top referrers, phone vs desktop. Data: page_views_daily + referrers_daily (our database, not PostHog). Chart: Recharts BarChart with these colours. -->
+<header class="sticky top-0 z-30 border-b border-border bg-card">
+  <div class="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:gap-6 sm:px-6">
+    <a href="landing.html" class="flex h-10 shrink-0 items-center gap-2 rounded-md font-display text-[17px] font-bold tracking-tight text-foreground focus-visible:outline-2 focus-visible:outline-offset-4" aria-label="Placard home">
+  <span class="grid size-7 place-items-center rounded-md bg-primary" aria-hidden="true">
+    <svg viewBox="0 0 16 16" class="size-4"><rect x="3" y="3" width="10" height="2.2" rx="1.1" fill="#ffd43b"/><rect x="3" y="6.9" width="7.5" height="2.2" rx="1.1" fill="#fff"/><rect x="3" y="10.8" width="4.8" height="2.2" rx="1.1" fill="#fff" fill-opacity=".55"/></svg>
+  </span>
+  <span>Placard</span>
+</a>
+
+    <nav aria-label="Main" class="flex items-center gap-1 text-sm font-medium">
+      <a href="dashboard.html" class="inline-flex h-10 items-center rounded-md px-3 sm:h-8 bg-accent text-foreground">Sites</a>
+      <a href="account.html" class="inline-flex h-10 items-center rounded-md px-3 sm:h-8 text-muted-foreground hover:bg-accent hover:text-foreground">Account</a>
+    </nav>
+    <div class="ml-auto flex items-center gap-3">
+      <a href="account.html" class="hidden items-center gap-2.5 rounded-md px-2 py-1.5 text-sm hover:bg-accent sm:flex" aria-label="212 of 300 AI requests left this month">
+        <svg class="lucide shrink-0 size-4 text-muted-foreground" data-icon="sparkles" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /><path d="M20 2v4" /><path d="M22 4h-4" /><circle cx="4" cy="20" r="2" /></svg>
+        <span class="tabular-nums"><span class="font-semibold">212</span><span class="text-muted-foreground"> of 300 AI requests left</span></span>
+        <span class="h-1.5 w-14 overflow-hidden rounded-full bg-muted" aria-hidden="true"><span class="block h-full rounded-full bg-primary" style="width: 71%"></span></span>
+      </a>
+      
+      <button type="button" class="grid size-10 place-items-center rounded-full sm:size-8 bg-[#d6dbe5] text-xs font-semibold text-foreground" aria-label="Account menu">AS</button>
+    </div>
+  </div>
+</header>
+
+<div class="border-b border-border bg-card">
+  <div class="mx-auto flex max-w-6xl flex-wrap items-end gap-x-6 gap-y-1 px-4 pt-3 sm:px-6 sm:pt-4">
+    <div class="mr-auto min-w-0 pb-2">
+      <a href="dashboard.html" class="-ml-1 inline-flex h-10 items-center gap-1 px-1 text-sm text-muted-foreground hover:text-foreground"><svg class="lucide shrink-0 size-4" data-icon="chevron-left" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="m15 18-6-6 6-6" /></svg>Sites</a>
+      <div class="flex items-center gap-3">
+        <h1 class="truncate font-display text-2xl font-bold">Ember & Rye</h1>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-live-soft px-2 py-0.5 text-xs font-semibold text-live"><span class="size-1.5 rounded-full bg-live"></span>Live</span>
+        
+      </div>
+    </div>
+    <nav aria-label="Site" class="-mb-px flex gap-1 text-sm font-medium">
+      <a href="editor.html" class="flex h-11 items-center border-b-2 px-3 border-transparent text-muted-foreground hover:text-foreground">Editor</a>
+      <a href="stats.html" class="flex h-11 items-center border-b-2 px-3 border-primary text-foreground">Stats</a>
+      <a href="site-settings.html" class="flex h-11 items-center border-b-2 px-3 border-transparent text-muted-foreground hover:text-foreground">Settings</a>
+    </nav>
+  </div>
+</div>
+
+<main class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <h2 class="text-lg font-semibold">Last 30 days</h2>
+    <p class="text-sm text-muted-foreground">Updated every minute. No cookies, no personal data.</p>
+  </div>
+  <dl class="mt-5 grid grid-cols-3 gap-3 sm:gap-4">
+    <div class="rounded-xl border border-border bg-card p-4 sm:p-5"><dt class="text-sm text-muted-foreground">Views</dt><dd class="mt-2 font-display text-2xl font-bold tabular-nums sm:text-4xl">1,117</dd></div>
+    <div class="rounded-xl border border-border bg-card p-4 sm:p-5"><dt class="text-sm text-muted-foreground">Today</dt><dd class="mt-2 font-display text-2xl font-bold tabular-nums sm:text-4xl">46</dd></div>
+    <div class="rounded-xl border border-border bg-card p-4 sm:p-5"><dt class="text-sm text-muted-foreground">On phones</dt><dd class="mt-2 font-display text-2xl font-bold tabular-nums sm:text-4xl">68%</dd></div>
+  </dl>
+  <section class="mt-4 rounded-xl border border-border bg-card p-5" aria-labelledby="daily-h">
+    <h3 id="daily-h" class="font-semibold">Daily views</h3>
+    <svg viewBox="0 0 1000 220" class="mt-4 h-auto w-full" role="img" aria-label="Daily views for the last 30 days, from 21 to 46"><line x1="36" x2="1000" y1="194.0" y2="194.0" stroke="var(--border)"/><text x="28" y="198.0" text-anchor="end" font-size="12" fill="var(--muted-foreground)">0</text><line x1="36" x2="1000" y1="102.0" y2="102.0" stroke="var(--border)"/><text x="28" y="106.0" text-anchor="end" font-size="12" fill="var(--muted-foreground)">40</text><line x1="36" x2="1000" y1="10.0" y2="10.0" stroke="var(--border)"/><text x="28" y="14.0" text-anchor="end" font-size="12" fill="var(--muted-foreground)">80</text><rect x="39.0" y="145.7" width="26.1" height="48.3" rx="3" fill="var(--chart-1)"><title>21 views</title></rect><rect x="71.1" y="152.6" width="26.1" height="41.4" rx="3" fill="var(--chart-1)"><title>18 views</title></rect><rect x="103.3" y="141.1" width="26.1" height="52.9" rx="3" fill="var(--chart-1)"><title>23 views</title></rect><rect x="135.4" y="129.6" width="26.1" height="64.4" rx="3" fill="var(--chart-1)"><title>28 views</title></rect><rect x="167.5" y="150.3" width="26.1" height="43.7" rx="3" fill="var(--chart-1)"><title>19 views</title></rect><rect x="199.7" y="113.5" width="26.1" height="80.5" rx="3" fill="var(--chart-1)"><title>35 views</title></rect><rect x="231.8" y="83.6" width="26.1" height="110.4" rx="3" fill="var(--chart-1)"><title>48 views</title></rect><rect x="263.9" y="125.0" width="26.1" height="69.0" rx="3" fill="var(--chart-1)"><title>30 views</title></rect><rect x="296.1" y="138.8" width="26.1" height="55.2" rx="3" fill="var(--chart-1)"><title>24 views</title></rect><rect x="328.2" y="127.3" width="26.1" height="66.7" rx="3" fill="var(--chart-1)"><title>29 views</title></rect><rect x="360.3" y="115.8" width="26.1" height="78.2" rx="3" fill="var(--chart-1)"><title>34 views</title></rect><rect x="392.5" y="136.5" width="26.1" height="57.5" rx="3" fill="var(--chart-1)"><title>25 views</title></rect><rect x="424.6" y="69.8" width="26.1" height="124.2" rx="3" fill="var(--chart-1)"><title>54 views</title></rect><rect x="456.7" y="81.3" width="26.1" height="112.7" rx="3" fill="var(--chart-1)"><title>49 views</title></rect><rect x="488.9" y="122.7" width="26.1" height="71.3" rx="3" fill="var(--chart-1)"><title>31 views</title></rect><rect x="521.0" y="127.3" width="26.1" height="66.7" rx="3" fill="var(--chart-1)"><title>29 views</title></rect><rect x="553.1" y="122.7" width="26.1" height="71.3" rx="3" fill="var(--chart-1)"><title>31 views</title></rect><rect x="585.3" y="108.9" width="26.1" height="85.1" rx="3" fill="var(--chart-1)"><title>37 views</title></rect><rect x="617.4" y="106.6" width="26.1" height="87.4" rx="3" fill="var(--chart-1)"><title>38 views</title></rect><rect x="649.5" y="83.6" width="26.1" height="110.4" rx="3" fill="var(--chart-1)"><title>48 views</title></rect><rect x="681.7" y="76.7" width="26.1" height="117.3" rx="3" fill="var(--chart-1)"><title>51 views</title></rect><rect x="713.8" y="113.5" width="26.1" height="80.5" rx="3" fill="var(--chart-1)"><title>35 views</title></rect><rect x="745.9" y="95.1" width="26.1" height="98.9" rx="3" fill="var(--chart-1)"><title>43 views</title></rect><rect x="778.1" y="97.4" width="26.1" height="96.6" rx="3" fill="var(--chart-1)"><title>42 views</title></rect><rect x="810.2" y="108.9" width="26.1" height="85.1" rx="3" fill="var(--chart-1)"><title>37 views</title></rect><rect x="842.3" y="76.7" width="26.1" height="117.3" rx="3" fill="var(--chart-1)"><title>51 views</title></rect><rect x="874.5" y="51.4" width="26.1" height="142.6" rx="3" fill="var(--chart-1)"><title>62 views</title></rect><rect x="906.6" y="67.5" width="26.1" height="126.5" rx="3" fill="var(--chart-1)"><title>55 views</title></rect><rect x="938.7" y="92.8" width="26.1" height="101.2" rx="3" fill="var(--chart-1)"><title>44 views</title></rect><rect x="970.9" y="88.2" width="26.1" height="105.8" rx="3" fill="var(--chart-1)"><title>46 views</title></rect><text x="52.1" y="214" text-anchor="middle" font-size="12" fill="var(--muted-foreground)">Oct 17</text><text x="534.1" y="214" text-anchor="middle" font-size="12" fill="var(--muted-foreground)">Nov 1</text><text x="983.9" y="214" text-anchor="middle" font-size="12" fill="var(--muted-foreground)">Nov 15</text></svg>
+  </section>
+  <div class="mt-4 grid gap-4 lg:grid-cols-2">
+    <section class="rounded-xl border border-border bg-card p-5" aria-labelledby="ref-h">
+      <h3 id="ref-h" class="font-semibold">Top referrers</h3>
+      <ul class="mt-4 space-y-4"><li class="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1.5"><span class="truncate text-sm">Direct</span><span class="text-sm font-semibold tabular-nums">512</span><span class="col-span-2 h-1.5 overflow-hidden rounded-full bg-muted"><span class="block h-full rounded-full bg-chart-1" style="width:100%"></span></span></li><li class="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1.5"><span class="truncate text-sm">instagram.com</span><span class="text-sm font-semibold tabular-nums">301</span><span class="col-span-2 h-1.5 overflow-hidden rounded-full bg-muted"><span class="block h-full rounded-full bg-chart-1" style="width:59%"></span></span></li><li class="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1.5"><span class="truncate text-sm">google.com</span><span class="text-sm font-semibold tabular-nums">254</span><span class="col-span-2 h-1.5 overflow-hidden rounded-full bg-muted"><span class="block h-full rounded-full bg-chart-1" style="width:50%"></span></span></li><li class="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1.5"><span class="truncate text-sm">facebook.com</span><span class="text-sm font-semibold tabular-nums">117</span><span class="col-span-2 h-1.5 overflow-hidden rounded-full bg-muted"><span class="block h-full rounded-full bg-chart-1" style="width:23%"></span></span></li><li class="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1.5"><span class="truncate text-sm">maps.google.com</span><span class="text-sm font-semibold tabular-nums">61</span><span class="col-span-2 h-1.5 overflow-hidden rounded-full bg-muted"><span class="block h-full rounded-full bg-chart-1" style="width:12%"></span></span></li></ul>
+    </section>
+    <section class="rounded-xl border border-border bg-card p-5" aria-labelledby="dev-h">
+      <h3 id="dev-h" class="font-semibold">Devices</h3>
+      <div class="mt-6 flex h-3 overflow-hidden rounded-full" role="img" aria-label="68% phone, 32% desktop"><span class="h-full bg-chart-1" style="width:68%"></span><span class="h-full bg-chart-2" style="width:32%"></span></div>
+      <dl class="mt-5 grid grid-cols-2 gap-4">
+        <div><dt class="flex items-center gap-2 text-sm text-muted-foreground"><span class="size-2.5 rounded-full bg-chart-1"></span><svg class="lucide shrink-0 size-4" data-icon="smartphone" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /><path d="M12 18h.01" /></svg>Phone</dt><dd class="mt-1 text-2xl font-semibold tabular-nums">68%</dd></div>
+        <div><dt class="flex items-center gap-2 text-sm text-muted-foreground"><span class="size-2.5 rounded-full bg-chart-2"></span><svg class="lucide shrink-0 size-4" data-icon="monitor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="20" height="14" x="2" y="3" rx="2" /><line x1="8" x2="16" y1="21" y2="21" /><line x1="12" x2="12" y1="17" y2="21" /></svg>Desktop</dt><dd class="mt-1 text-2xl font-semibold tabular-nums">32%</dd></div>
+      </dl>
+      <p class="mt-5 text-xs text-muted-foreground">Tablets count as phones.</p>
+    </section>
+  </div>
+</main>
+</body>
+</html>

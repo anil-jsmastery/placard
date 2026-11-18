@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Site settings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Figtree:wght@400..800&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500..800&family=Fraunces:opsz,wght@9..144,500..700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400..600&display=swap">
+<link rel="stylesheet" href="reference.css">
+</head>
+<body>
+<!-- Route: /sites/[id]/settings  ·  Pro user, custom domain added and waiting for DNS. On Free, the Custom domain row shows a "Pro" badge and an Upgrade button (paywall reason: custom_domain). -->
+<header class="sticky top-0 z-30 border-b border-border bg-card">
+  <div class="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:gap-6 sm:px-6">
+    <a href="landing.html" class="flex h-10 shrink-0 items-center gap-2 rounded-md font-display text-[17px] font-bold tracking-tight text-foreground focus-visible:outline-2 focus-visible:outline-offset-4" aria-label="Placard home">
+  <span class="grid size-7 place-items-center rounded-md bg-primary" aria-hidden="true">
+    <svg viewBox="0 0 16 16" class="size-4"><rect x="3" y="3" width="10" height="2.2" rx="1.1" fill="#ffd43b"/><rect x="3" y="6.9" width="7.5" height="2.2" rx="1.1" fill="#fff"/><rect x="3" y="10.8" width="4.8" height="2.2" rx="1.1" fill="#fff" fill-opacity=".55"/></svg>
+  </span>
+  <span>Placard</span>
+</a>
+
+    <nav aria-label="Main" class="flex items-center gap-1 text-sm font-medium">
+      <a href="dashboard.html" class="inline-flex h-10 items-center rounded-md px-3 sm:h-8 bg-accent text-foreground">Sites</a>
+      <a href="account.html" class="inline-flex h-10 items-center rounded-md px-3 sm:h-8 text-muted-foreground hover:bg-accent hover:text-foreground">Account</a>
+    </nav>
+    <div class="ml-auto flex items-center gap-3">
+      <a href="account.html" class="hidden items-center gap-2.5 rounded-md px-2 py-1.5 text-sm hover:bg-accent sm:flex" aria-label="212 of 300 AI requests left this month">
+        <svg class="lucide shrink-0 size-4 text-muted-foreground" data-icon="sparkles" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /><path d="M20 2v4" /><path d="M22 4h-4" /><circle cx="4" cy="20" r="2" /></svg>
+        <span class="tabular-nums"><span class="font-semibold">212</span><span class="text-muted-foreground"> of 300 AI requests left</span></span>
+        <span class="h-1.5 w-14 overflow-hidden rounded-full bg-muted" aria-hidden="true"><span class="block h-full rounded-full bg-primary" style="width: 71%"></span></span>
+      </a>
+      
+      <button type="button" class="grid size-10 place-items-center rounded-full sm:size-8 bg-[#d6dbe5] text-xs font-semibold text-foreground" aria-label="Account menu">AS</button>
+    </div>
+  </div>
+</header>
+
+<div class="border-b border-border bg-card">
+  <div class="mx-auto flex max-w-6xl flex-wrap items-end gap-x-6 gap-y-1 px-4 pt-3 sm:px-6 sm:pt-4">
+    <div class="mr-auto min-w-0 pb-2">
+      <a href="dashboard.html" class="-ml-1 inline-flex h-10 items-center gap-1 px-1 text-sm text-muted-foreground hover:text-foreground"><svg class="lucide shrink-0 size-4" data-icon="chevron-left" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="m15 18-6-6 6-6" /></svg>Sites</a>
+      <div class="flex items-center gap-3">
+        <h1 class="truncate font-display text-2xl font-bold">Ember & Rye</h1>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-live-soft px-2 py-0.5 text-xs font-semibold text-live"><span class="size-1.5 rounded-full bg-live"></span>Live</span>
+        
+      </div>
+    </div>
+    <nav aria-label="Site" class="-mb-px flex gap-1 text-sm font-medium">
+      <a href="editor.html" class="flex h-11 items-center border-b-2 px-3 border-transparent text-muted-foreground hover:text-foreground">Editor</a>
+      <a href="stats.html" class="flex h-11 items-center border-b-2 px-3 border-transparent text-muted-foreground hover:text-foreground">Stats</a>
+      <a href="site-settings.html" class="flex h-11 items-center border-b-2 px-3 border-primary text-foreground">Settings</a>
+    </nav>
+  </div>
+</div>
+
+<main class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+  <div class="divide-y divide-border rounded-xl border border-border bg-card">
+
+    <section class="grid grid-cols-1 gap-4 p-5 sm:p-6 md:grid-cols-[220px_minmax(0,1fr)]" aria-labelledby="addr-h">
+      <div><h2 id="addr-h" class="font-semibold">Site address</h2><p class="mt-1 text-sm text-muted-foreground">Where your site lives.</p></div>
+      <form onsubmit="event.preventDefault()">
+        <label for="slug" class="sr-only">Address</label>
+        <div class="flex flex-col gap-2 sm:flex-row">
+          <div class="flex h-11 min-w-0 items-center overflow-hidden rounded-md border border-input bg-card focus-within:ring-2 focus-within:ring-ring/30 sm:h-10 sm:flex-1">
+            <input id="slug" value="ember-and-rye" class="h-full min-w-0 flex-1 bg-transparent pl-3 font-mono text-base sm:text-sm outline-none" aria-describedby="slug-help">
+            <span class="flex h-full items-center border-l border-input bg-muted px-3 font-mono text-sm text-muted-foreground">.APP_DOMAIN</span>
+          </div>
+          <button type="submit" class="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90">Save</button>
+        </div>
+        <p id="slug-help" class="mt-2 text-sm text-muted-foreground">3–30 characters: lowercase letters, numbers and hyphens.</p>
+      </form>
+    </section>
+
+    <section data-feature="custom-domains" class="grid grid-cols-1 gap-4 p-5 sm:p-6 md:grid-cols-[220px_minmax(0,1fr)]" aria-labelledby="dom-h">
+      <div><h2 id="dom-h" class="flex items-center gap-2 font-semibold">Custom domain <span class="rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">Pro</span></h2><p class="mt-1 text-sm text-muted-foreground">Use a domain you own.</p></div>
+      <div>
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="font-mono text-sm font-medium">www.emberandrye.com</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground"><svg class="lucide shrink-0 size-3.5" data-icon="clock" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>Waiting for DNS</span>
+        </div>
+        <p class="mt-4 text-sm">Add this record at your domain provider:</p>
+        <div class="relative mt-2 overflow-x-auto rounded-lg border border-border">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-muted text-xs text-muted-foreground"><tr><th class="px-3 py-2 font-medium">Type</th><th class="px-3 py-2 font-medium">Name</th><th class="px-3 py-2 font-medium">Value</th><th class="w-0 px-3 py-2"><span class="sr-only">Copy</span></th></tr></thead>
+            <tbody><tr class="border-t border-border"><td class="px-3 py-2.5 font-mono">CNAME</td><td class="px-3 py-2.5 font-mono">www</td><td class="px-3 py-2.5 font-mono">sites.APP_DOMAIN</td><td class="px-2 py-1.5"><button type="button" class="grid size-8 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Copy value"><svg class="lucide shrink-0 size-4" data-icon="copy" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg></button></td></tr></tbody>
+          </table>
+        </div>
+        <p class="mt-3 text-sm text-muted-foreground">DNS changes can take up to an hour. HTTPS is set up automatically once the record is found.</p>
+        <div class="mt-4 flex flex-wrap gap-2">
+          <button type="button" class="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90"><svg class="lucide shrink-0 size-4" data-icon="refresh-cw" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" /></svg>Check DNS</button>
+          <button type="button" class="inline-flex h-10 items-center rounded-md px-4 text-sm font-semibold text-muted-foreground hover:bg-accent hover:text-foreground">Remove domain</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 gap-4 p-5 sm:p-6 md:grid-cols-[220px_minmax(0,1fr)]" aria-labelledby="pub-h">
+      <div><h2 id="pub-h" class="font-semibold">Publishing</h2><p class="mt-1 text-sm text-muted-foreground">Take the site offline.</p></div>
+      <div>
+        <p class="text-sm">Your site is live. If you unpublish it, visitors see a “site not found” page until you publish again. Your draft is kept.</p>
+        <button type="button" class="mt-4 inline-flex h-10 items-center rounded-md border border-input bg-card px-4 text-sm font-semibold hover:bg-accent">Unpublish</button>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 gap-4 p-5 sm:p-6 md:grid-cols-[220px_minmax(0,1fr)]" aria-labelledby="del-h">
+      <div><h2 id="del-h" class="font-semibold text-destructive">Delete site</h2><p class="mt-1 text-sm text-muted-foreground">This can’t be undone.</p></div>
+      <div>
+        <p class="text-sm">Deletes the site, its history and its stats, and frees the address.</p>
+        <button type="button" class="mt-4 inline-flex h-10 items-center rounded-md bg-destructive px-4 text-sm font-semibold text-white hover:bg-destructive/90">Delete site</button>
+      </div>
+    </section>
+  </div>
+</main>
+</body>
+</html>

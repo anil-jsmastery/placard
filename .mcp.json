@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "posthog": { "type": "http", "url": "https://mcp.posthog.com/mcp" },
+    "clerk": { "type": "http", "url": "https://mcp.clerk.com/mcp" },
+    "neon": { "type": "http", "url": "https://mcp.neon.tech/mcp" },
+    "vercel": { "type": "http", "url": "https://mcp.vercel.com" },
+    "hostinger": { "type": "http", "url": "https://mcp.hostinger.com" },
+    "cloudflare": { "type": "http", "url": "https://mcp.cloudflare.com/mcp" },
+    "next-devtools": { "command": "npx", "args": ["-y", "next-devtools-mcp@0.4.0"] },
+    "playwright": { "command": "npx", "args": ["-y", "@playwright/mcp@0.0.85", "--isolated"] },
+    "shadcn": { "command": "npx", "args": ["shadcn@4.23.0", "mcp"] }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "model": "claude-opus-5-5",
+  "effortLevel": "medium",
+  "autoMemoryEnabled": false,
+  "enableAllProjectMcpServers": true,
+  "permissions": {
+    "allow": ["mcp__next-devtools__*", "mcp__playwright__*", "mcp__shadcn__*"]
+  }
+}

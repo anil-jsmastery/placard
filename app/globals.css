@@ -1,0 +1,174 @@
+/*
+  app/globals.css — copy this file as-is. Do not add, rename or change tokens.
+  Two token groups live here:
+    1. App tokens (shadcn names): the app's own UI. Greyscale + one "marker" yellow reserved for AI activity.
+    2. Site tokens (--site-*): the published one-page sites and the editor canvas. Set by data-site-theme / data-site-font.
+  The two groups never share a name. (A site token called --muted would overwrite shadcn's --muted and hide text.)
+  Font variables (--font-figtree, --font-bricolage, --font-jetbrains, --font-site-*) are set by next/font in app/fonts.ts.
+*/
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ───────────────────────── 1. App tokens ───────────────────────── */
+:root {
+  --radius: 0.5rem;
+
+  --background: #f5f6f8;          /* page ground */
+  --foreground: #16181d;          /* ink */
+  --card: #ffffff;
+  --card-foreground: #16181d;
+  --popover: #ffffff;
+  --popover-foreground: #16181d;
+  --primary: #16181d;             /* primary buttons are ink */
+  --primary-foreground: #ffffff;
+  --secondary: #eceef2;
+  --secondary-foreground: #16181d;
+  --muted: #eceef2;
+  --muted-foreground: #5d6370;
+  --accent: #eceef2;              /* hover fill (shadcn meaning), not a brand color */
+  --accent-foreground: #16181d;
+  --destructive: #c8372d;
+  --border: #e3e5ea;              /* dividers and card edges */
+  --input: #8f95a1;               /* form control edges (3:1 on white) */
+  --ring: #16181d;
+
+  /* AI activity: the only chrome color. Only for what the AI is doing or just did. */
+  --marker: #ffd43b;
+  --marker-soft: #fff4c2;
+  --marker-foreground: #16181d;
+
+  /* Status */
+  --live: #16794a;
+  --live-soft: #e3f4ea;
+
+  /* Editor canvas ground (behind the page preview) */
+  --canvas: #e6e8ed;
+
+  /* Charts (stats page) */
+  --chart-1: #16181d;
+  --chart-2: #8f95a1;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-marker: var(--marker);
+  --color-marker-soft: var(--marker-soft);
+  --color-marker-foreground: var(--marker-foreground);
+  --color-live: var(--live);
+  --color-live-soft: var(--live-soft);
+  --color-canvas: var(--canvas);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-figtree), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace;
+
+  /* Site tokens exposed as utilities: bg-site-bg, text-site-text, border-site-border … */
+  --color-site-bg: var(--site-bg);
+  --color-site-surface: var(--site-surface);
+  --color-site-text: var(--site-text);
+  --color-site-muted: var(--site-muted);
+  --color-site-accent: var(--site-accent);
+  --color-site-accent-fg: var(--site-accent-fg);
+  --color-site-border: var(--site-border);
+  --radius-site: var(--site-radius);
+  --font-site-heading: var(--site-font-heading);
+  --font-site-body: var(--font-site-body), ui-sans-serif, system-ui, sans-serif;
+
+  /* Motion (always used behind motion-safe:) */
+  --animate-build-in: build-in 320ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-marker-pulse: marker-pulse 1.4s ease-in-out infinite;
+  @keyframes build-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes marker-pulse {
+    0%, 100% { box-shadow: 0 0 0 2px var(--marker); }
+    50% { box-shadow: 0 0 0 4px var(--marker); }
+  }
+}
+
+/* ───────────────────────── 2. Site tokens ───────────────────────── */
+/* Applied on the element that wraps a site: <div class="site" data-site-theme="paper" data-site-font="sans"> */
+.site {
+  container-type: inline-size; /* sections use container breakpoints (@2xl/@3xl/@5xl), so they render the same in the editor, thumbnails and live pages */
+  --site-font-heading: var(--font-site-sans), ui-sans-serif, system-ui, sans-serif;
+  background: var(--site-bg);
+  color: var(--site-text);
+  font-family: var(--font-site-body), ui-sans-serif, system-ui, sans-serif;
+}
+[data-site-theme="paper"] {
+  --site-bg: #fbfaf7; --site-surface: #ffffff; --site-text: #1d1c1a; --site-muted: #64605a;
+  --site-accent: #2847c9; --site-accent-fg: #ffffff; --site-border: #e6e2da; --site-radius: 10px;
+}
+[data-site-theme="midnight"] {
+  --site-bg: #0d1120; --site-surface: #161c30; --site-text: #eceff7; --site-muted: #a1a9c2;
+  --site-accent: #8ea6ff; --site-accent-fg: #0d1120; --site-border: #283050; --site-radius: 14px;
+}
+[data-site-theme="sunset"] {
+  --site-bg: #fff3ea; --site-surface: #ffffff; --site-text: #2a1812; --site-muted: #7a5446;
+  --site-accent: #c23e22; --site-accent-fg: #ffffff; --site-border: #f1d6c6; --site-radius: 20px;
+}
+[data-site-theme="forest"] {
+  --site-bg: #eff3ec; --site-surface: #ffffff; --site-text: #15241a; --site-muted: #4f6155;
+  --site-accent: #2e6a3e; --site-accent-fg: #ffffff; --site-border: #d3ddcd; --site-radius: 8px;
+}
+[data-site-theme="ocean"] {
+  --site-bg: #edf5f9; --site-surface: #ffffff; --site-text: #0e2431; --site-muted: #486474;
+  --site-accent: #0b6e99; --site-accent-fg: #ffffff; --site-border: #cce0ea; --site-radius: 12px;
+}
+[data-site-theme="mono"] {
+  --site-bg: #ffffff; --site-surface: #f3f3f3; --site-text: #000000; --site-muted: #555555;
+  --site-accent: #000000; --site-accent-fg: #ffffff; --site-border: #dadada; --site-radius: 0px;
+}
+[data-site-font="sans"]  { --site-font-heading: var(--font-site-sans), ui-sans-serif, system-ui, sans-serif; }
+[data-site-font="serif"] { --site-font-heading: var(--font-site-serif), ui-serif, Georgia, serif; }
+[data-site-font="mono"]  { --site-font-heading: var(--font-site-mono), ui-monospace, monospace; }
+
+/* ───────────────────────── Base ───────────────────────── */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "ss01";
+  }
+  .font-display {
+    font-variation-settings: "wdth" 88, "opsz" 72;
+    letter-spacing: -0.02em;
+  }
+  .site h1, .site h2, .site h3 {
+    font-family: var(--site-font-heading);
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+  .site[data-site-font="mono"] :is(h1, h2, h3) {
+    letter-spacing: -0.03em;
+  }
+}

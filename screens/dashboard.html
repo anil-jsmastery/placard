@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard: sites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Figtree:wght@400..800&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500..800&family=Fraunces:opsz,wght@9..144,500..700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400..600&display=swap">
+<link rel="stylesheet" href="reference.css">
+</head>
+<body>
+<!-- Route: /dashboard  ·  Shown here as a Pro user with 3 sites. The first card's action menu is open. -->
+<header class="sticky top-0 z-30 border-b border-border bg-card">
+  <div class="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:gap-6 sm:px-6">
+    <a href="landing.html" class="flex h-10 shrink-0 items-center gap-2 rounded-md font-display text-[17px] font-bold tracking-tight text-foreground focus-visible:outline-2 focus-visible:outline-offset-4" aria-label="Placard home">
+  <span class="grid size-7 place-items-center rounded-md bg-primary" aria-hidden="true">
+    <svg viewBox="0 0 16 16" class="size-4"><rect x="3" y="3" width="10" height="2.2" rx="1.1" fill="#ffd43b"/><rect x="3" y="6.9" width="7.5" height="2.2" rx="1.1" fill="#fff"/><rect x="3" y="10.8" width="4.8" height="2.2" rx="1.1" fill="#fff" fill-opacity=".55"/></svg>
+  </span>
+  <span>Placard</span>
+</a>
+
+    <nav aria-label="Main" class="flex items-center gap-1 text-sm font-medium">
+      <a href="dashboard.html" class="inline-flex h-10 items-center rounded-md px-3 sm:h-8 bg-accent text-foreground">Sites</a>
+      <a href="account.html" class="inline-flex h-10 items-center rounded-md px-3 sm:h-8 text-muted-foreground hover:bg-accent hover:text-foreground">Account</a>
+    </nav>
+    <div class="ml-auto flex items-center gap-3">
+      <a href="account.html" class="hidden items-center gap-2.5 rounded-md px-2 py-1.5 text-sm hover:bg-accent sm:flex" aria-label="212 of 300 AI requests left this month">
+        <svg class="lucide shrink-0 size-4 text-muted-foreground" data-icon="sparkles" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /><path d="M20 2v4" /><path d="M22 4h-4" /><circle cx="4" cy="20" r="2" /></svg>
+        <span class="tabular-nums"><span class="font-semibold">212</span><span class="text-muted-foreground"> of 300 AI requests left</span></span>
+        <span class="h-1.5 w-14 overflow-hidden rounded-full bg-muted" aria-hidden="true"><span class="block h-full rounded-full bg-primary" style="width: 71%"></span></span>
+      </a>
+      
+      <button type="button" class="grid size-10 place-items-center rounded-full sm:size-8 bg-[#d6dbe5] text-xs font-semibold text-foreground" aria-label="Account menu">AS</button>
+    </div>
+  </div>
+</header>
+
+<main class="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <h1 class="font-display text-3xl font-bold sm:text-4xl">Sites</h1>
+      <p class="mt-1 text-sm text-muted-foreground">3 of 10 sites on Pro</p>
+    </div>
+    <a href="new.html" class="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90"><svg class="lucide shrink-0 size-4" data-icon="plus" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M5 12h14" /><path d="M12 5v14" /></svg>New site</a>
+  </div>
+
+  <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="relative">
+      <article class="relative flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-input">
+  <div class="aspect-[16/10] overflow-hidden border-b border-border bg-site-bg" data-site-theme="sunset" data-frame data-width="1280" inert aria-hidden="true"><div class="site" data-site-theme="sunset" data-site-font="serif"><!-- Hero · layout: split -->
+  <section data-section="Hero" class="px-6 pt-16 pb-20 @2xl:pt-24 @2xl:pb-28">
+    <div class="mx-auto grid max-w-5xl items-center gap-12 @5xl:grid-cols-2">
+      <div>
+        <h1 class="text-4xl font-bold leading-[1.05] @2xl:text-6xl">Sourdough baked at dawn in Patan</h1>
+        <p class="mt-5 max-w-md text-lg leading-relaxed text-site-muted">Slow-fermented loaves, cardamom buns and a weekend brunch worth waking up for.</p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="#menu" class="inline-flex h-11 items-center rounded-site bg-site-accent px-5 font-semibold text-site-accent-fg hover:opacity-90">See the menu</a>
+          <a href="#visit" class="inline-flex h-11 items-center rounded-site border border-site-border bg-site-surface px-5 font-semibold hover:opacity-90">Find us</a>
+        </div>
+      </div>
+      <div class="grid aspect-[4/3] place-items-center rounded-site bg-site-border text-site-muted" data-image-tag="food" role="img" aria-label="Fresh sourdough loaves on a wooden counter">
+        <span class="flex items-center gap-2 text-sm"><svg class="lucide shrink-0 size-4" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>food</span>
+      </div>
+    </div>
+  </section>
+<!-- Features · columns: 3 -->
+  <section data-section="Features" class="px-6 py-16 @2xl:py-20">
+    <div class="mx-auto max-w-5xl">
+      <h2 class="max-w-2xl text-3xl font-bold @2xl:text-4xl">Why people come back</h2>
+      <div class="mt-12 grid gap-6 @2xl:grid-cols-2 @5xl:grid-cols-3">
+        <div class="rounded-site border border-site-border bg-site-surface p-6">
+          <span class="grid size-10 place-items-center rounded-site bg-site-accent text-site-accent-fg"><svg class="lucide shrink-0 size-5" data-icon="wheat" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M2 22 16 8" /><path d="M3.47 12.53 5 11l1.53 1.53a3.5 3.5 0 0 1 0 4.94L5 19l-1.53-1.53a3.5 3.5 0 0 1 0-4.94Z" /><path d="M7.47 8.53 9 7l1.53 1.53a3.5 3.5 0 0 1 0 4.94L9 15l-1.53-1.53a3.5 3.5 0 0 1 0-4.94Z" /><path d="M11.47 4.53 13 3l1.53 1.53a3.5 3.5 0 0 1 0 4.94L13 11l-1.53-1.53a3.5 3.5 0 0 1 0-4.94Z" /><path d="M20 2h2v2a4 4 0 0 1-4 4h-2V6a4 4 0 0 1 4-4Z" /><path d="M11.47 17.47 13 19l-1.53 1.53a3.5 3.5 0 0 1-4.94 0L5 19l1.53-1.53a3.5 3.5 0 0 1 4.94 0Z" /><path d="M15.47 13.47 17 15l-1.53 1.53a3.5 3.5 0 0 1-4.94 0L9 15l1.53-1.53a3.5 3.5 0 0 1 4.94 0Z" /><path d="M19.47 9.47 21 11l-1.53 1.53a3.5 3.5 0 0 1-4.94 0L13 11l1.53-1.53a3.5 3.5 0 0 1 4.94 0Z" /></svg></span>
+          <h3 class="mt-5 text-xl font-semibold">48-hour dough</h3>
+          <p class="mt-2 leading-relaxed text-site-muted">Long, slow fermentation for a crackly crust and an open, tangy crumb.</p>
+        </div>
+        <div class="rounded-site border border-site-border bg-site-surface p-6">
+          <span class="grid size-10 place-items-center rounded-site bg-site-accent text-site-accent-fg"><svg class="lucide shrink-0 size-5" data-icon="leaf" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M11 20a10 10 0 0010-10 25.9 25.9 0 00-1.04-7.281 1 1 0 00-1.755-.325C15.833 5.5 13 5.5 9.8 6.1A7 7 0 0011 20" /><path d="M2 21a5 5 0 012.911-4.544C7.613 15.212 8.351 15.24 11 13" /></svg></span>
+          <h3 class="mt-5 text-xl font-semibold">Local flour</h3>
+          <p class="mt-2 leading-relaxed text-site-muted">Stone-milled wheat and rye from farms in the valley, delivered every week.</p>
+        </div>
+        <div class="rounded-site border border-site-border bg-site-surface p-6">
+          <span class="grid size-10 place-items-center rounded-site bg-site-accent text-site-accent-fg"><svg class="lucide shrink-0 size-5" data-icon="clock" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg></span>
+          <h3 class="mt-5 text-xl font-semibold">Fresh at 7 am</h3>
+          <p class="mt-2 leading-relaxed text-site-muted">The first loaves come out of the oven as we open the doors.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div></div>
+  <div class="flex items-start gap-2 p-4">
+    <div class="min-w-0 flex-1">
+      <div class="flex items-center gap-2">
+        <h2 class="truncate font-semibold"><a href="editor.html" class="after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:rounded-xl focus-visible:after:outline-2 focus-visible:after:outline-ring">Ember &amp; Rye</a></h2>
+        <span class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-live-soft px-2 py-0.5 text-xs font-semibold text-live"><span class="size-1.5 rounded-full bg-live"></span>Live</span>
+        
+      </div>
+      <p class="mt-1 truncate font-mono text-xs text-muted-foreground">ember-and-rye.APP_DOMAIN</p>
+      <p class="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground"><svg class="lucide shrink-0 size-4" data-icon="eye" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /><circle cx="12" cy="12" r="3" /></svg>1,284 views</p>
+    </div>
+    <button type="button" class="relative z-10 grid size-10 shrink-0 sm:size-8 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Actions for Ember &amp; Rye" aria-haspopup="menu"><svg class="lucide shrink-0 size-4" data-icon="ellipsis" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg></button>
+  </div>
+</article>
+
+      <!-- DropdownMenu (open) -->
+      <div role="menu" aria-label="Actions for Ember &amp; Rye" class="absolute right-3 top-[calc(100%-12px)] z-20 w-48 rounded-lg border border-border bg-popover p-1 text-sm shadow-lg">
+        <a role="menuitem" href="editor.html" class="flex items-center gap-2.5 rounded-md px-2.5 py-2 hover:bg-accent"><svg class="lucide shrink-0 size-4 text-muted-foreground" data-icon="pencil" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" /></svg>Edit</a>
+        <a role="menuitem" href="site-sections.html" class="flex items-center gap-2.5 rounded-md px-2.5 py-2 hover:bg-accent"><svg class="lucide shrink-0 size-4 text-muted-foreground" data-icon="external-link" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M15 3h6v6" /><path d="M10 14 21 3" /><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></svg>View live</a>
+        <a role="menuitem" href="stats.html" class="flex items-center gap-2.5 rounded-md px-2.5 py-2 hover:bg-accent"><svg class="lucide shrink-0 size-4 text-muted-foreground" data-icon="chart-column" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M3 3v16a2 2 0 0 0 2 2h16" /><path d="M18 17V9" /><path d="M13 17V5" /><path d="M8 17v-3" /></svg>Stats</a>
+        <button role="menuitem" type="button" class="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 hover:bg-accent"><svg class="lucide shrink-0 size-4 text-muted-foreground" data-icon="copy" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>Duplicate</button>
+        <div class="my-1 h-px bg-border" role="separator"></div>
+        <button role="menuitem" type="button" class="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-destructive hover:bg-destructive/10"><svg class="lucide shrink-0 size-4" data-icon="trash-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M10 11v6" /><path d="M14 11v6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /><path d="M3 6h18" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>Delete</button>
+      </div>
+    </div>
+    <article class="relative flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-input">
+  <div class="aspect-[16/10] overflow-hidden border-b border-border bg-site-bg" data-site-theme="paper" data-frame data-width="1280" inert aria-hidden="true"><div class="site" data-site-theme="paper" data-site-font="sans"><!-- Hero · layout: centered (portfolio example) -->
+<section data-section="Hero" class="px-6 pt-20 pb-16 @2xl:pt-28">
+  <div class="mx-auto max-w-3xl text-center">
+    <h1 class="text-4xl font-bold leading-[1.05] @2xl:text-6xl">Product designer for calm, useful software</h1>
+    <p class="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-site-muted">I’m Asha Gurung. I design and test interfaces for health and finance startups. Booking projects for January.</p>
+    <div class="mt-8 flex flex-wrap justify-center gap-3">
+      <a href="#" class="inline-flex h-11 items-center rounded-site bg-site-accent px-5 font-semibold text-site-accent-fg">See my work</a>
+      <a href="#" class="inline-flex h-11 items-center rounded-site border border-site-border bg-site-surface px-5 font-semibold">Email me</a>
+    </div>
+    <div class="mt-14 grid aspect-[16/9] place-items-center rounded-site bg-site-border text-site-muted" data-image-tag="abstract" role="img" aria-label="Interface sketches"><span class="flex items-center gap-2 text-sm"><svg class="lucide shrink-0 size-4" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>abstract</span></div>
+  </div>
+</section>
+
+</div></div>
+  <div class="flex items-start gap-2 p-4">
+    <div class="min-w-0 flex-1">
+      <div class="flex items-center gap-2">
+        <h2 class="truncate font-semibold"><a href="editor.html" class="after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:rounded-xl focus-visible:after:outline-2 focus-visible:after:outline-ring">Asha Gurung</a></h2>
+        <span class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-live-soft px-2 py-0.5 text-xs font-semibold text-live"><span class="size-1.5 rounded-full bg-live"></span>Live</span>
+        
+      </div>
+      <p class="mt-1 truncate font-mono text-xs text-muted-foreground">asha.APP_DOMAIN</p>
+      <p class="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground"><svg class="lucide shrink-0 size-4" data-icon="eye" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /><circle cx="12" cy="12" r="3" /></svg>392 views</p>
+    </div>
+    <button type="button" class="relative z-10 grid size-10 shrink-0 sm:size-8 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Actions for Asha Gurung" aria-haspopup="menu"><svg class="lucide shrink-0 size-4" data-icon="ellipsis" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg></button>
+  </div>
+</article>
+
+    <article class="relative flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-input">
+  <div class="aspect-[16/10] overflow-hidden border-b border-border bg-site-bg" data-site-theme="midnight" data-frame data-width="1280" inert aria-hidden="true"><div class="site" data-site-theme="midnight" data-site-font="mono"><!-- Hero · layout: split (event example) -->
+<section data-section="Hero" class="px-6 pt-16 pb-20 @2xl:pt-24">
+  <div class="mx-auto grid max-w-5xl items-center gap-12 @5xl:grid-cols-2">
+    <div>
+      <h1 class="text-4xl font-bold leading-[1.05] @2xl:text-6xl">Valley Frontend Night, 12 December</h1>
+      <p class="mt-5 max-w-md text-lg leading-relaxed text-site-muted">Three talks on web performance, food at six and a room full of people who build for the web. Free, 80 seats.</p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="#" class="inline-flex h-11 items-center rounded-site bg-site-accent px-5 font-semibold text-site-accent-fg">Save my seat</a>
+        <a href="#" class="inline-flex h-11 items-center rounded-site border border-site-border bg-site-surface px-5 font-semibold">See the talks</a>
+      </div>
+    </div>
+    <div class="grid aspect-[4/3] place-items-center rounded-site bg-site-border text-site-muted" data-image-tag="people" role="img" aria-label="Audience at a talk"><span class="flex items-center gap-2 text-sm"><svg class="lucide shrink-0 size-4" data-icon="image" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>people</span></div>
+  </div>
+</section>
+<!-- Features · columns: 3 (event example) -->
+<section data-section="Features" class="px-6 py-16 @2xl:py-20">
+  <div class="mx-auto max-w-5xl">
+    <h2 class="max-w-2xl text-3xl font-bold @2xl:text-4xl">Three talks, one evening</h2>
+    <div class="mt-12 grid gap-6 @2xl:grid-cols-2 @5xl:grid-cols-3">
+      <div class="rounded-site border border-site-border bg-site-surface p-6"><span class="grid size-10 place-items-center rounded-site bg-site-accent text-site-accent-fg"><svg class="lucide shrink-0 size-5" data-icon="zap" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z" /></svg></span><h3 class="mt-5 text-xl font-semibold">Shipping less JavaScript</h3><p class="mt-2 leading-relaxed text-site-muted">How one team cut its bundle in half without a rewrite.</p></div>
+      <div class="rounded-site border border-site-border bg-site-surface p-6"><span class="grid size-10 place-items-center rounded-site bg-site-accent text-site-accent-fg"><svg class="lucide shrink-0 size-5" data-icon="type" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M12 4v16" /><path d="M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2" /><path d="M9 20h6" /></svg></span><h3 class="mt-5 text-xl font-semibold">Fonts without the flash</h3><p class="mt-2 leading-relaxed text-site-muted">Loading web fonts so text never jumps.</p></div>
+      <div class="rounded-site border border-site-border bg-site-surface p-6"><span class="grid size-10 place-items-center rounded-site bg-site-accent text-site-accent-fg"><svg class="lucide shrink-0 size-5" data-icon="gauge" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="m12 14 4-4" /><path d="M3.34 19a10 10 0 1 1 17.32 0" /></svg></span><h3 class="mt-5 text-xl font-semibold">Measuring what users feel</h3><p class="mt-2 leading-relaxed text-site-muted">Real-user metrics that match what people notice.</p></div>
+    </div>
+  </div>
+</section>
+</div></div>
+  <div class="flex items-start gap-2 p-4">
+    <div class="min-w-0 flex-1">
+      <div class="flex items-center gap-2">
+        <h2 class="truncate font-semibold"><a href="editor.html" class="after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:rounded-xl focus-visible:after:outline-2 focus-visible:after:outline-ring">Valley Frontend Night</a></h2>
+        
+        <span class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground"><span class="size-1.5 rounded-full bg-muted-foreground"></span>Draft</span>
+      </div>
+      <p class="mt-1 truncate font-mono text-xs text-muted-foreground">Not published yet</p>
+      <p class="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground"><svg class="lucide shrink-0 size-4" data-icon="eye" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /><circle cx="12" cy="12" r="3" /></svg>No views yet</p>
+    </div>
+    <button type="button" class="relative z-10 grid size-10 shrink-0 sm:size-8 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground" aria-label="Actions for Valley Frontend Night" aria-haspopup="menu"><svg class="lucide shrink-0 size-4" data-icon="ellipsis" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg></button>
+  </div>
+</article>
+
+  </div>
+</main>
+<script>
+  // Reference helper: renders a site at a fixed design width (data-width) and scales it to fit its frame.
+  // In the app this is <SiteFrame width={1280}> (components/site/site-frame.tsx), same math.
+  function fitFrames() {
+    document.querySelectorAll('[data-frame]').forEach((frame) => {
+      const inner = frame.firstElementChild;
+      // editor canvases (data-phone) switch to the phone preview below 768px, like the app
+      const w = frame.dataset.phone !== undefined && innerWidth < 768 ? 390 : Number(frame.dataset.width || 1280);
+      const s = frame.clientWidth / w;
+      inner.style.width = w + 'px';
+      inner.style.transform = 'scale(' + s + ')';
+      inner.style.transformOrigin = 'top left';
+      if (frame.dataset.fit === 'height') frame.style.height = inner.scrollHeight * s + 'px';
+      // editor overlays (outline, action bar) are drawn at screen size, not page size
+      frame.querySelectorAll('[data-ui-overlay]').forEach((o) => { o.style.transformOrigin = 'top left'; o.style.transform = 'scale(' + 1 / s + ')'; });
+      frame.querySelectorAll('[data-ui-outline]').forEach((o) => { const px = o.classList.contains('outline-marker') ? 3 : 2; o.style.outlineWidth = px / s + 'px'; o.style.outlineOffset = -px / s + 'px'; });
+    });
+  }
+  addEventListener('resize', fitFrames);
+  fitFrames();
+  document.fonts && document.fonts.ready.then(fitFrames);
+</script>
+
+</body>
+</html>
