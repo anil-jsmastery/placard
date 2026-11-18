@@ -2,10 +2,12 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Puck, createUsePuck } from "@puckeditor/core";
-import { Layers, Plus, SlidersHorizontal, X } from "lucide-react";
+import { Layers, Plus, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { AddPanel, SectionAddedContext } from "./add-panel";
+import { AiPanel, BuildStatusPill } from "./ai-panel";
+import { useEditor } from "./editor";
 import { FieldsPanel } from "./fields-panel";
 import { LayersPanel } from "./layers-panel";
 import { CanvasScaleContext } from "./section-overlay";
@@ -13,9 +15,9 @@ import { TopBar } from "./top-bar";
 
 const usePuck = createUsePuck();
 
-type Panel = "add" | "layers" | "edit";
+type Panel = "ai" | "add" | "layers" | "edit";
 
-const PANEL_TITLES: Record<Panel, string> = { add: "Add", layers: "Layers", edit: "Edit" };
+const PANEL_TITLES: Record<Panel, string> = { ai: "AI", add: "Add", layers: "Layers", edit: "Edit" };
 
 function useMediaQuery(query: string) {
   return useSyncExternalStore(
@@ -49,8 +51,9 @@ function Canvas() {
   const scale = box.w ? Math.min(1, box.w / width) : 1;
 
   return (
-    <main className="min-w-0 overflow-hidden bg-canvas p-4 sm:p-6" aria-label="Page preview">
-      <div ref={boxRef} className="h-full min-w-0">
+    <main className="flex min-w-0 flex-col overflow-hidden bg-canvas p-4 sm:p-6" aria-label="Page preview">
+      <BuildStatusPill />
+      <div ref={boxRef} className="min-h-0 min-w-0 flex-1">
         <div
           className="mx-auto overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-black/5"
           style={{ width: width * scale, height: box.h, visibility: box.w ? undefined : "hidden" }}
@@ -71,7 +74,8 @@ const tabClass =
 
 export function EditorLayout() {
   const isDesktop = useMediaQuery("(min-width: 1024px)");
-  const [tab, setTab] = useState<"add" | "layers">("add");
+  const [tab, setTab] = useState<"ai" | "add" | "layers">("ai");
+  const { building } = useEditor();
   const [sheet, setSheet] = useState<Panel | null>(null);
   const hasSelection = usePuck((s) => !!s.selectedItem);
   const dispatch = usePuck((s) => s.dispatch);
@@ -94,20 +98,36 @@ export function EditorLayout() {
       <div className="flex h-screen flex-col">
         <TopBar />
         <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)_280px] xl:grid-cols-[340px_minmax(0,1fr)_320px]">
-          <aside className="hidden min-h-0 flex-col border-r border-border bg-card lg:flex" aria-label={tab === "add" ? "Add" : "Layers"}>
+          <aside
+            className="hidden min-h-0 flex-col border-r border-border bg-card lg:flex"
+            aria-label={PANEL_TITLES[tab]}
+          >
             <div className="border-b border-border p-3">
-              <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1 text-sm font-medium" role="tablist" aria-label="Editor panels">
-                <button type="button" role="tab" aria-selected={tab === "add"} className={tabClass} onClick={() => setTab("add")}>
-                  <Plus className="size-4" aria-hidden="true" />
-                  Add
-                </button>
-                <button type="button" role="tab" aria-selected={tab === "layers"} className={tabClass} onClick={() => setTab("layers")}>
-                  <Layers className="size-4" aria-hidden="true" />
-                  Layers
-                </button>
+              <div className="grid grid-cols-3 gap-1 rounded-lg bg-muted p-1 text-sm font-medium" role="tablist" aria-label="Editor panels">
+                {(
+                  [
+                    { id: "ai", Icon: Sparkles },
+                    { id: "add", Icon: Plus },
+                    { id: "layers", Icon: Layers },
+                  ] as const
+                ).map(({ id, Icon }) => (
+                  <button key={id} type="button" role="tab" aria-selected={tab === id} className={tabClass} onClick={() => setTab(id)}>
+                    <Icon className="size-4" aria-hidden="true" />
+                    {PANEL_TITLES[id]}
+                  </button>
+                ))}
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto p-4">{isDesktop && (tab === "add" ? <AddPanel /> : <LayersPanel />)}</div>
+            {isDesktop &&
+              (tab === "ai" ? (
+                <div className="min-h-0 flex-1">
+                  <AiPanel />
+                </div>
+              ) : (
+                <div className={cn("flex-1 overflow-y-auto p-4", building && "opacity-50")} inert={building}>
+                  {tab === "add" ? <AddPanel /> : <LayersPanel />}
+                </div>
+              ))}
           </aside>
 
           <Canvas />
@@ -118,9 +138,10 @@ export function EditorLayout() {
         </div>
 
         {/* Below lg: panels open as bottom sheets from this bar */}
-        <nav className="grid grid-cols-3 border-t border-border bg-card lg:hidden" aria-label="Editor panels">
+        <nav className="grid grid-cols-4 border-t border-border bg-card lg:hidden" aria-label="Editor panels">
           {(
             [
+              { panel: "ai", Icon: Sparkles },
               { panel: "add", Icon: Plus },
               { panel: "layers", Icon: Layers },
               { panel: "edit", Icon: SlidersHorizontal },
@@ -133,7 +154,7 @@ export function EditorLayout() {
               onClick={() => setSheet(panel)}
               className={cn(
                 "flex h-14 flex-col items-center justify-center gap-0.5 text-xs font-medium disabled:pointer-events-none disabled:opacity-40",
-                openSheet !== panel && "text-muted-foreground",
+                (openSheet ?? "ai") !== panel && "text-muted-foreground",
               )}
             >
               <Icon className="size-4" aria-hidden="true" />
@@ -155,13 +176,14 @@ export function EditorLayout() {
                 </SheetClose>
               </SheetHeader>
               <div className="min-h-0 flex-1 overflow-y-auto">
+                {openSheet === "ai" && <AiPanel />}
                 {openSheet === "add" && (
-                  <div className="p-4">
+                  <div className={cn("p-4", building && "opacity-50")} inert={building}>
                     <AddPanel />
                   </div>
                 )}
                 {openSheet === "layers" && (
-                  <div className="p-4">
+                  <div className={cn("p-4", building && "opacity-50")} inert={building}>
                     <LayersPanel />
                   </div>
                 )}

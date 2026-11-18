@@ -1,9 +1,10 @@
 "use client";
 
 import { Puck, createUsePuck } from "@puckeditor/core";
-import { Settings2, X } from "lucide-react";
+import { Lock, Settings2, X } from "lucide-react";
 import { SECTION_CATALOG } from "@/lib/sections/catalog";
 import type { SectionType } from "@/lib/sections/schemas";
+import { useEditor } from "./editor";
 
 const usePuck = createUsePuck();
 
@@ -13,6 +14,24 @@ export function FieldsPanel({ showHeader = true }: { showHeader?: boolean }) {
   const dispatch = usePuck((s) => s.dispatch);
   const section = selectedType ? SECTION_CATALOG[selectedType] : undefined;
   const Icon = section?.icon ?? Settings2;
+  const { building } = useEditor();
+
+  // While the AI builds, fields are locked (editor-generating.html)
+  if (building) {
+    return (
+      <>
+        {showHeader && (
+          <div className="flex h-12 items-center border-b border-border px-4">
+            <h2 className="text-sm font-semibold">Fields</h2>
+          </div>
+        )}
+        <div className="flex flex-col items-center px-6 py-16 text-center">
+          <Lock className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <p className="mt-3 max-w-[220px] text-sm text-muted-foreground">Sections become editable when the build finishes.</p>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

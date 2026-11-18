@@ -11,11 +11,16 @@ import { ROOT_FIELD_LABELS, fieldLabel, puckConfig } from "@/lib/sections/puck-c
 import type { SectionType } from "@/lib/sections/schemas";
 import type { PageData } from "@/lib/site/types";
 import { saveDraft } from "@/app/(main)/sites/[id]/edit/actions";
+import type { UseCase } from "@/lib/analytics/events";
+import { AiRunProvider } from "./ai-panel";
 import { EditorLayout } from "./editor-layout";
 import { AddTile } from "./add-panel";
 import { SectionActionBar, SectionOverlay } from "./section-overlay";
 
 export type EditorSite = { id: string; name: string; slug: string; draft: PageData; publishedAt: Date | null };
+
+/** The usage line under the AI composer. */
+export type AiUsage = { left: number; total: number };
 
 export type SaveStatus =
   | { state: "saved" }
@@ -23,7 +28,19 @@ export type SaveStatus =
   | { state: "retrying" }
   | { state: "invalid"; message: string };
 
-const EditorContext = createContext<{ site: EditorSite; status: SaveStatus } | null>(null);
+type EditorContextValue = {
+  site: EditorSite;
+  status: SaveStatus;
+  /** An AI run is building the page: autosave is paused and hand editing is locked. */
+  building: boolean;
+  setBuilding: (building: boolean) => void;
+  /** The server already saved this page (the end of an AI run): don't autosave it again. */
+  markSaved: (data: Data) => void;
+  usage: AiUsage;
+  setUsage: (usage: AiUsage) => void;
+};
+
+const EditorContext = createContext<EditorContextValue | null>(null);
 
 export function useEditor() {
   const ctx = useContext(EditorContext);
@@ -53,8 +70,8 @@ function describePath(path: (string | number)[], data: Data): string {
   return keys.length ? `${sectionLabel} › ${fieldLabel(keys[keys.length - 1])}` : sectionLabel;
 }
 
-/** Debounced autosave (1000 ms). Invalid pages aren't stored; network errors retry after 3 s. */
-function useAutosave(siteId: string, initial: PageData) {
+/** Debounced autosave (1000 ms). Invalid pages aren't stored; network errors retry after 3 s. Paused during AI runs. */
+function useAutosave(siteId: string, initial: PageData, paused: React.RefObject<boolean>) {
   const [status, setStatus] = useState<SaveStatus>({ state: "saved" });
   const initialJson = useMemo(() => JSON.stringify(initial), [initial]);
   const lastSaved = useRef(initialJson);
@@ -72,6 +89,11 @@ function useAutosave(siteId: string, initial: PageData) {
 
   const run = useCallback(async () => {
     timer.current = null;
+    // A save queued before an AI run started waits for the run: markSaved discards it, a failed run lets it through.
+    if (paused.current) {
+      schedule(1000);
+      return;
+    }
     const data = latest.current;
     if (!data || inFlight.current) return;
     const json = JSON.stringify(data);
@@ -103,7 +125,7 @@ function useAutosave(siteId: string, initial: PageData) {
       setStatus({ state: "retrying" });
       schedule(3000);
     }
-  }, [siteId, schedule]);
+  }, [siteId, schedule, paused]);
 
   useEffect(() => {
     runRef.current = run;
@@ -111,6 +133,8 @@ function useAutosave(siteId: string, initial: PageData) {
 
   const onChange = useCallback(
     (data: Data) => {
+      // An AI run changes the page; the server saves it when the run ends.
+      if (paused.current) return;
       const json = JSON.stringify(data);
       // Puck reports the page once when it loads; nothing changed.
       if (json === lastSaved.current && !latest.current) return;
@@ -122,8 +146,16 @@ function useAutosave(siteId: string, initial: PageData) {
       setStatus((s) => (s.state === "invalid" || s.state === "retrying" ? s : { state: "saving" }));
       schedule(1000);
     },
-    [initialJson, schedule, siteId],
+    [initialJson, schedule, siteId, paused],
   );
+
+  const markSaved = useCallback((data: Data) => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = null;
+    lastSaved.current = JSON.stringify(data);
+    latest.current = null;
+    setStatus({ state: "saved" });
+  }, []);
 
   useEffect(() => {
     mounted.current = true;
@@ -133,7 +165,7 @@ function useAutosave(siteId: string, initial: PageData) {
     };
   }, []);
 
-  return { status, onChange };
+  return { status, onChange, markSaved };
 }
 
 /** The iframe gets the site fonts' CSS variables (globals.css is copied in by Puck). */
@@ -154,9 +186,19 @@ const overrides: Partial<Overrides> = {
   drawerItem: AddTile,
 };
 
-export function Editor({ site }: { site: EditorSite }) {
-  const { status, onChange } = useAutosave(site.id, site.draft);
-  const value = useMemo(() => ({ site, status }), [site, status]);
+export function Editor({ site, usage: initialUsage, useCase }: { site: EditorSite; usage: AiUsage; useCase: UseCase }) {
+  const paused = useRef(false);
+  const [building, setBuildingState] = useState(false);
+  const [usage, setUsage] = useState(initialUsage);
+  const { status, onChange, markSaved } = useAutosave(site.id, site.draft, paused);
+  const setBuilding = useCallback((value: boolean) => {
+    paused.current = value;
+    setBuildingState(value);
+  }, []);
+  const value = useMemo(
+    () => ({ site, status, building, setBuilding, markSaved, usage, setUsage }),
+    [site, status, building, setBuilding, markSaved, usage],
+  );
   return (
     <EditorContext.Provider value={value}>
       <Puck
@@ -169,7 +211,9 @@ export function Editor({ site }: { site: EditorSite }) {
         ui={INITIAL_UI}
         height="100%"
       >
-        <EditorLayout />
+        <AiRunProvider useCase={useCase}>
+          <EditorLayout />
+        </AiRunProvider>
       </Puck>
     </EditorContext.Provider>
   );
