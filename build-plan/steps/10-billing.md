@@ -17,9 +17,9 @@ Clerk Billing is set up in Clerk's dashboard (its MCP server doesn't manage bill
 2. Features: `remove_badge` ("Remove badge") and `full_stats` ("Full stats"). (`custom_domain` is added only if you build the optional Step 16.)
 3. Plans: the default free plan (key `free_user`, no features) and **Pro** (key `pro`, $9/month, no annual price, both features).
 4. Webhooks: add the billing events to **both** endpoints (the ngrok one and the production one from Step 9) (subscription item active, canceled and ended; see the Clerk docs for the exact event names in your instance).
-5. Paste the development Pro plan ID into `NEXT_PUBLIC_CLERK_PRO_PLAN_ID` in `.env.local`, (the same ID serves production; plan IDs aren't secret).
+5. Paste the Pro plan ID (`cplan_…`, from Clerk › Billing › Plans › Pro) into `NEXT_PUBLIC_CLERK_PRO_PLAN_ID` in `.env.local`, **and paste it in your `done` reply too**: it isn't secret, the same ID serves production, and Claude Code can't read `.env.local`.
 
-Claude Code creates the PostHog flag and sets the plan ID in Vercel (3.0).
+Claude Code creates the PostHog flag and sets the plan ID you pasted in Vercel (3.0).
 
 ## 2. Read first
 
@@ -65,9 +65,13 @@ Run this through `neon` on `dev` and on `main` (a `select`), and paste both resu
 ```sql
 select kind, model, count(*) runs, round(avg(cost_usd)::numeric, 5) avg_usd,
        round(percentile_cont(0.9) within group (order by cost_usd)::numeric, 5) p90_usd
-from ai_runs where status = 'succeeded' group by kind, model order by kind, model;
+from ai_runs where status = 'succeeded' and model <> 'step10-check' group by kind, model order by kind, model;
 ```
-Pro must stay profitable for a user who uses all 300 requests: `300 × p90 cost (mostly edits)` must be under half the Pro price ($4.50). Free's 10 requests should cost under $0.50. If the numbers say the limits must change, stop: the plan, `lib/plans.ts`, the landing copy and this table must change together for everyone.
+Use the `dev` p90s and these two mixes, both "mostly edits" because a site is built once and then edited:
+- **Pro:** 10 builds + 290 edits must cost under half the Pro price, **$4.50**.
+- **Free:** 1 build + 9 edits (Free has one site) must cost under **$0.50**.
+
+Also write the all-builds worst case for each plan in `notes/decisions.md`, for information only: it doesn't decide the limits. Keep 10 and 300 when both mixes pass. If a mix fails, stop: the plan, `lib/plans.ts`, the landing copy and this table must change together for everyone.
 
 ## 4. Responsive
 
@@ -79,10 +83,10 @@ Pro must stay profitable for a user who uses all 300 requests: `300 × p90 cost 
 ## 5. Check it works
 
 - [ ] A Free user with 1 site clicking "New site" sees the `site_limit` paywall; `paywall_shown` has `reason = site_limit` (link)
-- [ ] Set the user's usage to 10 (insert succeeded `ai_runs` rows in dev): Build and Send open the `ai_limit` paywall; calling `/api/ai/edit` directly returns 402
+- [ ] Set the user's usage to 10 by inserting succeeded `ai_runs` rows on `dev` with `model = 'step10-check'` and `cost_usd = 0`: Build and Send open the `ai_limit` paywall; calling `/api/ai/edit` directly returns 402. Then delete those rows (show the count before and after) so they don't skew the usage meter or later cost queries
 - [ ] Changing the `free-ai-allowance` payload to 12 through `posthog` changes "of 10" to "of 12" without a deploy; set it back to 10 (link to the flag)
 - [ ] Upgrading with the test card: Pro unlocks at once (header loses Upgrade, meter says 300, a 2nd site can be created); `checkout_started` and `subscription_started` arrive (links); the person's `plan` is `pro`
-- [ ] Cancelling in `<UserProfile />` sends `subscription_canceled`; when it ends, the user is Free again and both sites are still live
+- [ ] Cancelling in `<UserProfile />` sends `subscription_canceled` and the user stays Pro until the period ends. For the end: if Clerk's dashboard can end the subscription immediately (ask the person to do it), check the user is Free again, the person's `plan` is `free` and both sites are still live; if it can't, report "ends: not checkable today" and point to the unit test of the webhook's ended branch
 - [ ] `/pricing` matches `pricing-1440.png` (Clerk card internals aside) and `/account` matches `account-1440.png`; the paywall matches `paywall-1440.png` and `paywall-390.png`
 - [ ] The cost table is in `notes/decisions.md`
 - [ ] typecheck, lint, build pass

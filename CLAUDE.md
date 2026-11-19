@@ -119,7 +119,7 @@ The servers are in `.mcp.json`; `build-plan/mcp.md` says what each is for and ho
 
 ## Finishing a step
 
-`/step N` parts 7–13 are the finishing routine: responsive check, typecheck/lint/build/tests, the step's checklist with links, CodeRabbit review, commit with the step's message (from Step 9: push, follow the deploy with `vercel`, run the **(prod)** checks), a short report ending in `Next: /step N+1`, then stop.
+`/step N` parts 7–13 are the finishing routine: responsive check, typecheck/lint/build/tests, the step's checklist with links, CodeRabbit review (optional: skipped with a hand review if it's unavailable or over its free limit), commit with the step's message (from Step 9: push, follow the deploy with `vercel`, run the **(prod)** checks), a short report ending in `Next: /step N+1`, then stop.
 
 ## Never
 
