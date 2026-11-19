@@ -40,8 +40,8 @@ Nothing. Claude Code does everything in this step.
 - Empty page (no sections): the canvas shows a centred card on the white page: "Your page is empty" / "Add a section from the Add tab, or ask the AI to build it." No buttons.
 - Leaving the editor while a save is pending or the page can't be saved shows the browser's "leave site?" prompt (`beforeunload`).
 
-### 3.4 Edit everything the AI can make
-Generate three sites (one business, one portfolio, one event). For each, change every field of every section by hand through the fields panel, once at 1440 and once at 390 (through the Edit sheet): text, buttons, images (picker), array items (add, remove, reorder), theme and font. Write any field you couldn't change in `notes/decisions.md` and fix it if it's a bug in this plan's scope.
+### 3.4 Edit everything by hand
+Create one site and copy Step 2's sample page (`lib/site/sample-page.ts`, all 11 section types) into its draft; no AI run is needed, so the test user's AI requests don't matter. At 1440, change every field of every section once through the fields panel: text, buttons, images (picker), array items (add, remove, reorder), theme and font. At 390, through the Edit sheet, change one field of each kind: text, textarea, link, image (picker), an array (add, remove, reorder), a select, theme and font. Write any field you couldn't change in `notes/decisions.md` and fix it if it's a bug in this plan's scope.
 
 ## 4. Responsive
 
@@ -50,13 +50,13 @@ Generate three sites (one business, one portfolio, one event). For each, change 
 
 ## 5. Check it works
 
-- [ ] On a phone (390×844), every field of every section can be changed through the Edit sheet
+- [ ] At 1440, every field of every section of the sample-page site can be changed; on a phone (390×844), one field of each kind can be changed through the Edit sheet
 - [ ] Shortcuts work and don't fire while typing (except ⌘S)
 - [ ] Typing `www.example.com` in a link field shows the message under the field; fixing it clears it
 - [ ] A headline at 70 of 80 characters shows the counter; you can't type past 80
 - [ ] The tab icon picker shows the 40 emoji and saves the choice in `root.props.favicon` (the published site shows it from Step 8)
 - [ ] With a Pricing section selected, the Plans list matches the right panel of `editor-1440.png` ("3 of 4", handles on the left, chevrons, the dashed "Add plan" button); at 4 plans the button reads "Up to 4" and is disabled
-- [ ] Step 5 above done for 3 sites, notes written
+- [ ] 3.4 is done on the sample-page site, notes written
 - [ ] typecheck, lint, build pass
 - [ ] `node scripts/check-responsive.mjs` passes for the pages to check at all six widths, and its screenshots match the reference at 390, 768 and 1440 (1024 for editor screens)
 
