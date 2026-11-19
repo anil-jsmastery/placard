@@ -16,6 +16,9 @@ export default function proxy(req: NextRequest, event: NextFetchEvent) {
   const appHost = process.env.NEXT_PUBLIC_APP_DOMAIN!.toLowerCase();
   const path = req.nextUrl.pathname;
 
+  // On any host: the ngrok tunnel's host locally; webhooks check their own signature.
+  if (path.startsWith("/api/webhooks/")) return NextResponse.next();
+
   if (host === `www.${appHost}`) {
     const url = req.nextUrl.clone();
     url.host = appHost;
