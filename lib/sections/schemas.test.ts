@@ -2,12 +2,25 @@ import { describe, expect, it } from "vitest";
 import { Image, Link, PageSchema, SECTION_SCHEMAS, SECTION_TYPES } from "./schemas";
 import { SECTION_CATALOG } from "./catalog";
 import { SAMPLE_PAGE } from "../site/sample-page";
+import { DEMO_LOG, DEMO_PAGE } from "../marketing/demo";
+import { EXAMPLES } from "../marketing/examples";
 
 describe("PageSchema", () => {
   it("accepts the sample page", () => {
     const result = PageSchema.safeParse(SAMPLE_PAGE);
     expect(result.error?.issues ?? []).toEqual([]);
     expect(result.success).toBe(true);
+  });
+
+  it("accepts the landing page demo", () => {
+    const result = PageSchema.safeParse(DEMO_PAGE);
+    expect(result.error?.issues ?? []).toEqual([]);
+    expect(DEMO_PAGE.content).toHaveLength(DEMO_LOG.length - 1);
+  });
+
+  it.each(EXAMPLES.map((e) => [e.title, e.page] as const))("accepts the landing example %s", (_title, page) => {
+    const result = PageSchema.safeParse(page);
+    expect(result.error?.issues ?? []).toEqual([]);
   });
 });
 

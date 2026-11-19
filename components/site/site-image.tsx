@@ -1,5 +1,20 @@
+"use client";
+
+import { createContext, useContext } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+
+type SiteImageOptionsValue = { sizes?: string; preload?: boolean };
+
+const SiteImageOptionsContext = createContext<SiteImageOptionsValue>({});
+
+/**
+ * For a site shown scaled down inside a `SiteFrame` (the landing page): `sizes` matches the frame's rendered
+ * width, and `preload={false}` stops the Hero photo from being preloaded.
+ */
+export function SiteImageOptions({ sizes, preload, children }: SiteImageOptionsValue & { children: React.ReactNode }) {
+  return <SiteImageOptionsContext.Provider value={{ sizes, preload }}>{children}</SiteImageOptionsContext.Provider>;
+}
 
 type SiteImageProps = {
   image: { src: string; alt: string };
@@ -13,6 +28,7 @@ type SiteImageProps = {
 
 /** A library or uploaded photo in the reference's aspect-ratio box. */
 export function SiteImage({ image, className, avatar = false, preload = false }: SiteImageProps) {
+  const options = useContext(SiteImageOptionsContext);
   return (
     <div
       className={cn(
@@ -25,8 +41,8 @@ export function SiteImage({ image, className, avatar = false, preload = false }:
         src={image.src}
         alt={image.alt}
         fill
-        preload={preload}
-        sizes={avatar ? "40px" : "(min-width: 1024px) 50vw, 100vw"}
+        preload={options.preload ?? preload}
+        sizes={avatar ? "40px" : (options.sizes ?? "(min-width: 1024px) 50vw, 100vw")}
         className="object-cover"
       />
     </div>

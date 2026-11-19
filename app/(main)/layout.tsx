@@ -1,5 +1,5 @@
 import { ClerkProvider } from "@clerk/nextjs";
-import { appFontVars } from "../fonts";
+import { appFontVars } from "./fonts";
 import { clerkAppearance } from "@/lib/clerk-appearance";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { PaywallProvider } from "@/components/billing/paywall-provider";

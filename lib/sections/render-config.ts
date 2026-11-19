@@ -15,14 +15,14 @@ import { Links } from "@/components/site/sections/links";
 import type { PageData, SectionProps } from "@/lib/site/types";
 import { SECTION_TYPES, type SectionType } from "./schemas";
 
-const COMPONENTS: { [T in SectionType]: ComponentType<SectionProps<T>> } = {
+export const SECTION_COMPONENTS: { [T in SectionType]: ComponentType<SectionProps<T>> } = {
   Hero, About, Features, Services, Gallery, Testimonials, Pricing, FAQ, CallToAction, Contact, Links,
 };
 
 type RootProps = PageData["root"]["props"];
 
 function sectionRender(type: SectionType) {
-  const Component = COMPONENTS[type] as ComponentType<Record<string, unknown>>;
+  const Component = SECTION_COMPONENTS[type] as ComponentType<Record<string, unknown>>;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   return function SectionRender({ id, puck, editMode, ...props }: Record<string, unknown>) {
     return createElement(Component, props);
