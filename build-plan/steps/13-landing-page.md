@@ -34,7 +34,7 @@ Every page object must pass `PageSchema` (add them to the schema tests).
 - `components/marketing/faq.tsx`: shadcn `Accordion` (`type="single"`, `collapsible`, first item open) with the six reference questions and answers. "Can I use my own domain?" shows only when `FEATURES.customDomains` is true, and the "How it works" sentence "On Pro, connect your own domain." likewise (design-system §14).
 
 ### 3.3 Page: `app/(main)/(marketing)/page.tsx`
-Sections in this order with the reference ids and classes: hero block (Step 1) + `HeroDemo`, `#examples` (three `SiteFrame` cards with captions), `#how` (numbered steps), `#pricing` (plan cards + the AI request note), `#faq`, closing call to action ("Your site is one sentence away." on `bg-primary`), footer. Header links scroll to the sections (`scroll-mt-20`).
+Sections in this order with the reference ids and classes: hero block (Step 1) + `HeroDemo`, `#examples` (three `SiteFrame` cards with captions), `#how` (numbered steps), `#pricing` (plan cards + the AI request note), `#faq`, closing call to action ("Your site is one sentence away." on `bg-primary`), footer. Header links scroll to the sections (`scroll-mt-20`). In `#how`, the address in "One click puts your site at yourname.APP_DOMAIN." comes from `siteHost("yourname")` (`lib/config.ts`), so in production it reads `APP_DOMAIN/p/yourname` (Step 9).
 
 ### 3.4 Speed
 Example frames and the demo use `next/image` for library photos with `sizes` matching their rendered width (≈ 380 px for example cards, ≈ 800 px for the demo). No video, no third-party scripts besides PostHog. Fonts are preloaded only for Figtree and Bricolage.
@@ -44,7 +44,7 @@ Example frames and the demo use `next/image` for library photos with `sizes` mat
 - Demo: prompt and canvas only below `lg` (build log and "Ready to publish" hidden); the frame is `h-[300px] sm:h-[440px]`.
 - Examples, how-it-works and plan cards: 1 column below `md`.
 - FAQ rows are full-width tap targets (`py-5` on `summary`); the closing call to action stacks below `lg`.
-- `yourname.APP_DOMAIN` wraps instead of pushing the page wider (`[overflow-wrap:anywhere]`).
+- The `siteHost("yourname")` address wraps instead of pushing the page wider (`[overflow-wrap:anywhere]`).
 
 ## 5. Check it works
 

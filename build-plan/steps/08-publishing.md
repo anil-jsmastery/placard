@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Goal | Publish puts the site at `slug.APP_DOMAIN` (locally `slug.localhost:3000`), server-rendered with no editor JavaScript, with Open Graph tags and the emoji favicon. Unpublish takes it offline. The address can be changed in Settings |
+| Goal | Publish puts the site at its own address (locally `slug.localhost:3000`; in production `APP_DOMAIN/p/{slug}`, Step 9), server-rendered with no editor JavaScript, with Open Graph tags and the emoji favicon. Unpublish takes it offline. The address can be changed in Settings |
 | Spec | Build order 6 · §3.9 Publishing · §8 (host routing in `proxy.ts`) · §7 (`site_published`) |
 | Screens | `publish-dialog.html`, `site-settings.html` (address, publishing, delete), `site-sections.html` (the live page) |
 | Pages to check | `/sites/{id}/settings`, the live page `http://{slug}.localhost:3000` |
@@ -39,6 +39,12 @@ const appHost = process.env.NEXT_PUBLIC_APP_DOMAIN!.toLowerCase();
 const path = req.nextUrl.pathname;
 
 if (host === `www.${appHost}`) → 308 redirect to the same path on appHost
+if (host === appHost && SITE_PATHS) {
+  // production on a vercel.app address: a published site at /p/{slug} (Step 9). Clerk never runs for it.
+  const match = path.match(/^\/p\/([a-z0-9-]{3,30})\/?$/);
+  if (match) → rewrite to `/s/${encodeURIComponent(`${match[1]}.${appHost}`)}`
+  if (path.startsWith("/p/")) → rewrite to /s/_/not-found (a 404)
+}
 if (host !== appHost) {
   // a published site: slug.APP_DOMAIN or a custom domain
   if (path === "/api/view" || path.startsWith("/_next/") || path.startsWith("/library/") || path.startsWith("/uploads/")) → NextResponse.next()
@@ -48,18 +54,19 @@ if (host !== appHost) {
 if (path.startsWith("/s/")) → 404 on the app host
 → Clerk's clerkMiddleware for the app host
 ```
-Clerk must not run for site hosts.
+Clerk must not run for site hosts or `/p/` paths. `SITE_PATHS` comes from `lib/config.ts` (Step 1); it's false on this machine, so `/p/…` is a normal (missing) app route here.
 
 ### 3.4 The live page: `app/(sites)/s/[host]/page.tsx`
 - `lib/sites/resolve.ts`: `resolveHost(host)`: if the host ends with `.${APP_DOMAIN}` and the part before it has no dot, find the site by `slug`. Any other host is not found for now (the optional Step 16 adds custom domains here). Returns the site only if `published` is not null.
 - Not found → `notFound()`; `app/(sites)/s/[host]/not-found.tsx`: centred on white, "There's no site here yet." and the link "Make your own with Placard" to `APP_URL` (`?ref=404`).
 - Render `<Render config={renderConfig} data={site.published} />` from `@puckeditor/core/rsc`. The footer badge shows for every site in this step (Step 12 adds the Pro rule).
-- `generateMetadata`: `title` = root title; `description`; `icons.icon` = the emoji as an SVG data URL (`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>{emoji}</text></svg>`); `openGraph` { title, description, url, type "website", images: the first Hero's image as an absolute URL on the site's host, if any }; `twitter.card = "summary_large_image"`.
+- `generateMetadata`: `title` = root title; `description`; `icons.icon` = the emoji as an SVG data URL (`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>{emoji}</text></svg>`); `openGraph` { title, description, url: `siteUrl(slug)`, type "website", images: the first Hero's image as an absolute URL under `siteUrl(slug)`'s origin, if any }; `twitter.card = "summary_large_image"`.
 - Library images are served from `public/library/` on every host (the proxy lets `/library/` through).
 
 ### 3.5 Settings: `app/(main)/(app)/sites/[id]/settings/page.tsx`
 - `components/app/site-tabs.tsx` under the header with tabs **Editor** and **Settings** (Stats is added in Step 11).
 - Build the "Site address", "Publishing" and "Delete site" rows from `site-settings.html` (the "Custom domain" row arrives in Step 16).
+- Site address field: the reference's muted `.APP_DOMAIN` box after the slug input. When `SITE_PATHS` is true it moves before the input and reads `APP_DOMAIN/p/` (same classes, `border-r` instead of `border-l`). Every address shown or linked comes from `siteHost(slug)` / `siteUrl(slug)` (`lib/config.ts`), never a hand-built `${slug}.${APP_DOMAIN}`.
 - `updateSlug(siteId, slug)`: `isValidSlug`, not reserved, unique; errors from design-system §6 under the input. A published site moves to the new address immediately; the old one shows the not-found page.
 - Publishing row: live → the reference text + "Unpublish"; not live → "Your site isn't published yet. Publish it from the editor." + link button "Open editor".
 - Delete → AlertDialog (design-system §6), then back to `/dashboard`.
@@ -79,7 +86,8 @@ Clerk must not run for site hosts.
 - [ ] Edit and publish again: toast, and the live page shows the change after a reload
 - [ ] View the live page's source: no Puck editor bundle, no Clerk, no PostHog scripts (list the `<script src>` tags)
 - [ ] `<head>` has title, description, emoji favicon and `og:*` tags (paste them)
-- [ ] `http://{slug}.localhost:3000/anything` and an unknown slug show the 404 page; `http://localhost:3000/s/x` is a 404
+- [ ] `http://{slug}.localhost:3000/anything` and an unknown slug show the 404 page; `http://localhost:3000/s/x` and `http://localhost:3000/p/{slug}` are 404s
+- [ ] Path mode: restart the dev server once with `NEXT_PUBLIC_SITE_PATHS=true` set in the shell: `http://localhost:3000/p/{slug}` shows the site with no Clerk or PostHog scripts, `/p/{slug}/x` and an unknown slug are 404s, and the publish dialog, dashboard and Settings show `localhost:3000/p/{slug}`. Restart without it afterwards
 - [ ] Change the slug in Settings: the new address works, the old one is a 404; `www`, `api`, `ab` and an existing slug are refused with the right messages
 - [ ] Unpublish → the live address is a 404, the dashboard card shows Draft
 - [ ] `site_published` with `first_publish` true then false (links)
@@ -97,7 +105,7 @@ Clerk must not run for site hosts.
 
 ```md
 ## Step 8 · Publishing
-- Publishing copies the draft to the live page at `slug.APP_DOMAIN` (`slug.localhost:3000` on this machine), served by `app/(sites)/s/[host]/page.tsx` through host routing in `proxy.ts`, with no editor code and no PostHog.
+- Publishing copies the draft to the live page at `slug.localhost:3000` on this machine (`APP_DOMAIN/p/{slug}` in production when `NEXT_PUBLIC_SITE_PATHS=true`, Step 9), served by `app/(sites)/s/[host]/page.tsx` through host routing in `proxy.ts`, with no editor code and no PostHog.
 - The Puck config is split so live pages load only the section components.
 - Settings (`/sites/{id}/settings`) changes the address; Unpublish takes a site offline; the dashboard shows Live or Draft.
 ```

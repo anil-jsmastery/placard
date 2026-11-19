@@ -2,7 +2,7 @@
 
 > Describe it. Watch AI build it. Edit anything. Publish in one click.
 >
-- **Status:** v1 scope locked, 2026-11-13. v1.1, 2026-11-16: Vercel hosting with Neon as the backend (Postgres, Realtime, Object Storage, Functions, AI Gateway, Lakebase Search). v1.2, 2026-11-17: a launch rehearsal with an AI-agent swarm, and the first experiment chosen from its data
+- **Status:** v1 scope locked, 2026-11-13. v1.1, 2026-11-16: Vercel hosting with Neon as the backend (Postgres, Realtime, Object Storage, Functions, AI Gateway, Lakebase Search). v1.2, 2026-11-17: a launch rehearsal with an AI-agent swarm, and the first experiment chosen from its data v1.3, 2026-11-19: no domain of its own. Production runs at the app's `vercel.app` address with sites at `/p/{slug}`, sign-in on Clerk development instances, test payments only (no Stripe); custom domains and the Hostinger move are out of this build
 - **Name:** not chosen. This file uses `APP_DOMAIN` for the domain
 - **Start from:** `project/page-builder-prototype`. The editor, sections, themes and publish flow carry over
 - **Related:** position-task.md (video plan) · posthog-features.md (analytics plan)
@@ -131,12 +131,14 @@ Landing page → Sign up → "What are you building?" → Prompt
 ### **3.9 Publishing**
 
 - **Publish** copies the draft to the live version. **Unpublish** takes the site offline
-- Live URL: `slug.APP_DOMAIN`. The slug is editable (unique, lowercase, 3–30 characters, reserved words blocked: `www`, `app`, `api`, `admin`, …)
+- Live URL: `APP_DOMAIN/p/{slug}` in production (the `vercel.app` address has no subdomains of its own); `{slug}.localhost:3000` on the developer's machine. The slug is editable (unique, lowercase, 3–30 characters, reserved words blocked: `www`, `app`, `api`, `admin`, …)
 - Live pages are server-rendered with Puck's RSC `Render`, with no editor JavaScript
 - Open Graph tags from the site title, description and hero image
 - **Done when:** a published page scores 90+ on Lighthouse mobile and updates within seconds of republishing
 
 ### **3.10 Custom domains (Pro)**
+
+- **Not in this build (v1.3):** it needs a domain of our own. Kept here for a later version
 
 - The user enters a domain. The app adds it to the Vercel project and shows the DNS record Vercel asks for
 - A "Check DNS" button verifies the record. Vercel issues HTTPS automatically once the domain is verified
@@ -293,7 +295,7 @@ Full plan: posthog-features.md. These are the events the code must send.
 | `/api/uploads` | Upload links (straight to Neon Object Storage) and the user's uploads |
 | `/api/live/[query]` | Renews a sealed live query (Neon Realtime) |
 | `/uploads/[...path]` | Serves uploaded images |
-| Any `*.APP_DOMAIN` or custom domain | Published site (routed by host in `proxy.ts`) |
+| `/p/[slug]` on `APP_DOMAIN` (production) or `{slug}.localhost:3000` (local) | Published site (routed in `proxy.ts`) |
 
 ---
 
@@ -305,14 +307,14 @@ Full plan: posthog-features.md. These are the events the code must send.
 | Editor | Puck (`@puckeditor/core`) |
 | AI | Vercel AI SDK + the Neon AI Gateway provider (Claude models, tool calling, streaming, embeddings) |
 | Validation | zod |
-| Auth and billing | Clerk + Clerk Billing |
+| Auth and billing | Clerk + Clerk Billing (development instances, test payment gateway; no Stripe) |
 | Database | Neon Lakebase Postgres, Drizzle ORM; branches for development, every Vercel preview and checks |
 | Live data | Neon Realtime (live SQL queries) |
 | Files | Neon Object Storage, processed by a Neon Function |
 | Search | Lakebase Search (vector, keyword and hybrid) |
 | Analytics | PostHog (`posthog-js`, `posthog-node`, `@posthog/ai`) |
 | Launch rehearsal | An AI-agent swarm (`swarm/`): Playwright browsers driven by Claude Haiku 5.5 through the Neon AI Gateway, on its own Neon branch |
-| Hosting | Vercel: wildcard subdomains with HTTPS, Vercel's domain API for custom domains, a Neon branch per preview. Optional later: the app on a Hostinger VPS (Docker, Caddy), with every Neon service unchanged |
+| Hosting | Vercel at the app's `vercel.app` address (HTTPS included), published sites at `/p/{slug}`, a Neon branch per preview. No domain of our own, so no custom domains or Hostinger move in this build |
 | Code review | CodeRabbit (Claude Code plugin + GitHub PR reviews) |
 
 ---

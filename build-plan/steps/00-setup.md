@@ -112,6 +112,7 @@ Every key the app will use. Each step's "You do first" says when to fill one in.
 NEXT_PUBLIC_APP_NAME=Placard
 NEXT_PUBLIC_APP_DOMAIN=localhost:3000        # production: your domain, e.g. example.com
 NEXT_PUBLIC_APP_URL=http://localhost:3000    # production: https://example.com
+NEXT_PUBLIC_SITE_PATHS=false                 # true in production on a vercel.app address: sites at /p/{slug} (Step 9)
 APP_ENV=dev                                   # dev | prod (sent as the `environment` property)
 
 # Neon: `npx neon env pull` fills these from the linked branch (`dev` on your machine). Never paste them by hand.

@@ -8,6 +8,8 @@
 | MCP | `hostinger`, `cloudflare`, `vercel`, `clerk`, `posthog`, `neon`, `next-devtools`, `playwright` |
 | Model | Opus 5.5 · medium effort |
 
+**Not available in this plan's setup.** Step 9 runs Placard without a domain, and this move needs one: Caddy's wildcard certificate goes through a Cloudflare zone for `APP_DOMAIN`, and Clerk's production instance needs a domain you own. With only the `vercel.app` address there's nothing to move the DNS of, so skip this step; the app stays on Vercel.
+
 **This move is optional.** Run it with `/step hostinger` after Step 15 (and after Step 16 if you built custom domains). If you never run it, the app stays on Vercel (Step 9) and nothing else in the plan changes.
 
 ## What moves and what stays

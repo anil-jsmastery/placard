@@ -9,11 +9,13 @@
 | MCP | `vercel`, `clerk`, `posthog`, `neon`, `next-devtools`, `playwright` |
 | Model | Opus 5.5 · medium effort (Sonnet 5.5 is enough) |
 
+**Not available in this plan's setup.** Step 9 runs Placard without a domain: production is on its `vercel.app` address, published sites are at `/p/{slug}`, and sign-in uses Clerk development instances. A custom domain points at `sites.APP_DOMAIN`, which needs `APP_DOMAIN` to be a domain you own, with Clerk's production instance on it. Neither exists here, so skip this step; Steps 17–20 don't depend on it.
+
 **This step is optional.** Nothing in Steps 0–15 depends on it. Until it's built, the switch `NEXT_PUBLIC_FEATURE_CUSTOM_DOMAINS` is `false` and the app shows no custom-domain feature anywhere: not in the plan cards, comparison table, FAQ, paywall, settings or Clerk. If v1 ships without custom domains, skip this step; the app is complete after Step 15.
 
 ## 1. You do first
 
-1. Decide to add custom domains to v1. If you don't, stop here.
+1. Decide to add custom domains to v1. If you don't, or if Placard runs without a domain (Step 9), stop here.
 2. **Clerk** (dev and prod instances, in Clerk's dashboard): add the feature `custom_domain` ("Custom domain") and attach it to the Pro plan.
 3. **Vercel access token** (Account Settings › Tokens) scoped to the project's team. The app's code uses it at runtime to add and check domains, so it is a secret: put it in `VERCEL_API_TOKEN` in `.env.local` and in Vercel's Production variables (Sensitive).
 4. Have a test domain you own (not `APP_DOMAIN`) whose DNS you can edit, a Pro test account in development (Step 10), and a Pro account on production for the **(prod)** checks (subscribe once with your own card and cancel it when the step is done).
