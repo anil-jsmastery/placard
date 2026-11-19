@@ -155,7 +155,7 @@ VERCEL_TEAM_ID=
 ```
 
 ### 3.12 `.gitignore`
-`create-next-app` ignores `.env*`, which would also hide `.env.example`. Add `!.env.example` right after that line, then add `notes/responsive/`, `.env*.local`, `.env.vercel` (production's Neon variables on their way to Vercel, Step 9) `.neon` (the Neon CLI's link to your project and branch; it adds this line itself too) and `Thumbs.db` (Windows' thumbnail cache; `.DS_Store` is already there). `drizzle/` (the migrations) is committed.
+`create-next-app` ignores `.env*`, which would also hide `.env.example`. Add `!.env.example` right after that line, then add `notes/responsive/`, `.env*.local`, `.env.vercel` (production's Neon variables on their way to Vercel, Step 9) `.neon` (the Neon CLI's link to your project and branch; it adds this line itself too) `.playwright-mcp/` (the `playwright` MCP server's screenshots and snapshots), `test-results/` and `playwright-report/` (Playwright scripts' output), and `Thumbs.db` (Windows' thumbnail cache; `.DS_Store` is already there). `drizzle/` (the migrations) is committed.
 
 ### 3.13 MCP servers
 Write `.mcp.json` at the repo root exactly as in `build-plan/mcp.md` §2 (nine servers: `posthog`, `clerk`, `neon`, `vercel`, `hostinger`, `cloudflare`, `next-devtools`, `playwright`, `shadcn`; `hostinger` and `cloudflare` are only for the optional Hostinger move). `.claude/settings.json` is already there (from the last plan prompt: Opus 5.5 as the default model, medium effort, auto memory off, the MCP approvals). Both files are committed, so everyone gets the same servers and settings. The servers load when the next session starts; Step 1 checks them.
