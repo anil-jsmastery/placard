@@ -18,10 +18,30 @@ function buildCatalog() {
 
 const CATALOG = buildCatalog();
 
+/** The edit block (Step 6): the selection, then the current page as JSON. */
+function buildEditBlock(page: PageData, selection?: string | null) {
+  const selected = selection ? page.content.find((s) => s.props.id === selection) : undefined;
+  const label = selected ? (SECTION_CATALOG[selected.type as keyof typeof SECTION_CATALOG]?.label ?? selected.type) : null;
+  const selectionBlock = selected
+    ? `The user has selected the ${label} section (id ${selected.props.id}). Apply the request to that section unless the user clearly means something else.\n`
+    : "";
+  return `
+
+Editing an existing site:
+- The current page is below as JSON. Section ids are in props.id.
+- Change only what the user asks for. Keep every other section and field exactly as it is.
+- Prefer updateSection over removing and re-adding a section.
+- When you're done, reply with one short sentence in the past tense that says what changed, for example "Added a pricing section with 3 plans." or "Made the hero shorter."
+- If the request is unclear or would need something you can't do (custom code, forms, new section types), don't call any tools. Reply with one short sentence saying what you can do instead.
+${selectionBlock}Current page:
+${JSON.stringify(page)}`;
+}
+
 export function buildSystemPrompt({ kind, page, selection }: { kind: RunKind; page: PageData; selection?: string | null }) {
-  void kind; // Step 6 adds the edit variant (current page JSON and selection)
-  void page;
-  void selection;
+  return `${buildBasePrompt()}${kind === "edit" ? buildEditBlock(page, selection) : ""}`;
+}
+
+function buildBasePrompt() {
   return `You build one-page websites by calling tools. You never write code, HTML or CSS.
 
 Building a new site:

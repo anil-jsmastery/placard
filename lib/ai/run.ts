@@ -20,7 +20,7 @@ import { toPage, type PageData } from "@/lib/site/types";
 import { getAiUsage } from "@/lib/usage";
 import { costUsd } from "./cost";
 import { checkCanRun, type GuardFailure } from "./guards";
-import { getGenerationModel, languageModel, type ModelId } from "./models";
+import { EDIT_MODEL, getGenerationModel, languageModel, type ModelId } from "./models";
 import { buildGenerateMessage, buildSystemPrompt, type RunKind } from "./prompts";
 import { createSiteTools, type SiteTools, type ToolState } from "./tools";
 
@@ -38,8 +38,8 @@ type UsageUpdate = { left?: number; total?: number };
 
 /** The last part of every run: how it ended and the usage line's new numbers. */
 export type RunResult =
-  | ({ status: "succeeded"; sections: number } & UsageUpdate)
-  | ({ status: "failed"; reason: FailReason } & UsageUpdate);
+  | ({ status: "succeeded"; kind: RunKind; runId: string; sections: number; changed: boolean } & UsageUpdate)
+  | ({ status: "failed"; kind: RunKind; reason: FailReason } & UsageUpdate);
 
 /** The UI messages of an AI run: `data-page` (the full page after every change) and `data-run` (how it ended). */
 export type RunUIMessage = UIMessage<never, { page: PageData; run: RunResult }>;
@@ -77,17 +77,21 @@ export async function startRun(input: StartRunInput): Promise<{ error: StartRunE
   const { kind, userId, siteId, selection } = input;
   const prompt = input.prompt.trim();
 
-  // 1. Guards, the site (owner only), the prompt
-  const blocked = await checkCanRun(userId, kind);
+  // 1. Guards, the site (owner only), the prompt (read together; answered in this order)
+  const [blocked, site] = await Promise.all([
+    checkCanRun(userId, kind),
+    db.query.sites.findFirst({
+      where: and(eq(sites.id, siteId), eq(sites.userId, userId)),
+      columns: { id: true, name: true, slug: true, draft: true },
+    }),
+  ]);
   if (blocked) return { error: blocked };
-  const site = await db.query.sites.findFirst({
-    where: and(eq(sites.id, siteId), eq(sites.userId, userId)),
-    columns: { id: true, name: true, slug: true, draft: true },
-  });
   if (!site) return { error: { status: 404, code: "not_found" } };
   if (prompt.length < 1 || prompt.length > MAX_PROMPT) return { error: { status: 400, code: "invalid_prompt" } };
+  const modelPromise: Promise<ModelId> = kind === "edit" ? Promise.resolve(EDIT_MODEL) : getGenerationModel(userId);
+  const simulatedPromise = isSimulatedUser(userId).catch(() => false);
 
-  // 2. A snapshot of the draft before the run; keep the newest 20
+  // 2. A snapshot of the draft before the run (written before the run row: undo finds it by created_at <= the run's)
   await db.insert(snapshots).values({ siteId, data: site.draft, reason: "ai_run" });
   const keep = db
     .select({ id: snapshots.id })
@@ -95,18 +99,17 @@ export async function startRun(input: StartRunInput): Promise<{ error: StartRunE
     .where(eq(snapshots.siteId, siteId))
     .orderBy(desc(snapshots.createdAt))
     .limit(MAX_SNAPSHOTS);
-  await db.delete(snapshots).where(and(eq(snapshots.siteId, siteId), notInArray(snapshots.id, keep)));
 
-  // 3. The run row
-  const modelId: ModelId = await getGenerationModel(userId);
-  const [run] = await db
-    .insert(aiRuns)
-    .values({ userId, siteId, kind, prompt, model: modelId, status: "running" })
-    .returning({ id: aiRuns.id });
+  // 3. The run row; the snapshots beyond the newest 20 are deleted at the same time
+  const modelId = await modelPromise;
+  const [[run]] = await Promise.all([
+    db.insert(aiRuns).values({ userId, siteId, kind, prompt, model: modelId, status: "running" }).returning({ id: aiRuns.id }),
+    db.delete(snapshots).where(and(eq(snapshots.siteId, siteId), notInArray(snapshots.id, keep))),
+  ]);
   const startedAt = Date.now();
 
   // 4. The model, traced in PostHog's LLM analytics
-  const simulated = await isSimulatedUser(userId);
+  const simulated = await simulatedPromise;
   const model = withTracing(languageModel(modelId), posthogNodeClient, {
     posthogDistinctId: userId,
     posthogTraceId: run.id,
@@ -122,17 +125,22 @@ export async function startRun(input: StartRunInput): Promise<{ error: StartRunE
     instructions: buildSystemPrompt({ kind, page, selection }),
     tools,
     maxOutputTokens: MAX_OUTPUT_TOKENS,
+    // Edits: the long prompt (catalog + page) is cached between the run's steps (faster, cheaper second call)
+    ...(kind === "edit" ? { providerOptions: { anthropic: { cacheControl: { type: "ephemeral" as const } } } } : {}),
     stopWhen: [isStepCount(MAX_STEPS), totalOutputTokensOver(MAX_TOTAL_OUTPUT_TOKENS)],
   });
 
   const timeout = AbortSignal.timeout(TIMEOUT_MS);
   const abortSignal = input.signal ? AbortSignal.any([input.signal, timeout]) : timeout;
-  const userMessage = buildGenerateMessage({
-    prompt,
-    businessName: input.businessName,
-    tone: input.tone,
-    useCase: input.useCase ?? "other",
-  });
+  const userMessage =
+    kind === "edit"
+      ? prompt
+      : buildGenerateMessage({
+          prompt,
+          businessName: input.businessName,
+          tone: input.tone,
+          useCase: input.useCase ?? "other",
+        });
 
   /** Events never change how a run ends. */
   const capture: typeof captureServer = (...args) =>
@@ -155,8 +163,9 @@ export async function startRun(input: StartRunInput): Promise<{ error: StartRunE
         .set({ status: "failed", error: error.slice(0, 1000), durationMs: Date.now() - startedAt })
         .where(eq(aiRuns.id, run.id));
     } finally {
-      await capture(userId, "generation_failed", { reason, model: modelId });
-      writer.write({ type: "data-run", data: { status: "failed", reason, ...(await usageUpdate()) } });
+      // Failed edits aren't generations (Step 14 compares site_generated with generation_failed)
+      if (kind === "generate") await capture(userId, "generation_failed", { reason, model: modelId });
+      writer.write({ type: "data-run", data: { status: "failed", kind, reason, ...(await usageUpdate()) } });
     }
   };
 
@@ -189,7 +198,8 @@ export async function startRun(input: StartRunInput): Promise<{ error: StartRunE
 
         // 7. Check and save
         const cleaned = cleanPage(state.page);
-        const problem = cleaned.success ? checkGeneratedPage(cleaned.data) : "invalid_page";
+        // Edit runs have no section-count rule: they fail only on an invalid page or an error
+        const problem = !cleaned.success ? "invalid_page" : kind === "generate" ? checkGeneratedPage(cleaned.data) : null;
         if (problem || !cleaned.data) {
           const detail = cleaned.success ? problem : cleaned.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
           return await fail(writer, problem ?? "invalid_page", detail ?? "invalid page");
@@ -197,8 +207,8 @@ export async function startRun(input: StartRunInput): Promise<{ error: StartRunE
 
         const finalPage = cleaned.data;
         const title = finalPage.root.props.title;
-        const rename = site.name === "Untitled site";
-        const slug = rename && site.slug.startsWith("site-") ? await uniqueSlug(slugify(title)) : undefined;
+        const rename = kind === "generate" ? site.name === "Untitled site" : true; // edits keep name = title, like autosave
+        const slug = kind === "generate" && rename && site.slug.startsWith("site-") ? await uniqueSlug(slugify(title)) : undefined;
         await db
           .update(sites)
           .set({ draft: finalPage, ...(rename ? { name: title } : {}), ...(slug ? { slug } : {}), updatedAt: new Date() })
@@ -214,19 +224,32 @@ export async function startRun(input: StartRunInput): Promise<{ error: StartRunE
           .set({ status: "succeeded", inputTokens, outputTokens, costUsd: cost.toFixed(6), durationMs })
           .where(eq(aiRuns.id, run.id));
         committed = true;
-        await capture(userId, "site_generated", {
-          site_id: siteId,
-          sections_count: finalPage.content.length,
-          model: modelId,
-          duration_ms: durationMs,
-          cost_usd: Number(cost.toFixed(6)),
-        });
 
         writer.write({ type: "data-page", data: finalPage, transient: true });
         writer.write({
           type: "data-run",
-          data: { status: "succeeded", sections: finalPage.content.length, ...(await usageUpdate()) },
+          data: {
+            status: "succeeded",
+            kind,
+            runId: run.id,
+            sections: finalPage.content.length,
+            changed: JSON.stringify(finalPage) !== JSON.stringify(cleanPage(page).data ?? page),
+            ...(await usageUpdate()),
+          },
         });
+
+        // Events after the browser has the result
+        if (kind === "generate") {
+          await capture(userId, "site_generated", {
+            site_id: siteId,
+            sections_count: finalPage.content.length,
+            model: modelId,
+            duration_ms: durationMs,
+            cost_usd: Number(cost.toFixed(6)),
+          });
+        } else {
+          await capture(userId, "ai_edit_applied", { site_id: siteId, model: modelId, had_selection: !!selection });
+        }
       } catch (error) {
         if (committed) {
           console.warn(`AI run ${run.id}: error after the page was saved (${error instanceof Error ? error.message : error})`);

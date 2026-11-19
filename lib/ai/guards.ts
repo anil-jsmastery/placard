@@ -14,18 +14,20 @@ const RATE_LIMIT = 30;
 /** The first reason this user can't start an AI run now, or null. The client maps each code to design-system §6. */
 export async function checkCanRun(userId: string, kind: "generate" | "edit"): Promise<GuardFailure | null> {
   void kind; // both kinds share the same limits
-  if (!(await isAiEnabled(userId))) return { status: 503, code: "ai_disabled" };
-
+  // The four checks are read together (one round trip instead of four) and answered in this order
   const now = Date.now();
-  const running = await db.$count(
-    aiRuns,
-    and(eq(aiRuns.userId, userId), eq(aiRuns.status, "running"), gte(aiRuns.createdAt, new Date(now - BUSY_WINDOW_MS))),
-  );
+  const [enabled, running, lastHour, usage] = await Promise.all([
+    isAiEnabled(userId),
+    db.$count(
+      aiRuns,
+      and(eq(aiRuns.userId, userId), eq(aiRuns.status, "running"), gte(aiRuns.createdAt, new Date(now - BUSY_WINDOW_MS))),
+    ),
+    db.$count(aiRuns, and(eq(aiRuns.userId, userId), gte(aiRuns.createdAt, new Date(now - RATE_WINDOW_MS)))),
+    getAiUsage(userId),
+  ]);
+  if (!enabled) return { status: 503, code: "ai_disabled" };
   if (running > 0) return { status: 409, code: "busy" };
-
-  const lastHour = await db.$count(aiRuns, and(eq(aiRuns.userId, userId), gte(aiRuns.createdAt, new Date(now - RATE_WINDOW_MS))));
   if (lastHour >= RATE_LIMIT) return { status: 429, code: "rate_limited" };
-
-  if ((await getAiUsage(userId)).left <= 0) return { status: 402, code: "ai_limit" };
+  if (usage.left <= 0) return { status: 402, code: "ai_limit" };
   return null;
 }

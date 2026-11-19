@@ -38,6 +38,10 @@ type EditorContextValue = {
   markSaved: (data: Data) => void;
   usage: AiUsage;
   setUsage: (usage: AiUsage) => void;
+  /** Saves this page now (waiting for a save in flight), so the server's draft is the page the user sees. False when it couldn't be saved. */
+  flushSave: (data: Data) => Promise<boolean>;
+  /** Called on the first hand edit after it's set (the AI panel uses it to hide "Undo AI change"). */
+  handEditRef: React.RefObject<(() => void) | null>;
 };
 
 const EditorContext = createContext<EditorContextValue | null>(null);
@@ -71,13 +75,19 @@ function describePath(path: (string | number)[], data: Data): string {
 }
 
 /** Debounced autosave (1000 ms). Invalid pages aren't stored; network errors retry after 3 s. Paused during AI runs. */
-function useAutosave(siteId: string, initial: PageData, paused: React.RefObject<boolean>) {
+function useAutosave(
+  siteId: string,
+  initial: PageData,
+  paused: React.RefObject<boolean>,
+  handEditRef: React.RefObject<(() => void) | null>,
+) {
   const [status, setStatus] = useState<SaveStatus>({ state: "saved" });
   const initialJson = useMemo(() => JSON.stringify(initial), [initial]);
   const lastSaved = useRef(initialJson);
   const latest = useRef<Data | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inFlight = useRef(false);
+  const inFlightSave = useRef<Promise<unknown> | null>(null);
   const edited = useRef(false);
   const mounted = useRef(true);
 
@@ -104,7 +114,9 @@ function useAutosave(siteId: string, initial: PageData, paused: React.RefObject<
     inFlight.current = true;
     setStatus({ state: "saving" });
     try {
-      const result = await saveDraft(siteId, data);
+      const request = saveDraft(siteId, data);
+      inFlightSave.current = request;
+      const result = await request;
       inFlight.current = false;
       if (!mounted.current) return;
       const changedSince = !!latest.current && JSON.stringify(latest.current) !== json;
@@ -139,6 +151,7 @@ function useAutosave(siteId: string, initial: PageData, paused: React.RefObject<
       // Puck reports the page once when it loads; nothing changed.
       if (json === lastSaved.current && !latest.current) return;
       latest.current = data;
+      handEditRef.current?.();
       if (!edited.current && json !== initialJson) {
         edited.current = true;
         track("site_edited", { site_id: siteId });
@@ -146,7 +159,36 @@ function useAutosave(siteId: string, initial: PageData, paused: React.RefObject<
       setStatus((s) => (s.state === "invalid" || s.state === "retrying" ? s : { state: "saving" }));
       schedule(1000);
     },
-    [initialJson, schedule, siteId, paused],
+    [initialJson, schedule, siteId, paused, handEditRef],
+  );
+
+  const flush = useCallback(
+    async (data: Data) => {
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = null;
+      while (inFlight.current && inFlightSave.current) await inFlightSave.current.catch(() => {});
+      const json = JSON.stringify(data);
+      if (json === lastSaved.current) return true;
+      try {
+        const result = await saveDraft(siteId, data);
+        if (!result.ok) {
+          setStatus({ state: "invalid", message: `${result.message} (${describePath(result.path, data)})` });
+          return false;
+        }
+        lastSaved.current = json;
+        latest.current = null;
+        setStatus({ state: "saved" });
+        return true;
+      } catch {
+        // The write may or may not have landed: keep the page and retry like autosave does
+        lastSaved.current = "";
+        latest.current = data;
+        if (mounted.current) setStatus({ state: "retrying" });
+        schedule(3000);
+        return false;
+      }
+    },
+    [siteId, schedule],
   );
 
   const markSaved = useCallback((data: Data) => {
@@ -165,7 +207,7 @@ function useAutosave(siteId: string, initial: PageData, paused: React.RefObject<
     };
   }, []);
 
-  return { status, onChange, markSaved };
+  return { status, onChange, markSaved, flush };
 }
 
 /** The iframe gets the site fonts' CSS variables (globals.css is copied in by Puck). */
@@ -190,14 +232,15 @@ export function Editor({ site, usage: initialUsage, useCase }: { site: EditorSit
   const paused = useRef(false);
   const [building, setBuildingState] = useState(false);
   const [usage, setUsage] = useState(initialUsage);
-  const { status, onChange, markSaved } = useAutosave(site.id, site.draft, paused);
+  const handEditRef = useRef<(() => void) | null>(null);
+  const { status, onChange, markSaved, flush: flushSave } = useAutosave(site.id, site.draft, paused, handEditRef);
   const setBuilding = useCallback((value: boolean) => {
     paused.current = value;
     setBuildingState(value);
   }, []);
   const value = useMemo(
-    () => ({ site, status, building, setBuilding, markSaved, usage, setUsage }),
-    [site, status, building, setBuilding, markSaved, usage],
+    () => ({ site, status, building, setBuilding, markSaved, usage, setUsage, flushSave, handEditRef }),
+    [site, status, building, setBuilding, markSaved, usage, flushSave],
   );
   return (
     <EditorContext.Provider value={value}>
