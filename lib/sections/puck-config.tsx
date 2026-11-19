@@ -3,6 +3,8 @@ import type { ComponentConfig, Config, CustomField, Field, Fields } from "@pucke
 import type { z } from "zod";
 import { Switch } from "@/components/ui/switch";
 import { ImageField, type ImageValue } from "@/components/editor/image-field";
+import { LinkField, type FieldMeta } from "@/components/editor/fields";
+import { TabIconField } from "@/components/editor/tab-icon-field";
 import { SiteRoot } from "@/components/site/site-root";
 import { Hero } from "@/components/site/sections/hero";
 import { About } from "@/components/site/sections/about";
@@ -19,7 +21,7 @@ import { FONT_META, THEME_META, type Font, type Theme } from "@/lib/site/themes"
 import type { PageData, SectionProps } from "@/lib/site/types";
 import { cn } from "@/lib/utils";
 import { SECTION_CATALOG } from "./catalog";
-import { Button as ButtonSchema, FONTS, Image as ImageSchema, Link as LinkSchema, SECTION_SCHEMAS, SECTION_TYPES, THEMES, type SectionType } from "./schemas";
+import { Button as ButtonSchema, FONTS, Image as ImageSchema, Link as LinkSchema, RootProps as RootPropsSchema, SECTION_SCHEMAS, SECTION_TYPES, THEMES, type SectionType } from "./schemas";
 
 const COMPONENTS: { [T in SectionType]: React.ComponentType<SectionProps<T>> } = {
   Hero, About, Features, Services, Gallery, Testimonials, Pricing, FAQ, CallToAction, Contact, Links,
@@ -88,8 +90,25 @@ function ImageCustomField(label: string, optional: boolean): CustomField<ImageVa
   return {
     type: "custom",
     label,
-    render: ({ value, onChange, readOnly }) => (
-      <ImageField label={label} value={value} onChange={(v) => onChange(v)} optional={optional} readOnly={readOnly} />
+    render: ({ field, value, onChange, readOnly }) => (
+      <ImageField
+        label={label}
+        nested={(field as FieldMeta).nested}
+        value={value}
+        onChange={(v) => onChange(v)}
+        optional={optional}
+        readOnly={readOnly}
+      />
+    ),
+  };
+}
+
+function LinkCustomField(label: string): CustomField<string | undefined> {
+  return {
+    type: "custom",
+    label,
+    render: ({ field, id, value, onChange, readOnly }) => (
+      <LinkField label={label} nested={(field as FieldMeta).nested} id={id} value={value} onChange={onChange} readOnly={readOnly} />
     ),
   };
 }
@@ -227,6 +246,18 @@ function DescriptionField({ value, onChange, readOnly }: { value: string | undef
 
 const RADIO_KEYS = new Set(["layout", "columns"]);
 
+/** Each list's label and its item name ("Add plan", "Add question"). */
+const LIST_NAMES: Partial<Record<SectionType, Record<string, { label: string; singular: string }>>> = {
+  Features: { items: { label: "Features", singular: "feature" } },
+  Services: { items: { label: "Services", singular: "service" } },
+  Gallery: { images: { label: "Images", singular: "image" } },
+  Testimonials: { items: { label: "Testimonials", singular: "testimonial" } },
+  Pricing: { plans: { label: "Plans", singular: "plan" } },
+  FAQ: { items: { label: "Questions", singular: "question" } },
+  Contact: { socials: { label: "Social links", singular: "social link" } },
+  Links: { items: { label: "Links", singular: "link" } },
+};
+
 function enumOptions(key: string, values: readonly string[]) {
   // Feature icons are listed by name; other choices in sentence case.
   return values.map((v) => ({ value: v, label: key === "icon" ? v : sentenceCase(v) }));
@@ -251,9 +282,9 @@ function defaultFor(schema: z.ZodType): unknown {
   return "";
 }
 
-function fieldFor(key: string, schema: z.ZodType, example: unknown): Field {
+function fieldFor(key: string, schema: z.ZodType, example: unknown, list?: { label: string; singular: string }): Field {
   const { inner, optional } = unwrap(schema);
-  const label = fieldLabel(key);
+  const label = list?.label ?? fieldLabel(key);
 
   if (inner === (ImageSchema as unknown)) return ImageCustomField(label, optional) as Field;
 
@@ -273,12 +304,19 @@ function fieldFor(key: string, schema: z.ZodType, example: unknown): Field {
     } satisfies CustomField<boolean | undefined> as Field;
   }
 
+  if (inner === (LinkSchema as unknown)) return LinkCustomField(label) as Field;
+
   if (inner === (ButtonSchema as unknown)) {
+    const buttonShape = shapeOf(inner);
     return {
       type: "object",
       label,
-      objectFields: { label: { type: "text", label: "Label" }, href: { type: "text", label: fieldLabel("href") } },
-    };
+      optional,
+      objectFields: {
+        label: { type: "text", label: "Label", maxLength: (unwrap(buttonShape.label).inner as unknown as z.ZodString).maxLength ?? undefined },
+        href: LinkCustomField(fieldLabel("href")),
+      },
+    } as Field & FieldMeta;
   }
 
   if (inner.def.type === "enum") {
@@ -295,9 +333,11 @@ function fieldFor(key: string, schema: z.ZodType, example: unknown): Field {
     for (const [k, v] of Object.entries(shape)) {
       arrayFields[k] = fieldFor(k, v, (exampleItem as Record<string, unknown> | undefined)?.[k]);
     }
+    const singular = list?.singular ?? "item";
     return {
       type: "array",
       label,
+      singular,
       arrayFields,
       min,
       max,
@@ -307,14 +347,16 @@ function fieldFor(key: string, schema: z.ZodType, example: unknown): Field {
           const v = item?.[k];
           if (typeof v === "string" && v.trim()) return v;
         }
-        return `Item ${(index ?? 0) + 1}`;
+        if (typeof item?.platform === "string") return sentenceCase(item.platform);
+        return `${sentenceCase(singular)} ${(index ?? 0) + 1}`;
       },
-    };
+    } as Field & FieldMeta;
   }
 
   if (inner.def.type === "string") {
-    const maxLength = (inner as unknown as z.ZodString).maxLength ?? Infinity;
-    return { type: isSingleLine(inner) || maxLength <= 80 ? "text" : "textarea", label };
+    const maxLength = (inner as unknown as z.ZodString).maxLength ?? undefined;
+    const type = isSingleLine(inner) || (maxLength ?? Infinity) <= 80 ? "text" : "textarea";
+    return { type, label, maxLength } as Field & FieldMeta;
   }
 
   throw new Error(`No editor field for "${key}" (${inner.def.type})`);
@@ -324,7 +366,7 @@ function sectionFields(type: SectionType): Fields {
   const shape = SECTION_SCHEMAS[type].shape as Record<string, z.ZodType>;
   const defaults = SECTION_CATALOG[type].defaultProps as Record<string, unknown>;
   const fields: Fields = {};
-  for (const [key, schema] of Object.entries(shape)) fields[key] = fieldFor(key, schema, defaults[key]);
+  for (const [key, schema] of Object.entries(shape)) fields[key] = fieldFor(key, schema, defaults[key], LIST_NAMES[type]?.[key]);
   return fields;
 }
 
@@ -348,7 +390,7 @@ export const puckConfig: Config = {
   components: Object.fromEntries(SECTION_TYPES.map((t) => [t, sectionConfig(t)])),
   root: {
     fields: {
-      title: { type: "text", label: ROOT_FIELD_LABELS.title },
+      title: { type: "text", label: ROOT_FIELD_LABELS.title, maxLength: RootPropsSchema.shape.title.maxLength ?? undefined } as Field & FieldMeta,
       theme: {
         type: "custom",
         label: ROOT_FIELD_LABELS.theme,
@@ -359,7 +401,11 @@ export const puckConfig: Config = {
         label: ROOT_FIELD_LABELS.font,
         render: ({ value, onChange }) => <FontPicker value={value} onChange={onChange} />,
       },
-      favicon: { type: "text", label: ROOT_FIELD_LABELS.favicon },
+      favicon: {
+        type: "custom",
+        label: ROOT_FIELD_LABELS.favicon,
+        render: ({ value, onChange, readOnly }) => <TabIconField label={ROOT_FIELD_LABELS.favicon} value={value} onChange={onChange} readOnly={readOnly} />,
+      },
       description: {
         type: "custom",
         label: ROOT_FIELD_LABELS.description,

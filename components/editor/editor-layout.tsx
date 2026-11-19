@@ -49,13 +49,15 @@ function Canvas() {
   }, []);
 
   const scale = box.w ? Math.min(1, box.w / width) : 1;
+  const empty = usePuck((s) => s.appState.data.content.length === 0);
+  const { building } = useEditor();
 
   return (
     <main className="flex min-w-0 flex-col overflow-hidden bg-canvas p-4 sm:p-6" aria-label="Page preview">
       <BuildStatusPill />
       <div ref={boxRef} className="min-h-0 min-w-0 flex-1">
         <div
-          className="mx-auto overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-black/5"
+          className="relative mx-auto overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-black/5"
           style={{ width: width * scale, height: box.h, visibility: box.w ? undefined : "hidden" }}
         >
           <div style={{ width, height: box.h / scale, transform: `scale(${scale})`, transformOrigin: "top left" }}>
@@ -63,6 +65,14 @@ function Canvas() {
               <Puck.Preview />
             </CanvasScaleContext.Provider>
           </div>
+          {empty && !building && (
+            <div className="pointer-events-none absolute inset-0 grid place-items-center p-6">
+              <div className="max-w-xs rounded-lg border border-border bg-card p-6 text-center shadow-sm">
+                <p className="text-sm font-semibold">Your page is empty</p>
+                <p className="mt-1 text-sm text-muted-foreground">Add a section from the Add tab, or ask the AI to build it.</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </main>
@@ -90,8 +100,6 @@ export function EditorLayout() {
       });
     }
   }, [dispatch]);
-
-  const openSheet = sheet === "edit" && !hasSelection ? null : sheet;
 
   return (
     <SectionAddedContext.Provider value={() => setSheet(null)}>
@@ -150,24 +158,23 @@ export function EditorLayout() {
             <button
               key={panel}
               type="button"
-              disabled={panel === "edit" && !hasSelection}
               onClick={() => setSheet(panel)}
               className={cn(
                 "flex h-14 flex-col items-center justify-center gap-0.5 text-xs font-medium disabled:pointer-events-none disabled:opacity-40",
-                (openSheet ?? "ai") !== panel && "text-muted-foreground",
+                (sheet ?? "ai") !== panel && "text-muted-foreground",
               )}
             >
-              <Icon className="size-4" aria-hidden="true" />
+              <Icon className="size-5" aria-hidden="true" />
               {PANEL_TITLES[panel]}
             </button>
           ))}
         </nav>
 
         {!isDesktop && (
-          <Sheet open={openSheet !== null} onOpenChange={(open) => !open && setSheet(null)}>
-            <SheetContent side="bottom" showCloseButton={false} className="h-[80vh] gap-0 bg-card" aria-describedby={undefined}>
+          <Sheet open={sheet !== null} onOpenChange={(open) => !open && setSheet(null)}>
+            <SheetContent side="bottom" showCloseButton={false} className="h-[80vh] gap-0 bg-card data-[side=bottom]:h-[80vh]" aria-describedby={undefined}>
               <SheetHeader className="flex-row items-center justify-between border-b border-border py-2 pr-2">
-                <SheetTitle className="text-sm font-semibold">{openSheet ? PANEL_TITLES[openSheet] : ""}</SheetTitle>
+                <SheetTitle className="text-sm font-semibold">{sheet ? PANEL_TITLES[sheet] : ""}</SheetTitle>
                 <SheetClose
                   className="grid size-10 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground sm:size-8"
                   aria-label="Close"
@@ -176,18 +183,18 @@ export function EditorLayout() {
                 </SheetClose>
               </SheetHeader>
               <div className="min-h-0 flex-1 overflow-y-auto">
-                {openSheet === "ai" && <AiPanel />}
-                {openSheet === "add" && (
+                {sheet === "ai" && <AiPanel />}
+                {sheet === "add" && (
                   <div className={cn("p-4", building && "opacity-50")} inert={building}>
                     <AddPanel />
                   </div>
                 )}
-                {openSheet === "layers" && (
+                {sheet === "layers" && (
                   <div className={cn("p-4", building && "opacity-50")} inert={building}>
                     <LayersPanel />
                   </div>
                 )}
-                {openSheet === "edit" && <FieldsPanel showHeader={false} />}
+                {sheet === "edit" && <FieldsPanel showHeader={false} />}
               </div>
             </SheetContent>
           </Sheet>

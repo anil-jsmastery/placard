@@ -68,10 +68,14 @@
   font-size: 16px;
 }
 @media (min-width: 640px) {
-  .Puck input,
+  .Puck input:not(.font-mono),
   .Puck textarea,
   .Puck select {
     font-size: 14px;
+  }
+  /* Link fields: font-mono text-xs from sm (editor.html) */
+  .Puck input.font-mono {
+    font-size: 12px;
   }
 }
 

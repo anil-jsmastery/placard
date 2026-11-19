@@ -13,18 +13,20 @@ type Props = {
   onChange: (value: ImageValue | undefined) => void;
   /** The section can do without an image: show "Remove". */
   optional: boolean;
+  /** Inside a list item: the smaller label. */
+  nested?: boolean;
   readOnly?: boolean;
 };
 
 /** Custom Puck field for `Image`: thumbnail, alt text, Change (opens the picker) and Remove. `src` is never typed by hand. */
-export function ImageField({ label, value, onChange, optional, readOnly }: Props) {
+export function ImageField({ label, value, onChange, optional, nested, readOnly }: Props) {
   const [open, setOpen] = useState(false);
   const altId = useId();
 
   return (
     <div>
-      <p className="text-sm font-medium">{label}</p>
-      <div className="mt-2 space-y-3">
+      <p className={nested ? "text-xs font-medium text-muted-foreground" : "text-sm font-medium"}>{label}</p>
+      <div className={nested ? "mt-1.5 space-y-3" : "mt-2 space-y-3"}>
         {value?.src ? (
           <div className="relative aspect-[16/10] overflow-hidden rounded-md border border-border bg-muted">
             <Image src={value.src} alt="" fill sizes="320px" className="object-cover" />

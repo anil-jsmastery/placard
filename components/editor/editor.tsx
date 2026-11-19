@@ -16,6 +16,8 @@ import { AiRunProvider } from "./ai-panel";
 import { EditorLayout } from "./editor-layout";
 import { AddTile } from "./add-panel";
 import { SectionActionBar, SectionOverlay } from "./section-overlay";
+import { fieldTypeOverrides } from "./fields";
+import { EditorShortcuts, listenForShortcuts } from "./shortcuts";
 
 export type EditorSite = { id: string; name: string; slug: string; draft: PageData; publishedAt: Date | null };
 
@@ -216,7 +218,11 @@ function IframeFonts({ children, document: doc }: { children: React.ReactNode; d
     if (!doc) return;
     const classes = siteFontVars.split(" ");
     doc.body.classList.add(...classes);
-    return () => doc.body.classList.remove(...classes);
+    const stopShortcuts = listenForShortcuts(doc);
+    return () => {
+      doc.body.classList.remove(...classes);
+      stopShortcuts();
+    };
   }, [doc]);
   return <>{children}</>;
 }
@@ -226,7 +232,22 @@ const overrides: Partial<Overrides> = {
   componentOverlay: SectionOverlay,
   actionBar: SectionActionBar,
   drawerItem: AddTile,
+  fieldTypes: fieldTypeOverrides,
 };
+
+/** Leaving while a save is pending or the page can't be saved asks first. */
+function useLeaveWarning(status: SaveStatus) {
+  const unsaved = status.state !== "saved";
+  useEffect(() => {
+    if (!unsaved) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [unsaved]);
+}
 
 export function Editor({ site, usage: initialUsage, useCase }: { site: EditorSite; usage: AiUsage; useCase: UseCase }) {
   const paused = useRef(false);
@@ -234,6 +255,7 @@ export function Editor({ site, usage: initialUsage, useCase }: { site: EditorSit
   const [usage, setUsage] = useState(initialUsage);
   const handEditRef = useRef<(() => void) | null>(null);
   const { status, onChange, markSaved, flush: flushSave } = useAutosave(site.id, site.draft, paused, handEditRef);
+  useLeaveWarning(status);
   const setBuilding = useCallback((value: boolean) => {
     paused.current = value;
     setBuildingState(value);
@@ -255,6 +277,7 @@ export function Editor({ site, usage: initialUsage, useCase }: { site: EditorSit
         height="100%"
       >
         <AiRunProvider useCase={useCase}>
+          <EditorShortcuts />
           <EditorLayout />
         </AiRunProvider>
       </Puck>
