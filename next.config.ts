@@ -19,6 +19,10 @@ const nextConfig: NextConfig = {
       { source: "/ingest/:path*", destination: `${posthogHost}/:path*` },
     ];
   },
+  // The image library and users' uploads (Step 12), both served from this app
+  images: {
+    localPatterns: [{ pathname: "/library/**", search: "" }, { pathname: "/uploads/**", search: "" }],
+  },
   // PostHog's API paths end in a slash
   skipTrailingSlashRedirect: true,
 };

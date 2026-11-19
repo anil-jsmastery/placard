@@ -1,13 +1,14 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { Puck, type Data, type Overrides } from "@puckeditor/core";
+import { Puck, type Config, type Data, type Overrides } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
 import "./puck-theme.css";
 import { siteFontVars } from "@/app/fonts";
 import { track } from "@/lib/analytics/client";
 import { SECTION_CATALOG } from "@/lib/sections/catalog";
 import { ROOT_FIELD_LABELS, fieldLabel, puckConfig } from "@/lib/sections/puck-config";
+import { renderConfig } from "@/lib/sections/render-config";
 import type { SectionType } from "@/lib/sections/schemas";
 import type { PageData } from "@/lib/site/types";
 import { saveDraft } from "@/app/(main)/sites/[id]/edit/actions";
@@ -19,6 +20,7 @@ import { AddTile } from "./add-panel";
 import { SectionActionBar, SectionOverlay } from "./section-overlay";
 import { fieldTypeOverrides } from "./fields";
 import { EditorShortcuts, listenForShortcuts } from "./shortcuts";
+import { CanRemoveBadge } from "./badge-field";
 
 export type EditorSite = { id: string; name: string; slug: string; draft: PageData; published: boolean };
 
@@ -236,6 +238,15 @@ const overrides: Partial<Overrides> = {
   fieldTypes: fieldTypeOverrides,
 };
 
+/** Without `remove_badge` the canvas shows the badge whatever `showBadge` says, as the live page does. */
+const badgeAlwaysConfig: Config = {
+  ...puckConfig,
+  root: {
+    ...puckConfig.root,
+    render: (props: Parameters<typeof renderConfig.root.render>[0]) => renderConfig.root.render({ ...props, showBadge: true }),
+  },
+};
+
 /** Leaving while a save is pending or the page can't be saved asks first. */
 function useLeaveWarning(status: SaveStatus) {
   const unsaved = status.state !== "saved";
@@ -250,7 +261,7 @@ function useLeaveWarning(status: SaveStatus) {
   }, [unsaved]);
 }
 
-export function Editor({ site, useCase }: { site: EditorSite; useCase: UseCase }) {
+export function Editor({ site, useCase, canRemoveBadge }: { site: EditorSite; useCase: UseCase; canRemoveBadge: boolean }) {
   const paused = useRef(false);
   const [building, setBuildingState] = useState(false);
   const usage = useAiUsage();
@@ -268,8 +279,9 @@ export function Editor({ site, useCase }: { site: EditorSite; useCase: UseCase }
   );
   return (
     <EditorContext.Provider value={value}>
+      <CanRemoveBadge.Provider value={canRemoveBadge}>
       <Puck
-        config={puckConfig}
+        config={canRemoveBadge ? puckConfig : badgeAlwaysConfig}
         data={site.draft as Data}
         onChange={onChange}
         overrides={overrides}
@@ -283,6 +295,7 @@ export function Editor({ site, useCase }: { site: EditorSite; useCase: UseCase }
           <EditorLayout />
         </AiRunProvider>
       </Puck>
+      </CanRemoveBadge.Provider>
     </EditorContext.Provider>
   );
 }

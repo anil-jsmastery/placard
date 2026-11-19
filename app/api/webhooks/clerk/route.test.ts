@@ -14,7 +14,7 @@ const { verifyWebhook, upsertUser, userExists, captureServer, setPersonServer, o
 vi.mock("@clerk/nextjs/webhooks", () => ({ verifyWebhook }));
 vi.mock("@/lib/users", () => ({ upsertUser, userExists }));
 vi.mock("@/lib/analytics/server", () => ({ captureServer, setPersonServer }));
-vi.mock("@/lib/billing", () => ({ onDowngrade, hasOtherActivePro }));
+vi.mock("@/lib/billing", () => ({ onDowngrade, hasOtherActivePro, revalidatePlan: vi.fn() }));
 vi.mock("@/lib/config", () => ({ APP_ENV: "dev" }));
 
 import { POST } from "./route";

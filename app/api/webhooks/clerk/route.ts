@@ -2,7 +2,7 @@ import { verifyWebhook } from "@clerk/nextjs/webhooks";
 import type { NextRequest } from "next/server";
 import { upsertUser, userExists } from "@/lib/users";
 import { captureServer, setPersonServer } from "@/lib/analytics/server";
-import { hasOtherActivePro, onDowngrade } from "@/lib/billing";
+import { hasOtherActivePro, onDowngrade, revalidatePlan } from "@/lib/billing";
 import { APP_ENV } from "@/lib/config";
 
 const ok = () => new Response("ok", { status: 200 });
@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
     if (!userId || item.plan?.slug !== "pro") return ok(); // the free plan's items, or an organization payer
     // Both environments receive every billing event; a user without a row here belongs to the other one
     if (!(await userExists(userId))) return ok();
+    revalidatePlan(userId); // the owner's cached features (the badge) follow every billing event
 
     if (evt.type === "subscriptionItem.active") {
       await captureServer(userId, "subscription_started", { plan: "pro" }, { personSet: { plan: "pro" } });

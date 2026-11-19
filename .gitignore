@@ -38,6 +38,9 @@ yarn-error.log*
 .env*.local
 .env.vercel
 .neon
+.playwright-mcp/
+test-results/
+playwright-report/
 
 # vercel
 .vercel

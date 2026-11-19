@@ -8,6 +8,7 @@ import {
   statsDailyQuery,
   statsReferrersQuery,
   statsTotalQuery,
+  uploadsQuery,
 } from "@/lib/realtime/queries";
 import { realtime } from "@/lib/realtime/server";
 import { utcDay } from "@/lib/stats";
@@ -84,6 +85,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ query: 
     }
     case "site-views":
       sealed = await realtime.seal({ query: siteViewsQuery(userId) });
+      break;
+    case "uploads":
+      sealed = await realtime.seal({ query: uploadsQuery(userId) });
       break;
     case "ai-used": {
       const start = monthStart(input.monthStart, now);

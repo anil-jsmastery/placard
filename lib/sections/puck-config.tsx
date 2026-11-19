@@ -5,6 +5,8 @@ import { Switch } from "@/components/ui/switch";
 import { ImageField, type ImageValue } from "@/components/editor/image-field";
 import { LinkField, type FieldMeta } from "@/components/editor/fields";
 import { TabIconField } from "@/components/editor/tab-icon-field";
+import { BadgeField } from "@/components/editor/badge-field";
+import { APP_NAME } from "@/lib/config";
 import { FONT_META, THEME_META, type Font, type Theme } from "@/lib/site/themes";
 import { cn } from "@/lib/utils";
 import { SECTION_CATALOG } from "./catalog";
@@ -34,7 +36,7 @@ export const ROOT_FIELD_LABELS = {
   font: "Heading font",
   favicon: "Tab icon",
   description: "Search description",
-  showBadge: "Show badge",
+  showBadge: `Show “Made with ${APP_NAME}” badge`,
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -393,6 +395,13 @@ export const puckConfig: Config = {
         type: "custom",
         label: ROOT_FIELD_LABELS.description,
         render: ({ value, onChange, readOnly }) => <DescriptionField value={value} onChange={onChange} readOnly={readOnly} />,
+      },
+      showBadge: {
+        type: "custom",
+        label: ROOT_FIELD_LABELS.showBadge,
+        render: ({ value, onChange, readOnly }) => (
+          <BadgeField label={ROOT_FIELD_LABELS.showBadge} value={value} onChange={onChange} readOnly={readOnly} />
+        ),
       },
     },
   },

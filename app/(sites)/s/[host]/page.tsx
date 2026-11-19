@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Render } from "@puckeditor/core/rsc";
 import { ViewBeacon } from "@/components/site/view-beacon";
+import { getOwnerFeatures } from "@/lib/billing";
 import { siteUrl } from "@/lib/config";
 import { renderConfig } from "@/lib/sections/render-config";
 import { resolveHost } from "@/lib/sites/resolve";
@@ -55,8 +56,10 @@ export default async function LiveSitePage({ params }: Props) {
   const site = await resolveHost(await hostFrom(params));
   if (!site) notFound();
 
-  // The footer badge shows on every site for now (Step 12 adds the Pro rule).
-  const data: PageData = { ...site.published, root: { props: { ...site.published.root.props, showBadge: true } } };
+  // The badge shows unless the owner's plan has `remove_badge` (Pro) and they turned it off; a downgrade brings it back.
+  const canRemove = (await getOwnerFeatures(site.userId)).includes("remove_badge");
+  const showBadge = site.published.root.props.showBadge !== false || !canRemove;
+  const data: PageData = { ...site.published, root: { props: { ...site.published.root.props, showBadge } } };
   return (
     <>
       <Render config={renderConfig} data={data} />

@@ -5,7 +5,7 @@ import { db, sites } from "@/lib/db";
 import { APP_DOMAIN } from "@/lib/config";
 import type { PageData } from "@/lib/site/types";
 
-export type LiveSite = { id: string; slug: string; published: PageData };
+export type LiveSite = { id: string; userId: string; slug: string; published: PageData };
 
 /**
  * The published site for a request host: `slug.APP_DOMAIN` (the part before it has no dot).
@@ -21,8 +21,8 @@ export const resolveHost = cache(async (host: string): Promise<LiveSite | null> 
 
   const site = await db.query.sites.findFirst({
     where: eq(sites.slug, slug),
-    columns: { id: true, slug: true, published: true },
+    columns: { id: true, userId: true, slug: true, published: true },
   });
   if (!site || site.published === null) return null;
-  return { id: site.id, slug: site.slug, published: site.published as PageData };
+  return { id: site.id, userId: site.userId, slug: site.slug, published: site.published as PageData };
 });

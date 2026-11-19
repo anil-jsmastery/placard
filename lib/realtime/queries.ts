@@ -1,6 +1,6 @@
 import "server-only";
 import { and, asc, desc, eq, gte, sql } from "drizzle-orm";
-import { aiRuns, db, pageViewsDaily, referrersDaily, sites } from "@/lib/db";
+import { aiRuns, db, pageViewsDaily, referrersDaily, sites, uploads } from "@/lib/db";
 
 // The live queries (Step 11): the one place these queries are written. The server runs them for the first
 // render and seals the same builders for Neon Realtime, so both sides always see the same rows.
@@ -60,4 +60,21 @@ export function aiUsedQuery(userId: string, monthStart: Date) {
     .select({ used: sql<number>`count(*)::int`.as("used") })
     .from(aiRuns)
     .where(and(eq(aiRuns.userId, userId), eq(aiRuns.status, "succeeded"), gte(aiRuns.createdAt, monthStart)));
+}
+
+/** `{ id, path, bytes, status, error, createdAt }` of the user's uploads (Step 12), newest first, at most 100. */
+export function uploadsQuery(userId: string) {
+  return db
+    .select({
+      id: uploads.id,
+      path: uploads.path,
+      bytes: uploads.bytes,
+      status: uploads.status,
+      error: uploads.error,
+      createdAt: sql<string>`${uploads.createdAt}`.as("createdAt"),
+    })
+    .from(uploads)
+    .where(eq(uploads.userId, userId))
+    .orderBy(desc(uploads.createdAt))
+    .limit(100);
 }

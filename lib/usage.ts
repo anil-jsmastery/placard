@@ -1,5 +1,5 @@
 import "server-only";
-import { eq, sum } from "drizzle-orm";
+import { and, eq, sum } from "drizzle-orm";
 import { db, uploads } from "@/lib/db";
 import { posthogNodeClient } from "@/lib/analytics/server";
 import { getPlanKey } from "@/lib/plan";
@@ -47,8 +47,11 @@ export async function getLiveAiUsage(userId: string) {
 }
 export type LiveAiUsage = Awaited<ReturnType<typeof getLiveAiUsage>>;
 
-/** Bytes of images the user has uploaded (sum of `uploads.bytes`). */
+/** Bytes of images the user has stored: the `ready` uploads' `bytes` (rejected ones hold nothing). */
 export async function getStorageUsed(userId: string) {
-  const [row] = await db.select({ bytes: sum(uploads.bytes) }).from(uploads).where(eq(uploads.userId, userId));
+  const [row] = await db
+    .select({ bytes: sum(uploads.bytes) })
+    .from(uploads)
+    .where(and(eq(uploads.userId, userId), eq(uploads.status, "ready")));
   return Number(row?.bytes ?? 0);
 }

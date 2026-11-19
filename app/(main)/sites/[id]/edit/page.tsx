@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { and, eq } from "drizzle-orm";
 import { db, sites, users } from "@/lib/db";
 import { isUseCase } from "@/lib/examples";
+import { hasFeature } from "@/lib/plan";
 import type { PageData } from "@/lib/site/types";
 import { getLiveAiUsage } from "@/lib/usage";
 import { realtimeUrl } from "@/lib/realtime/server";
@@ -22,9 +23,10 @@ export default async function EditSitePage({ params }: { params: Promise<{ id: s
     columns: { id: true, name: true, slug: true, draft: true, published: true },
   });
   if (!site) notFound();
-  const [usage, user] = await Promise.all([
+  const [usage, user, canRemoveBadge] = await Promise.all([
     getLiveAiUsage(userId),
     db.query.users.findFirst({ where: eq(users.id, userId), columns: { useCase: true } }),
+    hasFeature("remove_badge"),
   ]);
 
   return (
@@ -33,6 +35,7 @@ export default async function EditSitePage({ params }: { params: Promise<{ id: s
         <Editor
           site={{ id: site.id, name: site.name, slug: site.slug, draft: site.draft as PageData, published: site.published !== null }}
           useCase={isUseCase(user?.useCase) ? user.useCase : "other"}
+          canRemoveBadge={canRemoveBadge}
         />
       </AiUsageProvider>
     </RealtimeRoot>

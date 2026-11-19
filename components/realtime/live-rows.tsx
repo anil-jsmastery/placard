@@ -6,7 +6,7 @@ import type { SealedLiveQuery } from "@neon/realtime/client";
 import { useLiveQuery } from "@neon/realtime-react";
 import { useRealtimeOn } from "./realtime-root";
 
-export type LiveQueryName = "stats-daily" | "stats-referrers" | "stats-total" | "site-views" | "ai-used";
+export type LiveQueryName = "stats-daily" | "stats-referrers" | "stats-total" | "site-views" | "ai-used" | "uploads";
 export type LiveParams = { siteId?: string; from?: string; monthStart?: string };
 
 type Props<Row> = {
