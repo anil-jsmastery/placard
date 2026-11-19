@@ -46,3 +46,8 @@ export async function captureServer<E extends keyof ServerEvents>(
     },
   });
 }
+
+/** Sets person properties without a product event (e.g. `plan` when Pro ends). */
+export async function setPersonServer(userId: string, personSet: Record<string, unknown>) {
+  await posthogNodeClient.identifyImmediate({ distinctId: userId, properties: { $set: personSet } });
+}

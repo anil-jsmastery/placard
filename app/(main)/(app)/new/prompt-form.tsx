@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics/client";
 import type { UseCase } from "@/lib/analytics/events";
 import { EXAMPLES } from "@/lib/examples";
+import { usePaywall } from "@/components/billing/paywall-provider";
 import { createSite } from "../sites/actions";
 
 const TONES = ["Minimal", "Bold", "Playful", "Elegant"] as const;
@@ -16,8 +17,9 @@ type Tone = (typeof TONES)[number];
 const MAX = 1000;
 const MIN = 10;
 
-export function PromptForm({ useCase, left }: { useCase: UseCase; left: number }) {
+export function PromptForm({ useCase, left, allowance }: { useCase: UseCase; left: number; allowance: number }) {
   const router = useRouter();
+  const paywall = usePaywall();
   const [prompt, setPrompt] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [tone, setTone] = useState<Tone | null>(null);
@@ -31,10 +33,20 @@ export function PromptForm({ useCase, left }: { useCase: UseCase; left: number }
 
   function submit() {
     if (!canSubmit) return;
+    // With no requests left, Build opens the paywall instead of calling the server (design-system §7)
+    if (left === 0) {
+      paywall.open("ai_limit", { allowance });
+      return;
+    }
     startTransition(async () => {
       track("prompt_submitted", { use_case: useCase, used_example: usedExample, prompt_length: prompt.length });
       const name = businessName.trim();
-      const { id } = await createSite(name ? { businessName: name } : undefined);
+      const result = await createSite(name ? { businessName: name } : undefined);
+      if (result.code) {
+        paywall.open(result.code, { allowance });
+        return;
+      }
+      const { id } = result;
       try {
         sessionStorage.setItem(
           `pending-build:${id}`,

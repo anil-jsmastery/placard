@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { db, sites } from "@/lib/db";
 import { isUniqueViolation } from "@/lib/db/errors";
 import { randomSlug, slugify, uniqueSlug } from "@/lib/domains";
+import { checkSiteLimit, type LimitCode } from "@/lib/limits";
 import { EMPTY_PAGE } from "@/lib/sections/schemas";
 
 async function requireUserId() {
@@ -35,8 +36,11 @@ async function insertSite(
  * name and the slug comes from it ("Ember & Rye" → `ember-and-rye`, then `ember-and-rye-2` …);
  * without one, "Untitled site" and a random slug.
  */
-export async function createSite(input?: { businessName?: string }) {
+export async function createSite(
+  input?: { businessName?: string },
+): Promise<{ id: string; code?: never } | { id?: never; code: LimitCode }> {
   const userId = await requireUserId();
+  if (!(await checkSiteLimit(userId)).allowed) return { code: "site_limit" };
   const businessName = input?.businessName?.trim().slice(0, 80);
   if (!businessName) {
     const site = await insertSite({ userId, name: "Untitled site", draft: EMPTY_PAGE });
@@ -49,8 +53,9 @@ export async function createSite(input?: { businessName?: string }) {
 }
 
 /** A copy of the draft, named "{name} copy", with a new address. Not published. */
-export async function duplicateSite(id: string) {
+export async function duplicateSite(id: string): Promise<{ code: LimitCode } | undefined> {
   const userId = await requireUserId();
+  if (!(await checkSiteLimit(userId)).allowed) return { code: "site_limit" };
   const source = await db.query.sites.findFirst({
     where: and(eq(sites.id, id), eq(sites.userId, userId)),
     columns: { name: true, draft: true },

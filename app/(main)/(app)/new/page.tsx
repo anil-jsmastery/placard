@@ -22,7 +22,7 @@ export default async function NewSitePage() {
       <p className="mt-3 text-muted-foreground">
         A sentence or two is enough. Say what you do, who it’s for and the feel you want.
       </p>
-      <PromptForm useCase={useCase} left={usage?.left ?? 0} />
+      <PromptForm useCase={useCase} left={usage?.left ?? 0} allowance={usage?.allowance ?? 0} />
     </main>
   );
 }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Copy, Ellipsis, ExternalLink, Eye, Pencil, Trash2 } from "lucide-react";
 import { deleteSite, duplicateSite } from "@/app/(main)/(app)/sites/actions";
 import { StatusBadge } from "@/components/app/status-badge";
+import { usePaywall } from "@/components/billing/paywall-provider";
 import { SiteFrame } from "@/components/site/site-frame";
 import { Hero } from "@/components/site/sections/hero";
 import { About } from "@/components/site/sections/about";
@@ -73,6 +74,7 @@ const itemClass = "gap-2.5 px-2.5 py-2";
 export function SiteCard({ site }: { site: SiteCardData }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+  const paywall = usePaywall();
   const editHref = `/sites/${site.id}/edit`;
 
   return (
@@ -125,7 +127,12 @@ export function SiteCard({ site }: { site: SiteCardData }) {
                 View live
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem className={itemClass} onSelect={() => startTransition(() => duplicateSite(site.id))}>
+            <DropdownMenuItem className={itemClass} onSelect={() =>
+                startTransition(async () => {
+                  const result = await duplicateSite(site.id);
+                  if (result?.code === "site_limit") paywall.open("site_limit");
+                })
+              }>
               <Copy aria-hidden="true" />
               Duplicate
             </DropdownMenuItem>

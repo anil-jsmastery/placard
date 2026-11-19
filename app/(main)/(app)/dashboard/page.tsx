@@ -3,10 +3,14 @@ import Link from "next/link";
 import { desc, eq } from "drizzle-orm";
 import { Plus } from "lucide-react";
 import { EmptyState } from "@/components/app/empty-state";
+import { NewSiteButton } from "@/components/app/new-site-button";
+import { SetSitesCount } from "@/components/providers/posthog-provider";
 import { LogoMark } from "@/components/app/logo";
 import { SiteCard, type SiteCardData } from "@/components/app/site-card";
 import { Button } from "@/components/ui/button";
 import { db, sites } from "@/lib/db";
+import { getPlanKey } from "@/lib/plan";
+import { PLANS } from "@/lib/plans";
 import type { PageData } from "@/lib/site/types";
 
 async function getSites(userId: string): Promise<SiteCardData[]> {
@@ -29,11 +33,13 @@ async function getSites(userId: string): Promise<SiteCardData[]> {
 
 export default async function DashboardPage() {
   const { userId } = await auth();
-  const userSites = userId ? await getSites(userId) : [];
+  const [userSites, plan] = await Promise.all([userId ? getSites(userId) : [], getPlanKey()]);
+  const { sites: limit, name: planName } = PLANS[plan];
 
   if (userSites.length === 0) {
     return (
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+        <SetSitesCount count={0} />
         <h1 className="font-display text-3xl font-bold sm:text-4xl">Sites</h1>
         <EmptyState
           icon={<LogoMark className="size-8" />}
@@ -54,16 +60,15 @@ export default async function DashboardPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <SetSitesCount count={userSites.length} />
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-bold sm:text-4xl">Sites</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {userSites.length} of {limit} {limit === 1 ? "site" : "sites"} on {planName}
+          </p>
         </div>
-        <Button asChild>
-          <Link href="/new">
-            <Plus aria-hidden="true" />
-            New site
-          </Link>
-        </Button>
+        <NewSiteButton atLimit={userSites.length >= limit} />
       </div>
       <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {userSites.map((site) => (

@@ -13,6 +13,7 @@ import type { RunResult, RunUIMessage } from "@/lib/ai/run";
 import { SECTION_CATALOG } from "@/lib/sections/catalog";
 import { SECTION_TYPES, type SectionType } from "@/lib/sections/schemas";
 import type { PageData } from "@/lib/site/types";
+import { usePaywall } from "@/components/billing/paywall-provider";
 import { useEditor } from "./editor";
 
 const usePuck = createUsePuck();
@@ -29,7 +30,7 @@ type RunRequest = ({ kind: "generate" } & BuildRequest) | ({ kind: "edit" } & Ed
 
 type GuardCode = "ai_disabled" | "busy" | "rate_limited" | "ai_limit";
 
-/** Design-system §6 copy for the guard codes (`ai_limit` is a toast, see below). */
+/** Design-system §6 copy for the guard codes (`ai_limit` opens the paywall instead, see below). */
 const GUARD_COPY: Record<Exclude<GuardCode, "ai_limit">, string> = {
   ai_disabled: "AI is paused for a few minutes. You can still edit your site by hand.",
   busy: "The AI is still working on your last request.",
@@ -155,6 +156,7 @@ function changedSections(before: PageData, page: PageData) {
  */
 export function AiRunProvider({ useCase, children }: { useCase: UseCase; children: React.ReactNode }) {
   const { site, building, setBuilding, markSaved, setUsage, usage, flushSave, handEditRef } = useEditor();
+  const paywall = usePaywall();
   const dispatch = usePuck((s) => s.dispatch);
   const data = usePuck((s) => s.appState.data);
   const dataRef = useRef<Data>(data);
@@ -235,7 +237,7 @@ export function AiRunProvider({ useCase, children }: { useCase: UseCase; childre
     },
     onError: (err) => {
       const code = readGuardCode(err);
-      if (code === "ai_limit") toast(`You've used all ${usage.total} AI requests this month`);
+      if (code === "ai_limit") paywall.open("ai_limit", { allowance: usage.total });
       endRun(null);
       if (code) setFailed(false);
     },
@@ -522,6 +524,7 @@ export function AiPanel() {
   const { building: running, undoing, kind, messages, guardCode, failed, useCase, start, edit, retry, undoableRunId, undo } = useAiRun();
   const building = running || undoing;
   const { usage } = useEditor();
+  const paywall = usePaywall();
   const empty = usePuck((s) => s.appState.data.content.length === 0);
   const selected = usePuck((s) => s.selectedItem);
   const dispatch = usePuck((s) => s.dispatch);
@@ -545,6 +548,11 @@ export function AiPanel() {
   const submit = () => {
     const text = prompt.trim().slice(0, MAX_PROMPT);
     if (building || !text) return;
+    // With no requests left, Send opens the paywall instead of calling the API (design-system §7)
+    if (usage.left === 0) {
+      paywall.open("ai_limit", { allowance: usage.total });
+      return;
+    }
     if (empty) start({ prompt: text, useCase });
     else void edit({ prompt: text, selectedId });
     setPrompt("");

@@ -1,15 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { NextRequest } from "next/server";
 
-const { verifyWebhook, upsertUser, captureServer } = vi.hoisted(() => ({
+const { verifyWebhook, upsertUser, userExists, captureServer, setPersonServer, onDowngrade, hasOtherActivePro } = vi.hoisted(() => ({
   verifyWebhook: vi.fn(),
   upsertUser: vi.fn(),
+  userExists: vi.fn(),
   captureServer: vi.fn(),
+  setPersonServer: vi.fn(),
+  onDowngrade: vi.fn(),
+  hasOtherActivePro: vi.fn(),
 }));
 
 vi.mock("@clerk/nextjs/webhooks", () => ({ verifyWebhook }));
-vi.mock("@/lib/users", () => ({ upsertUser }));
-vi.mock("@/lib/analytics/server", () => ({ captureServer }));
+vi.mock("@/lib/users", () => ({ upsertUser, userExists }));
+vi.mock("@/lib/analytics/server", () => ({ captureServer, setPersonServer }));
+vi.mock("@/lib/billing", () => ({ onDowngrade, hasOtherActivePro }));
 vi.mock("@/lib/config", () => ({ APP_ENV: "dev" }));
 
 import { POST } from "./route";
@@ -52,5 +57,61 @@ describe("Clerk webhook, user.created", () => {
     await POST(req);
     expect(upsertUser).toHaveBeenCalledTimes(1);
     expect(captureServer).toHaveBeenCalledTimes(1);
+  });
+});
+
+function subscriptionItem(type: string, slug = "pro") {
+  return { type, data: { id: "csubi_old", payer: { user_id: "user_test" }, plan: { slug } } };
+}
+
+describe("Clerk webhook, billing", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    userExists.mockResolvedValue(true);
+    hasOtherActivePro.mockResolvedValue(false);
+  });
+
+  it("ignores a billing event for a user this database doesn't have", async () => {
+    userExists.mockResolvedValue(false);
+    verifyWebhook.mockResolvedValue(subscriptionItem("subscriptionItem.active"));
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    expect(captureServer).not.toHaveBeenCalled();
+  });
+
+  it("ignores the free plan's items", async () => {
+    verifyWebhook.mockResolvedValue(subscriptionItem("subscriptionItem.active", "free_user"));
+    await POST(req);
+    expect(captureServer).not.toHaveBeenCalled();
+    expect(userExists).not.toHaveBeenCalled();
+  });
+
+  it("sends subscription_started and sets plan = pro when Pro becomes active", async () => {
+    verifyWebhook.mockResolvedValue(subscriptionItem("subscriptionItem.active"));
+    await POST(req);
+    expect(captureServer).toHaveBeenCalledWith("user_test", "subscription_started", { plan: "pro" }, { personSet: { plan: "pro" } });
+  });
+
+  it("sends subscription_canceled when Pro is canceled", async () => {
+    verifyWebhook.mockResolvedValue(subscriptionItem("subscriptionItem.canceled"));
+    await POST(req);
+    expect(captureServer).toHaveBeenCalledWith("user_test", "subscription_canceled", { plan: "pro" });
+  });
+
+  it("sets plan = free and runs onDowngrade when Pro ends", async () => {
+    verifyWebhook.mockResolvedValue(subscriptionItem("subscriptionItem.ended"));
+    await POST(req);
+    expect(setPersonServer).toHaveBeenCalledWith("user_test", { plan: "free" });
+    expect(onDowngrade).toHaveBeenCalledWith("user_test");
+    expect(captureServer).not.toHaveBeenCalled();
+  });
+
+  it("keeps Pro when a late `ended` arrives for an old item and another Pro item is active", async () => {
+    hasOtherActivePro.mockResolvedValue(true);
+    verifyWebhook.mockResolvedValue(subscriptionItem("subscriptionItem.ended"));
+    await POST(req);
+    expect(hasOtherActivePro).toHaveBeenCalledWith("user_test", "csubi_old");
+    expect(setPersonServer).not.toHaveBeenCalled();
+    expect(onDowngrade).not.toHaveBeenCalled();
   });
 });

@@ -23,3 +23,14 @@ export const authCardAppearance = {
     otpCodeFieldInput: "text-base! sm:text-[13px]!",
   },
 };
+
+// <PricingTable /> (design-system §13): no text under 12 px, 40 px buttons on phones.
+export const pricingTableAppearance = {
+  ...clerkAppearance,
+  elements: {
+    pricingTableCardFeePeriod: "text-xs!",
+    pricingTableCardFeePeriodNotice: "text-xs!",
+    badge: "text-xs!",
+    pricingTableCardFooterButton: "h-10! sm:h-8!",
+  },
+};
