@@ -7,10 +7,12 @@ type SiteImageProps = {
   className?: string;
   /** A round 40 px avatar instead of a theme-rounded photo box. */
   avatar?: boolean;
+  /** The page's largest image above the fold (the Hero photo): fetched from <head> instead of lazily. */
+  preload?: boolean;
 };
 
 /** A library or uploaded photo in the reference's aspect-ratio box. */
-export function SiteImage({ image, className, avatar = false }: SiteImageProps) {
+export function SiteImage({ image, className, avatar = false, preload = false }: SiteImageProps) {
   return (
     <div
       className={cn(
@@ -23,6 +25,7 @@ export function SiteImage({ image, className, avatar = false }: SiteImageProps) 
         src={image.src}
         alt={image.alt}
         fill
+        preload={preload}
         sizes={avatar ? "40px" : "(min-width: 1024px) 50vw, 100vw"}
         className="object-cover"
       />

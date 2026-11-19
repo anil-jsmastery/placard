@@ -3,7 +3,8 @@ import { Bricolage_Grotesque, Figtree, JetBrains_Mono, Plus_Jakarta_Sans, Fraunc
 
 // App
 export const figtree = Figtree({ subsets: ["latin"], variable: "--font-figtree", display: "swap" });
-export const bricolage = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-bricolage", axes: ["opsz", "wdth"], display: "swap" });
+// Not preloaded: Next preloads every next/font file on every route, published sites included, and this one is 131 KB.
+export const bricolage = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-bricolage", axes: ["opsz", "wdth"], display: "swap", preload: false });
 export const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains", weight: ["400", "500"], display: "swap", preload: false });
 
 // Published sites (body + 3 heading choices)

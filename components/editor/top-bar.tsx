@@ -1,11 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { createUsePuck } from "@puckeditor/core";
+import { createUsePuck, useGetPuck } from "@puckeditor/core";
+import { toast } from "sonner";
 import { ArrowLeft, Check, Monitor, Redo2, Smartphone, Tablet, Undo2 } from "lucide-react";
 import { StatusBadge } from "@/components/app/status-badge";
 import { cn } from "@/lib/utils";
+import { publishSite } from "@/app/(main)/sites/[id]/edit/actions";
 import { useEditor } from "./editor";
+import { PublishDialog } from "./publish-dialog";
 
 const usePuck = createUsePuck();
 
@@ -35,9 +39,60 @@ function SaveStatusText() {
   );
 }
 
-/** Editor top bar (editor-topbar in the reference). Publish arrives in Step 8. */
+/** Publish: flushes autosave, then publishes. First publish → the dialog; later ones → a toast. */
+function PublishButton() {
+  const { site, status, building, flushSave, setLive } = useEditor();
+  const getPuck = useGetPuck();
+  const [publishing, setPublishing] = useState(false);
+  const [dialogUrl, setDialogUrl] = useState<string | null>(null);
+
+  const publish = async () => {
+    setPublishing(true);
+    try {
+      if (!(await flushSave(getPuck().appState.data))) return;
+      const result = await publishSite(site.id);
+      if (!result.ok) {
+        toast(`Can't publish: ${result.message}`);
+        return;
+      }
+      setLive(true);
+      if (result.firstPublish) {
+        setDialogUrl(result.url);
+      } else {
+        toast("Published. Your changes are live.", {
+          action: { label: "View site", onClick: () => window.open(result.url, "_blank", "noreferrer") },
+        });
+      }
+    } catch {
+      toast("That didn't work. Try again.");
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+  return (
+    <>
+      <button
+        type="button"
+        disabled={building || publishing || status.state !== "saved"}
+        onClick={publish}
+        className="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-40 sm:h-9"
+      >
+        Publish
+      </button>
+      <PublishDialog
+        open={dialogUrl !== null}
+        onOpenChange={(open) => !open && setDialogUrl(null)}
+        url={dialogUrl ?? ""}
+        siteId={site.id}
+      />
+    </>
+  );
+}
+
+/** Editor top bar (editor-topbar in the reference). */
 export function TopBar() {
-  const { site } = useEditor();
+  const { site, live } = useEditor();
   const title = usePuck((s) => (s.appState.data.root.props as { title?: string } | undefined)?.title);
   const viewportWidth = usePuck((s) => s.appState.ui.viewports.current.width);
   const hasPast = usePuck((s) => s.history.hasPast);
@@ -66,7 +121,7 @@ export function TopBar() {
       <div className="flex min-w-0 items-center gap-2.5">
         <span className="truncate text-sm font-semibold">{title || site.name}</span>
         <span className="hidden shrink-0 sm:inline-flex">
-          <StatusBadge status={site.publishedAt ? "live" : "draft"} />
+          <StatusBadge status={live ? "live" : "draft"} />
         </span>
         <SaveStatusText />
       </div>
@@ -98,13 +153,7 @@ export function TopBar() {
           <Redo2 className="size-4" aria-hidden="true" />
         </button>
         <div className="mx-1 hidden h-6 w-px bg-border sm:block" aria-hidden="true" />
-        <button
-          type="button"
-          disabled
-          className="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-40 sm:h-9"
-        >
-          Publish
-        </button>
+        <PublishButton />
       </div>
     </header>
   );

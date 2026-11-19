@@ -5,27 +5,11 @@ import { Switch } from "@/components/ui/switch";
 import { ImageField, type ImageValue } from "@/components/editor/image-field";
 import { LinkField, type FieldMeta } from "@/components/editor/fields";
 import { TabIconField } from "@/components/editor/tab-icon-field";
-import { SiteRoot } from "@/components/site/site-root";
-import { Hero } from "@/components/site/sections/hero";
-import { About } from "@/components/site/sections/about";
-import { Features } from "@/components/site/sections/features";
-import { Services } from "@/components/site/sections/services";
-import { Gallery } from "@/components/site/sections/gallery";
-import { Testimonials } from "@/components/site/sections/testimonials";
-import { Pricing } from "@/components/site/sections/pricing";
-import { FAQ } from "@/components/site/sections/faq";
-import { CallToAction } from "@/components/site/sections/call-to-action";
-import { Contact } from "@/components/site/sections/contact";
-import { Links } from "@/components/site/sections/links";
 import { FONT_META, THEME_META, type Font, type Theme } from "@/lib/site/themes";
-import type { PageData, SectionProps } from "@/lib/site/types";
 import { cn } from "@/lib/utils";
 import { SECTION_CATALOG } from "./catalog";
+import { renderConfig } from "./render-config";
 import { Button as ButtonSchema, FONTS, Image as ImageSchema, Link as LinkSchema, RootProps as RootPropsSchema, SECTION_SCHEMAS, SECTION_TYPES, THEMES, type SectionType } from "./schemas";
-
-const COMPONENTS: { [T in SectionType]: React.ComponentType<SectionProps<T>> } = {
-  Hero, About, Features, Services, Gallery, Testimonials, Pricing, FAQ, CallToAction, Contact, Links,
-};
 
 // ---------------------------------------------------------------------------
 // Labels
@@ -373,22 +357,21 @@ function sectionFields(type: SectionType): Fields {
 // ---------------------------------------------------------------------------
 // Config
 
-type RootProps = PageData["root"]["props"];
-
 function sectionConfig<T extends SectionType>(type: T): ComponentConfig {
-  const Component = COMPONENTS[type] as React.ComponentType<Record<string, unknown>>;
   return {
+    ...(renderConfig.components[type] as ComponentConfig),
     label: SECTION_CATALOG[type].label,
     defaultProps: SECTION_CATALOG[type].defaultProps as Record<string, unknown>,
     fields: sectionFields(type),
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    render: ({ id, puck, editMode, ...props }) => <Component {...props} />,
   };
 }
 
+/** The editor's config: `renderConfig` plus fields and defaults. */
 export const puckConfig: Config = {
+  ...renderConfig,
   components: Object.fromEntries(SECTION_TYPES.map((t) => [t, sectionConfig(t)])),
   root: {
+    ...renderConfig.root,
     fields: {
       title: { type: "text", label: ROOT_FIELD_LABELS.title, maxLength: RootPropsSchema.shape.title.maxLength ?? undefined } as Field & FieldMeta,
       theme: {
@@ -411,22 +394,6 @@ export const puckConfig: Config = {
         label: ROOT_FIELD_LABELS.description,
         render: ({ value, onChange, readOnly }) => <DescriptionField value={value} onChange={onChange} readOnly={readOnly} />,
       },
-    },
-    render: ({ children, ...props }: { children: React.ReactNode }) => {
-      const { title, theme, font, showBadge } = props as Partial<RootProps>;
-      return (
-        <SiteRoot
-          title={title ?? ""}
-          theme={theme ?? "paper"}
-          font={font ?? "sans"}
-          favicon=""
-          description=""
-          showBadge={showBadge ?? true}
-          className="min-h-screen"
-        >
-          {children}
-        </SiteRoot>
-      );
     },
   },
 };

@@ -28,7 +28,7 @@ export function Hero({ headline, subheadline, primaryButton, secondaryButton, im
             {subheadline && <p className="mt-5 max-w-md text-lg leading-relaxed text-site-muted">{subheadline}</p>}
             <Buttons primaryButton={primaryButton} secondaryButton={secondaryButton} className="mt-8 flex flex-wrap gap-3" />
           </div>
-          <SiteImage image={image} className="aspect-[4/3]" />
+          <SiteImage image={image} className="aspect-[4/3]" preload />
         </div>
       </section>
     );
@@ -40,7 +40,7 @@ export function Hero({ headline, subheadline, primaryButton, secondaryButton, im
         <h1 className="text-4xl font-bold leading-[1.05] @2xl:text-6xl">{headline}</h1>
         {subheadline && <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-site-muted">{subheadline}</p>}
         <Buttons primaryButton={primaryButton} secondaryButton={secondaryButton} className="mt-8 flex flex-wrap justify-center gap-3" />
-        {layout === "centered" && image && <SiteImage image={image} className="mt-14 aspect-[16/9]" />}
+        {layout === "centered" && image && <SiteImage image={image} className="mt-14 aspect-[16/9]" preload />}
       </div>
     </section>
   );

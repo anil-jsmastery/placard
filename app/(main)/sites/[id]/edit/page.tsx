@@ -16,7 +16,7 @@ export default async function EditSitePage({ params }: { params: Promise<{ id: s
 
   const site = await db.query.sites.findFirst({
     where: and(eq(sites.id, id), eq(sites.userId, userId)),
-    columns: { id: true, name: true, slug: true, draft: true, publishedAt: true },
+    columns: { id: true, name: true, slug: true, draft: true, published: true },
   });
   if (!site) notFound();
   const [usage, user] = await Promise.all([
@@ -26,7 +26,7 @@ export default async function EditSitePage({ params }: { params: Promise<{ id: s
 
   return (
     <Editor
-      site={{ id: site.id, name: site.name, slug: site.slug, draft: site.draft as PageData, publishedAt: site.publishedAt }}
+      site={{ id: site.id, name: site.name, slug: site.slug, draft: site.draft as PageData, published: site.published !== null }}
       usage={{ left: usage.left, total: usage.allowance }}
       useCase={isUseCase(user?.useCase) ? user.useCase : "other"}
     />

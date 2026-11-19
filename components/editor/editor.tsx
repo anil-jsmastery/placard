@@ -19,7 +19,7 @@ import { SectionActionBar, SectionOverlay } from "./section-overlay";
 import { fieldTypeOverrides } from "./fields";
 import { EditorShortcuts, listenForShortcuts } from "./shortcuts";
 
-export type EditorSite = { id: string; name: string; slug: string; draft: PageData; publishedAt: Date | null };
+export type EditorSite = { id: string; name: string; slug: string; draft: PageData; published: boolean };
 
 /** The usage line under the AI composer. */
 export type AiUsage = { left: number; total: number };
@@ -44,6 +44,9 @@ type EditorContextValue = {
   flushSave: (data: Data) => Promise<boolean>;
   /** Called on the first hand edit after it's set (the AI panel uses it to hide "Undo AI change"). */
   handEditRef: React.RefObject<(() => void) | null>;
+  /** The site has a live page (the status badge shows Live). */
+  live: boolean;
+  setLive: (live: boolean) => void;
 };
 
 const EditorContext = createContext<EditorContextValue | null>(null);
@@ -253,6 +256,7 @@ export function Editor({ site, usage: initialUsage, useCase }: { site: EditorSit
   const paused = useRef(false);
   const [building, setBuildingState] = useState(false);
   const [usage, setUsage] = useState(initialUsage);
+  const [live, setLive] = useState(site.published);
   const handEditRef = useRef<(() => void) | null>(null);
   const { status, onChange, markSaved, flush: flushSave } = useAutosave(site.id, site.draft, paused, handEditRef);
   useLeaveWarning(status);
@@ -261,8 +265,8 @@ export function Editor({ site, usage: initialUsage, useCase }: { site: EditorSit
     setBuildingState(value);
   }, []);
   const value = useMemo(
-    () => ({ site, status, building, setBuilding, markSaved, usage, setUsage, flushSave, handEditRef }),
-    [site, status, building, setBuilding, markSaved, usage, flushSave],
+    () => ({ site, status, building, setBuilding, markSaved, usage, setUsage, flushSave, handEditRef, live, setLive }),
+    [site, status, building, setBuilding, markSaved, usage, flushSave, live],
   );
   return (
     <EditorContext.Provider value={value}>
