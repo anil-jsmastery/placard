@@ -72,11 +72,11 @@ Build from the reference markup (design-system §5): `components/app/logo.tsx`, 
 **The Neon project.** One project, `placard`, next to Vercel's `iad1` region. Through the CLI (the person signed it in; `--no-secrets` keeps connection strings out of the output):
 ```bash
 npx neon me
-npx neon projects create --name placard --region-id aws-us-east-1 --pg-version 17 --no-secrets --output json
+npx neon projects create --name placard --region-id aws-us-east-1 --pg-version 18 --no-secrets --output json
 npx neon link --project-id <the id it printed> -y --no-env-pull
 npx neon branches list --output json
 ```
-If `neon me` says you're not signed in, ask the person to run `npx neon login` and wait. If a project named `placard` already exists (a second try), link to it instead of creating another. The project's default branch must be called `main`: if `branches list` shows another name for it, rename it with `npx neon branches rename <its name> main`.
+Postgres **18** is required: Neon Realtime (Step 11) only runs on Postgres 18, and a project's major version can't be changed later without moving to a new project. If `neon me` says you're not signed in, ask the person to run `npx neon login` and wait. If a project named `placard` already exists (a second try), link to it instead of creating another. The project's default branch must be called `main`: if `branches list` shows another name for it, rename it with `npx neon branches rename <its name> main`.
 
 `neon.ts` at the repo root, exactly (later steps replace it as they add services):
 ```ts
@@ -318,7 +318,7 @@ Every later step runs this on the pages it touched (design-system §13).
 - [ ] Signed out, `/dashboard` redirects to `/sign-in`
 - [ ] The browser tab on `/` and `/dashboard` shows the Placard mark, and `app/favicon.ico` is gone
 - [ ] `users` on `dev` has one row per account with the Clerk ID: the SQL result (through `neon`) matches the user list from `clerk` (paste both)
-- [ ] Neon (through `neon`, with the Console link): the project `placard` is in `aws-us-east-1` on Postgres 17, its default branch is `main`, and `dev` is a child of `main`; `.neon` pins `dev` and `git check-ignore .neon` prints it
+- [ ] Neon (through `neon`, with the Console link): the project `placard` is in `aws-us-east-1` on Postgres 18, its default branch is `main`, and `dev` is a child of `main`; `.neon` pins `dev` and `git check-ignore .neon` prints it
 - [ ] `drizzle/` has `0000_init.sql`; `npm run db:check` passes and `npx drizzle-kit generate` says there are no schema changes; on `dev` the 7 tables exist with snake_case names in `public`, and `select count(*) from drizzle.__drizzle_migrations` is 1 (paste the table list and both results)
 - [ ] PostHog (through `posthog`): one `signed_up` per new account, with `environment = dev`; the person is identified by Clerk ID (saved insight `Check · signed_up`, and links to the person pages)
 - [ ] `npm run typecheck`, `npm run lint`, `npm run build` pass

@@ -40,7 +40,7 @@ The folder Claude Code is open in is `placard`, the repo root, and it holds the 
 
 ## Neon
 
-One Neon project, `placard`, in AWS US East (N. Virginia) `aws-us-east-1` (next to Vercel's `iad1`), Postgres 17, database `neondb`. Step 1 creates it.
+One Neon project, `placard`, in AWS US East (N. Virginia) `aws-us-east-1` (next to Vercel's `iad1`), Postgres 18 (Neon Realtime needs 18; a project's major version can't change later), database `neondb`. Step 1 creates it.
 
 - **Branches.** `main` is production (the project's default branch; Vercel's Production uses it). `dev` is a child of `main` and is what the app uses on your machine: `.neon` pins it, and `.env.local` holds its variables. Every Vercel preview gets its own branch, `preview/<git branch>`, from Neon's Vercel integration (Step 9): the build applies `neon.ts` and the migrations to it, and `instrumentation.ts` reads its variables when the preview starts. Steps make short-lived branches for checks (`migrate-check`, `preview/preview-check`, `preview/preview-files`, `sim`, `restore-check`) and delete them before they finish. The launch rehearsal (Steps 17–20) runs on `swarm`, a branch of `dev`: Step 17 makes it and points `.neon` and `.env.local` at it, and Step 20 points them back at `dev` and deletes it. Never delete, reset or restore `main` or `dev`.
 - **`neon.ts`** at the repo root is the backend as code: Realtime, the AI Gateway, the `uploads` bucket, the `jobs` function and its triggers. A step that adds a service gives the whole new file. `npx neon deploy --branch dev` applies it to `dev`; `npx neon deploy --branch main --no-env-pull` applies it to production, only in the steps that say so (`--no-env-pull`, so `main`'s variables never land in `.env.local`).
@@ -71,7 +71,7 @@ Everyone uses exactly these, except Node.js, which can be any version in its ran
 | Claude Code | the VS Code extension, any current version; Opus 5.5 at medium effort (Sonnet 5.5 where a step's Model row says it's enough) | `.claude/settings.json` (`model`, `effortLevel`) and the `/step` check |
 | npm packages | every version exact, everything they depend on as published on 2026-11-16 | package.json, `.npmrc` (`before=`, `save-exact`) |
 | Next.js · React · Tailwind CSS · TypeScript | 16.4.6 · 19.3.0 · 4.3.3 · 5.9.3 | Step 0 |
-| Database | Neon Lakebase Postgres 17 (`aws-us-east-1`, database `neondb`); Drizzle ORM 0.45.4 · drizzle-kit 0.31.11 · `pg` 8.23.1 | Steps 0 and 1 |
+| Database | Neon Lakebase Postgres 18 (`aws-us-east-1`, database `neondb`); Drizzle ORM 0.45.4 · drizzle-kit 0.31.11 · `pg` 8.23.1 | Steps 0 and 1 |
 | Neon | CLI `neon` 9.5.0 · `@neon/config` 1.14.0 · `@neon/realtime` 0.2.1 · `@neon/realtime-react` 0.2.0 · `@neon/realtime-drizzle` 0.2.0 · `@neon/ai-sdk-provider` 1.3.2 · `@neon/env` 2.1.3 · `@neondatabase/serverless` 1.2.1 | Step 0 |
 | Object Storage client | `@aws-sdk/client-s3` · `@aws-sdk/s3-request-presigner` 3.1169.0 | Step 0 |
 | shadcn CLI · Puck · AI SDK · Clerk · PostHog | 4.23.0 · 0.24.0 · 7.0.173 · 7.10.0 · `posthog-js` 1.449.2 | Step 0 |
