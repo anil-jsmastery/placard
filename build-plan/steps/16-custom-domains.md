@@ -9,7 +9,7 @@
 | MCP | `vercel`, `clerk`, `posthog`, `neon`, `next-devtools`, `playwright` |
 | Model | Opus 5.5 · medium effort (Sonnet 5.5 is enough) |
 
-**Not available in this plan's setup.** Step 9 runs Placard without a domain: production is on its `vercel.app` address, published sites are at `/p/{slug}`, and sign-in uses Clerk development instances. A custom domain points at `sites.APP_DOMAIN`, which needs `APP_DOMAIN` to be a domain you own, with Clerk's production instance on it. Neither exists here, so skip this step; Steps 17–20 don't depend on it.
+**Not available in this plan's setup.** Step 9 runs Placard without a domain: production is on its `vercel.app` address, published sites are at `/p/{slug}`, and sign-in uses Clerk's development instance. A custom domain points at `sites.APP_DOMAIN`, which needs `APP_DOMAIN` to be a domain you own, with Clerk's production instance on it. Neither exists here, so skip this step; Steps 17–20 don't depend on it.
 
 **This step is optional.** Nothing in Steps 0–15 depends on it. Until it's built, the switch `NEXT_PUBLIC_FEATURE_CUSTOM_DOMAINS` is `false` and the app shows no custom-domain feature anywhere: not in the plan cards, comparison table, FAQ, paywall, settings or Clerk. If v1 ships without custom domains, skip this step; the app is complete after Step 15.
 

@@ -11,15 +11,15 @@
 
 ## 1. You do first
 
-Clerk Billing is set up in Clerk's dashboard (its MCP server doesn't manage billing). Do 1–4 in the development instance of **both** Clerk applications: **Placard** (this machine and previews) and **Placard Live** (production, Step 9). Neither has a production instance, so both use Clerk's test payment gateway: Pro is paid with test cards, and no Stripe account is needed.
+Clerk Billing is set up in Clerk's dashboard (its MCP server doesn't manage billing). Do 1–4 in the development instance of the **Placard** application. Production uses the same instance (Step 9), so this one setup serves your machine, previews and production. There's no production instance, so Clerk's test payment gateway is used: Pro is paid with test cards, and no Stripe account is needed.
 
 1. Billing → enable for **users** (Clerk's test payment gateway; don't connect Stripe).
 2. Features: `remove_badge` ("Remove badge") and `full_stats` ("Full stats"). (`custom_domain` is added only if you build the optional Step 16.)
 3. Plans: the default free plan (key `free_user`, no features) and **Pro** (key `pro`, $9/month, no annual price, both features).
-4. Webhooks: add the billing events to the existing endpoint (subscription item active, canceled and ended; see the Clerk docs for the exact event names in your instance).
-5. Paste the development Pro plan ID into `NEXT_PUBLIC_CLERK_PRO_PLAN_ID` in `.env.local`, and give Claude Code Placard Live's Pro plan ID in the chat (plan IDs aren't secret).
+4. Webhooks: add the billing events to **both** endpoints (the ngrok one and the production one from Step 9) (subscription item active, canceled and ended; see the Clerk docs for the exact event names in your instance).
+5. Paste the development Pro plan ID into `NEXT_PUBLIC_CLERK_PRO_PLAN_ID` in `.env.local`, (the same ID serves production; plan IDs aren't secret).
 
-Claude Code creates the PostHog flag and sets Placard Live's plan ID in Vercel (3.0).
+Claude Code creates the PostHog flag and sets the plan ID in Vercel (3.0).
 
 ## 2. Read first
 
@@ -31,8 +31,8 @@ Claude Code creates the PostHog flag and sets Placard Live's plan ID in Vercel (
 
 ### 3.0 Services (`posthog`, `vercel`, `clerk`)
 - **Flag (`posthog`):** create the boolean flag `free-ai-allowance`, name "Free AI requests per month", active, 100% rollout, JSON payload `10`. Give its link.
-- **Variable (`vercel`):** set `NEXT_PUBLIC_CLERK_PRO_PLAN_ID` for Production to Placard Live's plan ID the person gave, and for Preview to the Placard plan ID from `.env.local`.
-- **Check (`clerk`):** in both applications' development instances, Billing is on with the features `remove_badge` and `full_stats` and the plans `free_user` and `pro` as in section 1, where `clerk` can read them; otherwise ask the person to confirm each line.
+- **Variable (`vercel`):** set `NEXT_PUBLIC_CLERK_PRO_PLAN_ID` for Production and Preview to the plan ID in `.env.local` (one application, one plan ID).
+- **Check (`clerk`):** in the development instance, Billing is on with the features `remove_badge` and `full_stats` and the plans `free_user` and `pro` as in section 1, where `clerk` can read them; otherwise ask the person to confirm each line.
 
 ### 3.1 Reading the plan (never stored)
 - `lib/plan.ts`: `getPlanKey()` → `(await auth()).has({ plan: "pro" }) ? "pro" : "free"`; `hasFeature(feature)` → `has({ feature })`. Client side: `useAuth().has` in the same way.
@@ -51,7 +51,7 @@ Claude Code creates the PostHog flag and sets Placard Live's plan ID in Vercel (
 - Dashboard subtitle: "{count} of {limit} sites on {Plan}" ("site" when the limit is 1).
 
 ### 3.4 Webhooks and person properties
-In `app/api/webhooks/clerk/route.ts`:
+In `app/api/webhooks/clerk/route.ts` (production and this machine share one Clerk application, Step 9, so both receive every billing event): ignore a billing event, with 200, when its user has no `users` row in this database. Otherwise:
 - Pro becomes active → `captureServer(userId, "subscription_started", { plan: "pro" }, { personSet: { plan: "pro" } })`.
 - Pro canceled (still active until the period ends) → `subscription_canceled` `{ plan: "pro" }`.
 - Pro ended → `personSet: { plan: "free" }`, and call `onDowngrade(userId)` in `lib/billing.ts` (empty for now; Step 12 adds to it, and Step 16 if you build it).
@@ -86,7 +86,7 @@ Pro must stay profitable for a user who uses all 300 requests: `300 × p90 cost 
 - [ ] `/pricing` matches `pricing-1440.png` (Clerk card internals aside) and `/account` matches `account-1440.png`; the paywall matches `paywall-1440.png` and `paywall-390.png`
 - [ ] The cost table is in `notes/decisions.md`
 - [ ] typecheck, lint, build pass
-- [ ] **(prod)** The deployment is Ready with no runtime errors since (`vercel`, links); on `https://APP_DOMAIN/pricing` the plan cards come from Placard Live, a signed-in Free user's meter says "of 10", and upgrading with a test card unlocks Pro at once
+- [ ] **(prod)** The deployment is Ready with no runtime errors since (`vercel`, links); on `https://APP_DOMAIN/pricing` the plan cards show Free and Pro, a signed-in Free user's meter says "of 10", and upgrading with a test card unlocks Pro at once
 - [ ] `node scripts/check-responsive.mjs` passes for the pages to check at all six widths, and its screenshots match the reference at 390, 768 and 1440 (1024 for editor screens)
 
 ## 6. Commit

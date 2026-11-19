@@ -25,7 +25,7 @@ An experiment is only as good as its setup, so this step is strict about three t
 ## 3. Build
 
 ### 3.0 Before the run
-- Through `clerk`: at most 15 users. `.neon` pins `swarm`. Build and start the app on it as in Step 17 3.3 (it must include Step 19).
+- Through `clerk`: at most 20 users (production's sign-ups count too: production shares this Clerk application, Step 9). `.neon` pins `swarm`. Build and start the app on it as in Step 17 3.3 (it must include Step 19).
 - Through `posthog`: the flag's three release conditions are as Step 19 set them. Then **launch** the experiment now, and note its start time. Nothing before it counts, including the check users from Step 19.
 
 ### 3.1 Cohort B (about 25 minutes)
@@ -70,7 +70,7 @@ Nothing in the UI changes.
 
 ## 5. Check it works
 
-- [ ] Clerk had room: at most 15 users before the run, and none of the swarm's after the person's cleanup (counts through `clerk`)
+- [ ] Clerk had room: at most 20 users before the run (production's included), and none of the swarm's after the person's cleanup (counts through `clerk`)
 - [ ] The experiment was launched before Cohort B's first arrival (its start time against `started_at` in `summary.json`)
 - [ ] Cohort B finished without `Stopped early`, with at most 5% failed actions (its summary lines, pasted)
 - [ ] Each variant has 40–60% of the exposures (link)

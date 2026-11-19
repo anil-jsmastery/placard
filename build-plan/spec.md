@@ -2,7 +2,7 @@
 
 > Describe it. Watch AI build it. Edit anything. Publish in one click.
 >
-- **Status:** v1 scope locked, 2026-11-13. v1.1, 2026-11-16: Vercel hosting with Neon as the backend (Postgres, Realtime, Object Storage, Functions, AI Gateway, Lakebase Search). v1.2, 2026-11-17: a launch rehearsal with an AI-agent swarm, and the first experiment chosen from its data v1.3, 2026-11-19: no domain of its own. Production runs at the app's `vercel.app` address with sites at `/p/{slug}`, sign-in on Clerk development instances, test payments only (no Stripe); custom domains and the Hostinger move are out of this build
+- **Status:** v1 scope locked, 2026-11-13. v1.1, 2026-11-16: Vercel hosting with Neon as the backend (Postgres, Realtime, Object Storage, Functions, AI Gateway, Lakebase Search). v1.2, 2026-11-17: a launch rehearsal with an AI-agent swarm, and the first experiment chosen from its data v1.3, 2026-11-19: no domain of its own. Production runs at the app's `vercel.app` address with sites at `/p/{slug}`, sign-in on the Clerk development instance shared with development, test payments only (no Stripe); custom domains and the Hostinger move are out of this build
 - **Name:** not chosen. This file uses `APP_DOMAIN` for the domain
 - **Start from:** `project/page-builder-prototype`. The editor, sections, themes and publish flow carry over
 - **Related:** position-task.md (video plan) · posthog-features.md (analytics plan)
@@ -307,7 +307,7 @@ Full plan: posthog-features.md. These are the events the code must send.
 | Editor | Puck (`@puckeditor/core`) |
 | AI | Vercel AI SDK + the Neon AI Gateway provider (Claude models, tool calling, streaming, embeddings) |
 | Validation | zod |
-| Auth and billing | Clerk + Clerk Billing (development instances, test payment gateway; no Stripe) |
+| Auth and billing | Clerk + Clerk Billing (one development instance for every environment, test payment gateway; no Stripe) |
 | Database | Neon Lakebase Postgres, Drizzle ORM; branches for development, every Vercel preview and checks |
 | Live data | Neon Realtime (live SQL queries) |
 | Files | Neon Object Storage, processed by a Neon Function |

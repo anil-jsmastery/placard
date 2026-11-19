@@ -59,7 +59,7 @@ Build from the reference markup (design-system §5): `components/app/logo.tsx`, 
 
 ### 3.3 Pages
 - `app/(main)/(marketing)/layout.tsx`: marketing header and footer (`marketing-header`, `marketing-footer` partials). `app/(main)/(marketing)/page.tsx`: only the first block of `landing.html`. Port its hero `<section class="pt-16 sm:pt-24">` and the `<div class="mx-auto max-w-6xl px-5 sm:px-8">` inside it (the same column as the header, so the headline lines up with the logo), with the headline, lead, two buttons and note in it, every class exactly as in the reference; leave out only the demo below them. The rest of the landing page is Step 13.
-- `app/(main)/(auth)/sign-in/[[...sign-in]]/page.tsx` and `sign-up/[[...sign-up]]/page.tsx`: Clerk `<SignIn fallbackRedirectUrl="/dashboard" />` / `<SignUp forceRedirectUrl="/dashboard" />` centred on `bg-background`, logo above, `py-16`. (Step 4 sends new sign-ups to `/onboarding` instead.)
+- `app/(main)/(auth)/sign-in/[[...sign-in]]/page.tsx` and `sign-up/[[...sign-up]]/page.tsx`: Clerk `<SignIn fallbackRedirectUrl="/dashboard" />` / `<SignUp forceRedirectUrl="/dashboard" unsafeMetadata={{ environment: APP_ENV }} />` centred on `bg-background`, logo above, `py-16`. (Step 4 sends new sign-ups to `/onboarding` instead.)
 - `app/(main)/(app)/layout.tsx`: `<AppHeader />` + children. Calls `ensureUser()` (below).
 - `app/(main)/(app)/dashboard/page.tsx`: title "Sites" and the empty state from `dashboard-empty.html`, without the "New site" button (Step 3 adds it, when there is an editor to open). Keep the empty state's text and the "Free includes…" line.
 - Signed-in visitors to `/` are redirected to `/dashboard`.
@@ -255,7 +255,7 @@ Commit `lib/db/` and `drizzle/`. If the schema changes in a later step: edit `sc
 
 ### 3.6 Users
 - `lib/users.ts`: `ensureUser()` reads the Clerk user (`currentUser()`) and creates the `users` row if it's missing (`db.insert(users).values({ id, email }).onConflictDoNothing()`). Also `isSimulatedEmail(email)` → `email.includes("+clerk_test")` (test-script users always use Clerk test emails).
-- `app/api/webhooks/clerk/route.ts`: verify with `verifyWebhook` from `@clerk/nextjs/webhooks`. On `user.created`: create the user (the same upsert) and send `signed_up` from the server. Other event types: return 200 and do nothing (billing events arrive in Step 10).
+- `app/api/webhooks/clerk/route.ts`: verify with `verifyWebhook` from `@clerk/nextjs/webhooks`. On `user.created`: if the user's `unsafe_metadata.environment` is set and isn't `APP_ENV`, return 200 and do nothing; otherwise create the user (the same upsert) and send `signed_up` from the server. Production and this machine share one Clerk application from Step 9, so both webhooks receive every sign-up, and the `environment` tag that the sign-up page sets (`unsafeMetadata`, kept in every later step) decides which one acts. A sign-up without the tag is handled as before. Other event types: return 200 and do nothing (billing events arrive in Step 10).
 - Local webhooks reach the app through the ngrok tunnel the person started in section 1 (`ngrok http --url=<their domain> 3000`).
 
 ### 3.7 PostHog
