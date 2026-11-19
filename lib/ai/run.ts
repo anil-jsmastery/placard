@@ -11,7 +11,7 @@ import {
   type UIMessageStreamWriter,
 } from "ai";
 import { and, desc, eq, notInArray } from "drizzle-orm";
-import { captureServer, isSimulatedUser, posthogNodeClient } from "@/lib/analytics/server";
+import { captureServer, flushAnalyticsAfterResponse, isSimulatedUser, posthogNodeClient } from "@/lib/analytics/server";
 import { APP_ENV } from "@/lib/config";
 import { aiRuns, db, sites, snapshots } from "@/lib/db";
 import { slugify, uniqueSlug } from "@/lib/domains";
@@ -271,5 +271,6 @@ export async function startRun(input: StartRunInput): Promise<{ error: StartRunE
     onError: () => "model_error",
   });
 
+  flushAnalyticsAfterResponse();
   return { response: createUIMessageStreamResponse({ stream }) };
 }

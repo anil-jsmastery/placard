@@ -1,4 +1,5 @@
 import "server-only";
+import { after } from "next/server";
 import { PostHog } from "posthog-node";
 import { eq } from "drizzle-orm";
 import { db, users } from "@/lib/db";
@@ -12,6 +13,14 @@ export const posthogNodeClient = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY
   flushAt: 1,
   flushInterval: 0,
 });
+
+/**
+ * After the response (an AI run's whole stream) has finished, flush what the client still holds, such as the LLM
+ * traces, so nothing is lost when the function ends (Step 9). Call it inside the request.
+ */
+export function flushAnalyticsAfterResponse() {
+  after(() => posthogNodeClient.flush().catch((error) => console.warn(`PostHog flush failed: ${error}`)));
+}
 
 /** `simulated` for a user: true for test-script users (Clerk test emails). */
 export async function isSimulatedUser(userId: string) {

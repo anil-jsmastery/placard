@@ -2,6 +2,9 @@ import { auth } from "@clerk/nextjs/server";
 import { z } from "zod";
 import { startRun } from "@/lib/ai/run";
 
+// The run stops itself at 90 s (lib/ai/run.ts); the function gets room to finish and flush after it.
+export const maxDuration = 120;
+
 const Body = z.object({
   siteId: z.uuid(),
   prompt: z.string(),
