@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { and, eq, sql } from "drizzle-orm";
 import { SiteTabs } from "@/components/app/site-tabs";
-import { APP_DOMAIN } from "@/lib/config";
+import { APP_DOMAIN, SITE_PATHS } from "@/lib/config";
 import { db, sites } from "@/lib/db";
 import { AddressRow, DeleteRow, PublishingRow } from "./settings-rows";
 
@@ -25,7 +25,7 @@ export default async function SiteSettingsPage({ params }: { params: Promise<{ i
       <SiteTabs siteId={site.id} name={site.name} live={site.live} active="settings" />
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
         <div className="divide-y divide-border rounded-xl border border-border bg-card">
-          <AddressRow key={site.slug} siteId={site.id} slug={site.slug} appDomain={APP_DOMAIN} />
+          <AddressRow key={site.slug} siteId={site.id} slug={site.slug} appDomain={APP_DOMAIN} sitePaths={SITE_PATHS} />
           <PublishingRow siteId={site.id} live={site.live} />
           <DeleteRow siteId={site.id} name={site.name} />
         </div>

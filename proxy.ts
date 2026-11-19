@@ -1,5 +1,6 @@
 import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { SITE_PATHS } from "@/lib/config";
 
 const isProtectedRoute = createRouteMatcher(["/dashboard", "/new", "/onboarding", "/account", "/sites(.*)"]);
 
@@ -19,6 +20,13 @@ export default function proxy(req: NextRequest, event: NextFetchEvent) {
     const url = req.nextUrl.clone();
     url.host = appHost;
     return NextResponse.redirect(url, 308);
+  }
+
+  if (host === appHost && SITE_PATHS) {
+    // Production on a vercel.app address: a published site at /p/{slug} (Step 9). Clerk never runs for it.
+    const match = path.match(/^\/p\/([a-z0-9-]{3,30})\/?$/);
+    if (match) return NextResponse.rewrite(new URL(`/s/${encodeURIComponent(`${match[1]}.${appHost}`)}`, req.url));
+    if (path.startsWith("/p/")) return NextResponse.rewrite(new URL("/s/_/not-found", req.url));
   }
 
   if (host !== appHost) {

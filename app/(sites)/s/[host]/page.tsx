@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Render } from "@puckeditor/core/rsc";
-import { APP_URL } from "@/lib/config";
+import { siteUrl } from "@/lib/config";
 import { renderConfig } from "@/lib/sections/render-config";
 import { resolveHost } from "@/lib/sites/resolve";
 import type { PageData } from "@/lib/site/types";
@@ -29,7 +29,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!site) return {};
 
   const { title, description, favicon } = site.published.root.props;
-  const origin = `${APP_URL.startsWith("https") ? "https" : "http"}://${host}`;
+  const url = siteUrl(site.slug);
+  const origin = new URL(url).origin;
   const hero = site.published.content.find((s) => s.type === "Hero");
   const heroImage = hero?.type === "Hero" ? hero.props.image : undefined;
 
@@ -40,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title,
       description: description || undefined,
-      url: origin,
+      url,
       type: "website",
       images: heroImage ? [{ url: new URL(heroImage.src, origin).toString(), alt: heroImage.alt }] : undefined,
     },

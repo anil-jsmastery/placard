@@ -20,8 +20,18 @@ import { updateSlug } from "./actions";
 
 const rowClass = "grid grid-cols-1 gap-4 p-5 sm:p-6 md:grid-cols-[220px_minmax(0,1fr)]";
 
-/** "Site address": the slug with the app domain after it. */
-export function AddressRow({ siteId, slug, appDomain }: { siteId: string; slug: string; appDomain: string }) {
+/** "Site address": the slug with the app domain after it (or `APP_DOMAIN/p/` before it in path mode). */
+export function AddressRow({
+  siteId,
+  slug,
+  appDomain,
+  sitePaths,
+}: {
+  siteId: string;
+  slug: string;
+  appDomain: string;
+  sitePaths: boolean;
+}) {
   const router = useRouter();
   const inputId = useId();
   const [value, setValue] = useState(slug);
@@ -53,6 +63,9 @@ export function AddressRow({ siteId, slug, appDomain }: { siteId: string; slug: 
         <label htmlFor={inputId} className="sr-only">Address</label>
         <div className="flex flex-col gap-2 sm:flex-row">
           <div className="flex h-11 min-w-0 items-center overflow-hidden rounded-md border border-input bg-card focus-within:ring-2 focus-within:ring-ring/30 sm:h-10 sm:flex-1">
+            {sitePaths ? (
+              <span className="flex h-full items-center border-r border-input bg-muted px-3 font-mono text-sm text-muted-foreground">{appDomain}/p/</span>
+            ) : null}
             <input
               id={inputId}
               value={value}
@@ -67,7 +80,9 @@ export function AddressRow({ siteId, slug, appDomain }: { siteId: string; slug: 
               aria-describedby={`${inputId}-help`}
               className="h-full min-w-0 flex-1 bg-transparent pl-3 font-mono text-base outline-none sm:text-sm"
             />
-            <span className="flex h-full items-center border-l border-input bg-muted px-3 font-mono text-sm text-muted-foreground">.{appDomain}</span>
+            {sitePaths ? null : (
+              <span className="flex h-full items-center border-l border-input bg-muted px-3 font-mono text-sm text-muted-foreground">.{appDomain}</span>
+            )}
           </div>
           <button
             type="submit"
