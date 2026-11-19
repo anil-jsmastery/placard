@@ -38,6 +38,7 @@ const host = (req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? 
 const appHost = process.env.NEXT_PUBLIC_APP_DOMAIN!.toLowerCase();
 const path = req.nextUrl.pathname;
 
+if (path.startsWith("/api/webhooks/")) → NextResponse.next()   // on any host: the ngrok tunnel's host locally; webhooks check their own signature
 if (host === `www.${appHost}`) → 308 redirect to the same path on appHost
 if (host === appHost && SITE_PATHS) {
   // production on a vercel.app address: a published site at /p/{slug} (Step 9). Clerk never runs for it.
@@ -54,7 +55,7 @@ if (host !== appHost) {
 if (path.startsWith("/s/")) → 404 on the app host
 → Clerk's clerkMiddleware for the app host
 ```
-Clerk must not run for site hosts or `/p/` paths. `SITE_PATHS` comes from `lib/config.ts` (Step 1); it's false on this machine, so `/p/…` is a normal (missing) app route here.
+Clerk must not run for site hosts, `/p/` paths or webhooks. Webhooks pass on any host because Clerk reaches this machine through the ngrok tunnel, whose host isn't `APP_DOMAIN`; without that line they'd get the site 404. `SITE_PATHS` comes from `lib/config.ts` (Step 1); it's false on this machine, so `/p/…` is a normal (missing) app route here.
 
 ### 3.4 The live page: `app/(sites)/s/[host]/page.tsx`
 - `lib/sites/resolve.ts`: `resolveHost(host)`: if the host ends with `.${APP_DOMAIN}` and the part before it has no dot, find the site by `slug`. Any other host is not found for now (the optional Step 16 adds custom domains here). Returns the site only if `published` is not null.
@@ -86,6 +87,7 @@ Clerk must not run for site hosts or `/p/` paths. `SITE_PATHS` comes from `lib/c
 - [ ] Edit and publish again: toast, and the live page shows the change after a reload
 - [ ] View the live page's source: no Puck editor bundle, no Clerk, no PostHog scripts (list the `<script src>` tags)
 - [ ] `<head>` has title, description, emoji favicon and `og:*` tags (paste them)
+- [ ] With the ngrok tunnel running, a new `+clerk_test` sign-up reaches `/api/webhooks/clerk` (ngrok's log shows 200, not 404) and sends one `signed_up` (link)
 - [ ] `http://{slug}.localhost:3000/anything` and an unknown slug show the 404 page; `http://localhost:3000/s/x` and `http://localhost:3000/p/{slug}` are 404s
 - [ ] Path mode: restart the dev server once with `NEXT_PUBLIC_SITE_PATHS=true` set in the shell: `http://localhost:3000/p/{slug}` shows the site with no Clerk or PostHog scripts, `/p/{slug}/x` and an unknown slug are 404s, and the publish dialog, dashboard and Settings show `localhost:3000/p/{slug}`. Restart without it afterwards
 - [ ] Change the slug in Settings: the new address works, the old one is a 404; `www`, `api`, `ab` and an existing slug are refused with the right messages
