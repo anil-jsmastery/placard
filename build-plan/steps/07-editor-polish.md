@@ -31,7 +31,7 @@ Nothing. Claude Code does everything in this step.
 ### 3.2 Fields
 - **Links:** every `href`/`url` field is a custom field: the input in `font-mono text-xs`, helper text "Starts with https://, mailto: or tel:", and the `Link` schema message in `text-destructive text-xs` under it when invalid.
 - **Lengths:** text and textarea fields get `maxLength` from the schema and show `{n} / {max}` (right-aligned `text-xs text-muted-foreground`) once the text passes 80% of the limit.
-- **Arrays:** at the schema's `max`, the add button is disabled and reads "Up to {max}"; below `min`, the remove action is hidden.
+- **Arrays:** match `editor.html` (the Plans list): a header row with the field label (`text-sm font-medium`) and "{n} of {max}" (`text-xs text-muted-foreground`); each item is an `h-10` row (`rounded-md border border-border px-2.5`) with `grip-vertical` on the left, the item summary, and `chevron-right` on the right (`chevron-down` when the item is open, its fields shown inside the same border); the add button is full width and dashed (`h-10 border-dashed border-input text-muted-foreground`, `plus` icon) and reads "Add {item}", the field label in the singular ("Add plan", "Add question", "Add feature"). Build it with Puck's array field overrides. At the schema's `max`, the add button is disabled and reads "Up to {max}"; below `min`, the remove action is hidden.
 - **Tab icon:** a button showing the current emoji (`size-9`, `border-input`) opens a `DropdownMenu` with these 40 emoji in an 8-column grid, plus an input "Or type one" (accepts a single emoji):
   `✨ ⭐ 🌟 🔥 💡 🎯 🚀 🌱 🌿 🌸 🌻 🍞 🥐 ☕ 🍰 🍕 🍜 🍷 🏠 🏡 🛠️ 🔧 🧰 💼 📷 🎨 🎵 🎤 📚 ✏️ 💻 📱 🧘 🏃 ⚽ 🐾 ❤️ 💬 📅 🎉`
 
@@ -55,6 +55,7 @@ Generate three sites (one business, one portfolio, one event). For each, change 
 - [ ] Typing `www.example.com` in a link field shows the message under the field; fixing it clears it
 - [ ] A headline at 70 of 80 characters shows the counter; you can't type past 80
 - [ ] The tab icon picker shows the 40 emoji and saves the choice in `root.props.favicon` (the published site shows it from Step 8)
+- [ ] With a Pricing section selected, the Plans list matches the right panel of `editor-1440.png` ("3 of 4", handles on the left, chevrons, the dashed "Add plan" button); at 4 plans the button reads "Up to 4" and is disabled
 - [ ] Step 5 above done for 3 sites, notes written
 - [ ] typecheck, lint, build pass
 - [ ] `node scripts/check-responsive.mjs` passes for the pages to check at all six widths, and its screenshots match the reference at 390, 768 and 1440 (1024 for editor screens)

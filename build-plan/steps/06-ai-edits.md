@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Goal | The user asks for changes in the chat panel; a one-section edit finishes in under 5 seconds; "Undo AI change" restores the exact previous page |
+| Goal | The user asks for changes in the chat panel; a one-section edit finishes in under 5 seconds in production; "Undo AI change" restores the exact previous page |
 | Spec | Build order 4 · §3.5 AI edits · §7 (`ai_edit_applied`, `ai_change_undone`) |
 | Screens | `editor.html` (AI tab with the conversation, selection chip, Undo AI change) |
 | Pages to check | `/sites/{id}/edit` |
@@ -56,8 +56,8 @@ Nothing. Claude Code does everything in this step.
 
 ## 5. Check it works
 
-- [ ] "Make the hero shorter" with the hero selected changes only the hero (diff the page JSON before/after: only that section's props changed) in under 5 s
-- [ ] "Add a pricing section with 3 plans" with nothing selected adds a valid Pricing section; the reply is one short sentence; the view matches `editor-1440.png` after you select the new section
+- [ ] "Make the hero shorter" with the hero selected changes only the hero (diff the page JSON before/after: only that section's props changed), and report the time (server and browser) with the trace link; the 5 s target is checked on production in Step 9
+- [ ] "Add a pricing section with 3 plans: Starter $9/month, Studio $29/month, Pro $79/month" with nothing selected adds a valid Pricing section with those three prices; the reply is one short sentence; the view matches `editor-1440.png` after you select the new section. (Without prices the AI should decline: Step 5's rules forbid invented prices.)
 - [ ] "Make it darker" switches the theme to midnight or mono through `setSiteSettings`
 - [ ] "Add a contact form" makes no tool calls and replies with what it can do instead
 - [ ] Undo after an edit restores the exact previous JSON (compare with the snapshot) and sends `ai_change_undone` (link)
