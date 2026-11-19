@@ -6,11 +6,14 @@ import { EmptyState } from "@/components/app/empty-state";
 import { NewSiteButton } from "@/components/app/new-site-button";
 import { SetSitesCount } from "@/components/providers/posthog-provider";
 import { LogoMark } from "@/components/app/logo";
-import { SiteCard, type SiteCardData } from "@/components/app/site-card";
+import type { SiteCardData } from "@/components/app/site-card";
+import { SitesGrid } from "@/components/app/sites-grid";
 import { Button } from "@/components/ui/button";
 import { db, sites } from "@/lib/db";
 import { getPlanKey } from "@/lib/plan";
 import { PLANS } from "@/lib/plans";
+import { siteViewsQuery } from "@/lib/realtime/queries";
+import { sealOrNull } from "@/lib/realtime/server";
 import type { PageData } from "@/lib/site/types";
 
 async function getSites(userId: string): Promise<SiteCardData[]> {
@@ -33,7 +36,12 @@ async function getSites(userId: string): Promise<SiteCardData[]> {
 
 export default async function DashboardPage() {
   const { userId } = await auth();
-  const [userSites, plan] = await Promise.all([userId ? getSites(userId) : [], getPlanKey()]);
+  const [userSites, plan, views] = await Promise.all([
+    userId ? getSites(userId) : [],
+    getPlanKey(),
+    // Each card's views line, live: the rows now and the same query sealed for Neon Realtime (Step 11)
+    userId ? Promise.all([siteViewsQuery(userId), sealOrNull(siteViewsQuery(userId))]) : null,
+  ]);
   const { sites: limit, name: planName } = PLANS[plan];
 
   if (userSites.length === 0) {
@@ -70,11 +78,7 @@ export default async function DashboardPage() {
         </div>
         <NewSiteButton atLimit={userSites.length >= limit} />
       </div>
-      <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {userSites.map((site) => (
-          <SiteCard key={site.id} site={site} />
-        ))}
-      </div>
+      <SitesGrid sites={userSites} initialRows={views?.[0] ?? []} sealed={views?.[1] ?? null} />
     </main>
   );
 }

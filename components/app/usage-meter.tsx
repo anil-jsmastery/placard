@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
 
-type Props = { used: number; allowance: number; left: number; className?: string };
+type Props = { allowance: number; left: number; className?: string };
 
 // "7 of 10 AI requests left" + a 56 px bar of requests left (design-system §5)
 export function UsageMeter({ allowance, left, className = "hidden sm:flex" }: Props) {

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Copy, Ellipsis, ExternalLink, Eye, Pencil, Trash2 } from "lucide-react";
+import { ChartColumn, Copy, Ellipsis, ExternalLink, Eye, Pencil, Trash2 } from "lucide-react";
 import { deleteSite, duplicateSite } from "@/app/(main)/(app)/sites/actions";
 import { StatusBadge } from "@/components/app/status-badge";
 import { usePaywall } from "@/components/billing/paywall-provider";
@@ -71,7 +71,7 @@ function Thumbnail({ preview }: { preview: SiteCardData["preview"] }) {
 const itemClass = "gap-2.5 px-2.5 py-2";
 
 /** A site on the dashboard (dashboard.html): thumbnail, name (opens the editor), status, address, views, actions. */
-export function SiteCard({ site }: { site: SiteCardData }) {
+export function SiteCard({ site, views }: { site: SiteCardData; views: number }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const paywall = usePaywall();
@@ -96,7 +96,7 @@ export function SiteCard({ site }: { site: SiteCardData }) {
           <p className="mt-1 truncate font-mono text-xs text-muted-foreground">{site.published ? siteHost(site.slug) : "Not published yet"}</p>
           <p className="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground">
             <Eye className="size-4" aria-hidden="true" />
-            No views yet
+            {views === 0 ? "No views yet" : views === 1 ? "1 view" : `${views.toLocaleString("en-US")} views`}
           </p>
         </div>
         <DropdownMenu>
@@ -127,6 +127,12 @@ export function SiteCard({ site }: { site: SiteCardData }) {
                 View live
               </DropdownMenuItem>
             )}
+            <DropdownMenuItem asChild className={itemClass}>
+              <Link href={`/sites/${site.id}/stats`}>
+                <ChartColumn aria-hidden="true" />
+                Stats
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem className={itemClass} onSelect={() =>
                 startTransition(async () => {
                   const result = await duplicateSite(site.id);

@@ -17,7 +17,6 @@ import { aiRuns, db, sites, snapshots } from "@/lib/db";
 import { slugify, uniqueSlug } from "@/lib/domains";
 import { cleanPage } from "@/lib/sections/clean";
 import { toPage, type PageData } from "@/lib/site/types";
-import { getAiUsage } from "@/lib/usage";
 import { costUsd } from "./cost";
 import { checkCanRun, type GuardFailure } from "./guards";
 import { EDIT_MODEL, getGenerationModel, languageModel, type ModelId } from "./models";
@@ -33,13 +32,10 @@ const TIMEOUT_MS = 90_000;
 
 export type FailReason = "invalid_page" | "too_few_sections" | "model_error" | "timeout";
 
-/** The usage line's new numbers, or nothing when they couldn't be read (the editor keeps the last ones). */
-type UsageUpdate = { left?: number; total?: number };
-
-/** The last part of every run: how it ended and the usage line's new numbers. */
+/** The last part of every run: how it ended. The usage line updates by itself through Neon Realtime (Step 11). */
 export type RunResult =
-  | ({ status: "succeeded"; kind: RunKind; runId: string; sections: number; changed: boolean } & UsageUpdate)
-  | ({ status: "failed"; kind: RunKind; reason: FailReason } & UsageUpdate);
+  | { status: "succeeded"; kind: RunKind; runId: string; sections: number; changed: boolean }
+  | { status: "failed"; kind: RunKind; reason: FailReason };
 
 /** The UI messages of an AI run: `data-page` (the full page after every change) and `data-run` (how it ended). */
 export type RunUIMessage = UIMessage<never, { page: PageData; run: RunResult }>;
@@ -146,16 +142,6 @@ export async function startRun(input: StartRunInput): Promise<{ error: StartRunE
   const capture: typeof captureServer = (...args) =>
     captureServer(...args).catch((error) => console.warn(`PostHog capture failed: ${error}`));
 
-  /** The usage line after the run; never fails the run. */
-  const usageUpdate = async (): Promise<UsageUpdate> => {
-    try {
-      const usage = await getAiUsage(userId);
-      return { left: usage.left, total: usage.allowance };
-    } catch {
-      return {};
-    }
-  };
-
   const fail = async (writer: UIMessageStreamWriter<RunUIMessage>, reason: FailReason, error: string) => {
     try {
       await db
@@ -165,7 +151,7 @@ export async function startRun(input: StartRunInput): Promise<{ error: StartRunE
     } finally {
       // Failed edits aren't generations (Step 14 compares site_generated with generation_failed)
       if (kind === "generate") await capture(userId, "generation_failed", { reason, model: modelId });
-      writer.write({ type: "data-run", data: { status: "failed", kind, reason, ...(await usageUpdate()) } });
+      writer.write({ type: "data-run", data: { status: "failed", kind, reason } });
     }
   };
 
@@ -234,7 +220,6 @@ export async function startRun(input: StartRunInput): Promise<{ error: StartRunE
             runId: run.id,
             sections: finalPage.content.length,
             changed: JSON.stringify(finalPage) !== JSON.stringify(cleanPage(page).data ?? page),
-            ...(await usageUpdate()),
           },
         });
 

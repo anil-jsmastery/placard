@@ -155,7 +155,7 @@ function changedSections(before: PageData, page: PageData) {
  * is closed below 1024 px. Every `data-page` part replaces the canvas; `data-run` ends the run.
  */
 export function AiRunProvider({ useCase, children }: { useCase: UseCase; children: React.ReactNode }) {
-  const { site, building, setBuilding, markSaved, setUsage, usage, flushSave, handEditRef } = useEditor();
+  const { site, building, setBuilding, markSaved, usage, flushSave, handEditRef } = useEditor();
   const paywall = usePaywall();
   const dispatch = usePuck((s) => s.dispatch);
   const data = usePuck((s) => s.appState.data);
@@ -198,12 +198,11 @@ export function AiRunProvider({ useCase, children }: { useCase: UseCase; childre
         dispatch({ type: "setData", data: before.current, recordHistory: false });
         setFailed(true);
       }
-      if (result?.left !== undefined && result.total !== undefined) setUsage({ left: result.left, total: result.total });
       setNewest(null);
       setChanged({ ids: [], version: 0 });
       setBuilding(false);
     },
-    [dispatch, markSaved, setBuilding, setUsage],
+    [dispatch, markSaved, setBuilding],
   );
 
   // Only the request goes to the server (not the conversation); `kind` picks the route.

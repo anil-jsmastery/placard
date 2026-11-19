@@ -13,6 +13,7 @@ import type { PageData } from "@/lib/site/types";
 import { saveDraft } from "@/app/(main)/sites/[id]/edit/actions";
 import type { UseCase } from "@/lib/analytics/events";
 import { AiRunProvider } from "./ai-panel";
+import { useAiUsage, type AiUsage } from "@/components/app/live-usage";
 import { EditorLayout } from "./editor-layout";
 import { AddTile } from "./add-panel";
 import { SectionActionBar, SectionOverlay } from "./section-overlay";
@@ -20,9 +21,6 @@ import { fieldTypeOverrides } from "./fields";
 import { EditorShortcuts, listenForShortcuts } from "./shortcuts";
 
 export type EditorSite = { id: string; name: string; slug: string; draft: PageData; published: boolean };
-
-/** The usage line under the AI composer. */
-export type AiUsage = { left: number; total: number };
 
 export type SaveStatus =
   | { state: "saved" }
@@ -38,8 +36,8 @@ type EditorContextValue = {
   setBuilding: (building: boolean) => void;
   /** The server already saved this page (the end of an AI run): don't autosave it again. */
   markSaved: (data: Data) => void;
+  /** The usage line under the AI composer, live (Step 11). */
   usage: AiUsage;
-  setUsage: (usage: AiUsage) => void;
   /** Saves this page now (waiting for a save in flight), so the server's draft is the page the user sees. False when it couldn't be saved. */
   flushSave: (data: Data) => Promise<boolean>;
   /** Called on the first hand edit after it's set (the AI panel uses it to hide "Undo AI change"). */
@@ -252,10 +250,10 @@ function useLeaveWarning(status: SaveStatus) {
   }, [unsaved]);
 }
 
-export function Editor({ site, usage: initialUsage, useCase }: { site: EditorSite; usage: AiUsage; useCase: UseCase }) {
+export function Editor({ site, useCase }: { site: EditorSite; useCase: UseCase }) {
   const paused = useRef(false);
   const [building, setBuildingState] = useState(false);
-  const [usage, setUsage] = useState(initialUsage);
+  const usage = useAiUsage();
   const [live, setLive] = useState(site.published);
   const handEditRef = useRef<(() => void) | null>(null);
   const { status, onChange, markSaved, flush: flushSave } = useAutosave(site.id, site.draft, paused, handEditRef);
@@ -265,7 +263,7 @@ export function Editor({ site, usage: initialUsage, useCase }: { site: EditorSit
     setBuildingState(value);
   }, []);
   const value = useMemo(
-    () => ({ site, status, building, setBuilding, markSaved, usage, setUsage, flushSave, handEditRef, live, setLive }),
+    () => ({ site, status, building, setBuilding, markSaved, usage, flushSave, handEditRef, live, setLive }),
     [site, status, building, setBuilding, markSaved, usage, flushSave, live],
   );
   return (

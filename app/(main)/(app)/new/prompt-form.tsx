@@ -9,6 +9,7 @@ import { track } from "@/lib/analytics/client";
 import type { UseCase } from "@/lib/analytics/events";
 import { EXAMPLES } from "@/lib/examples";
 import { usePaywall } from "@/components/billing/paywall-provider";
+import { useAiUsage } from "@/components/app/live-usage";
 import { createSite } from "../sites/actions";
 
 const TONES = ["Minimal", "Bold", "Playful", "Elegant"] as const;
@@ -17,7 +18,8 @@ type Tone = (typeof TONES)[number];
 const MAX = 1000;
 const MIN = 10;
 
-export function PromptForm({ useCase, left, allowance }: { useCase: UseCase; left: number; allowance: number }) {
+export function PromptForm({ useCase }: { useCase: UseCase }) {
+  const { left, total: allowance } = useAiUsage();
   const router = useRouter();
   const paywall = usePaywall();
   const [prompt, setPrompt] = useState("");

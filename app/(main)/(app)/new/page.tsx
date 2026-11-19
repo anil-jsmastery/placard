@@ -2,7 +2,8 @@ import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { db, users } from "@/lib/db";
 import { isUseCase } from "@/lib/examples";
-import { getAiUsage } from "@/lib/usage";
+import { AiUsageProvider } from "@/components/app/live-usage";
+import { getLiveAiUsage } from "@/lib/usage";
 import { PromptForm } from "./prompt-form";
 
 // The prompt box (new.html). Yellow buttons spend an AI request.
@@ -11,7 +12,7 @@ export default async function NewSitePage() {
   const [row, usage] = userId
     ? await Promise.all([
         db.query.users.findFirst({ where: eq(users.id, userId), columns: { useCase: true } }),
-        getAiUsage(userId),
+        getLiveAiUsage(userId),
       ])
     : [undefined, null];
   const useCase = isUseCase(row?.useCase) ? row.useCase : "other";
@@ -22,7 +23,9 @@ export default async function NewSitePage() {
       <p className="mt-3 text-muted-foreground">
         A sentence or two is enough. Say what you do, who it’s for and the feel you want.
       </p>
-      <PromptForm useCase={useCase} left={usage?.left ?? 0} allowance={usage?.allowance ?? 0} />
+      <AiUsageProvider usage={usage ?? { allowance: 0, used: 0, monthStart: "", sealed: null }}>
+        <PromptForm useCase={useCase} />
+      </AiUsageProvider>
     </main>
   );
 }

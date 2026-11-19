@@ -1,12 +1,14 @@
 import "server-only";
-import { and, eq, gte, sum } from "drizzle-orm";
-import { aiRuns, db, uploads } from "@/lib/db";
+import { eq, sum } from "drizzle-orm";
+import { db, uploads } from "@/lib/db";
 import { posthogNodeClient } from "@/lib/analytics/server";
 import { getPlanKey } from "@/lib/plan";
 import { PLANS } from "@/lib/plans";
+import { aiUsedQuery } from "@/lib/realtime/queries";
+import { sealOrNull } from "@/lib/realtime/server";
 
-// The 1st of the current month at 00:00 UTC
-export function startOfMonthUtc(now = new Date()) {
+// The 1st of the current month at 00:00 UTC (a parameter of the live `ai-used` query, never now() in SQL)
+export function monthStartUtc(now = new Date()) {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
 }
 
@@ -30,17 +32,20 @@ async function freeAllowance(userId: string) {
 
 // AI requests used this month = successful ai_runs rows since the 1st (UTC). Failed runs never count.
 // `userId` is the signed-in user: the plan comes from their Clerk session.
-export async function getAiUsage(userId: string) {
-  const [used, plan] = await Promise.all([
-    db.$count(
-      aiRuns,
-      and(eq(aiRuns.userId, userId), eq(aiRuns.status, "succeeded"), gte(aiRuns.createdAt, startOfMonthUtc())),
-    ),
-    getPlanKey(),
-  ]);
+export async function getAiUsage(userId: string, monthStart = monthStartUtc()) {
+  const [[row], plan] = await Promise.all([aiUsedQuery(userId, monthStart), getPlanKey()]);
+  const used = row?.used ?? 0;
   const allowance = plan === "pro" ? PLANS.pro.aiRequests : await freeAllowance(userId);
   return { used, allowance, left: Math.max(0, allowance - used) };
 }
+
+/** What a live usage line needs (Step 11): the allowance, `used` as of now, and the sealed `ai-used` query (or null). */
+export async function getLiveAiUsage(userId: string) {
+  const monthStart = monthStartUtc();
+  const [usage, sealed] = await Promise.all([getAiUsage(userId, monthStart), sealOrNull(aiUsedQuery(userId, monthStart))]);
+  return { allowance: usage.allowance, used: usage.used, monthStart: monthStart.toISOString(), sealed };
+}
+export type LiveAiUsage = Awaited<ReturnType<typeof getLiveAiUsage>>;
 
 /** Bytes of images the user has uploaded (sum of `uploads.bytes`). */
 export async function getStorageUsed(userId: string) {

@@ -3,12 +3,13 @@ import { ChevronLeft } from "lucide-react";
 import { StatusBadge } from "@/components/app/status-badge";
 import { cn } from "@/lib/utils";
 
-type Tab = "editor" | "settings";
+type Tab = "editor" | "stats" | "settings";
 
-/** The strip under the app header on a site's pages: back to Sites, the name and status, and the tabs (Stats arrives in Step 11). */
+/** The strip under the app header on a site's pages: back to Sites, the name and status, and the tabs: Editor, Stats, Settings. */
 export function SiteTabs({ siteId, name, live, active }: { siteId: string; name: string; live: boolean; active: Tab }) {
   const tabs: { key: Tab; label: string; href: string }[] = [
     { key: "editor", label: "Editor", href: `/sites/${siteId}/edit` },
+    { key: "stats", label: "Stats", href: `/sites/${siteId}/stats` },
     { key: "settings", label: "Settings", href: `/sites/${siteId}/settings` },
   ];
   return (

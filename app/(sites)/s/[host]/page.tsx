@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Render } from "@puckeditor/core/rsc";
+import { ViewBeacon } from "@/components/site/view-beacon";
 import { siteUrl } from "@/lib/config";
 import { renderConfig } from "@/lib/sections/render-config";
 import { resolveHost } from "@/lib/sites/resolve";
@@ -56,5 +57,10 @@ export default async function LiveSitePage({ params }: Props) {
 
   // The footer badge shows on every site for now (Step 12 adds the Pro rule).
   const data: PageData = { ...site.published, root: { props: { ...site.published.root.props, showBadge: true } } };
-  return <Render config={renderConfig} data={data} />;
+  return (
+    <>
+      <Render config={renderConfig} data={data} />
+      <ViewBeacon siteId={site.id} />
+    </>
+  );
 }

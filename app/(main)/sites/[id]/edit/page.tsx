@@ -4,7 +4,10 @@ import { and, eq } from "drizzle-orm";
 import { db, sites, users } from "@/lib/db";
 import { isUseCase } from "@/lib/examples";
 import type { PageData } from "@/lib/site/types";
-import { getAiUsage } from "@/lib/usage";
+import { getLiveAiUsage } from "@/lib/usage";
+import { realtimeUrl } from "@/lib/realtime/server";
+import { AiUsageProvider } from "@/components/app/live-usage";
+import { RealtimeRoot } from "@/components/realtime/realtime-root";
 import { Editor } from "@/components/editor/editor";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -20,15 +23,18 @@ export default async function EditSitePage({ params }: { params: Promise<{ id: s
   });
   if (!site) notFound();
   const [usage, user] = await Promise.all([
-    getAiUsage(userId),
+    getLiveAiUsage(userId),
     db.query.users.findFirst({ where: eq(users.id, userId), columns: { useCase: true } }),
   ]);
 
   return (
-    <Editor
-      site={{ id: site.id, name: site.name, slug: site.slug, draft: site.draft as PageData, published: site.published !== null }}
-      usage={{ left: usage.left, total: usage.allowance }}
-      useCase={isUseCase(user?.useCase) ? user.useCase : "other"}
-    />
+    <RealtimeRoot url={realtimeUrl()}>
+      <AiUsageProvider usage={usage}>
+        <Editor
+          site={{ id: site.id, name: site.name, slug: site.slug, draft: site.draft as PageData, published: site.published !== null }}
+          useCase={isUseCase(user?.useCase) ? user.useCase : "other"}
+        />
+      </AiUsageProvider>
+    </RealtimeRoot>
   );
 }
