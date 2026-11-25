@@ -203,6 +203,8 @@ If the `.tsx` test fails on JSX, set the installed Vite's JSX transform to `auto
 - `Link` rejects `javascript:alert(1)`, `data:text/html,x`, `//evil.com`, `www.example.com` and `tel:+9771555`; accepts `https://a.co` and `mailto:a@b.co`
 - `Image` rejects `https://example.com/x.jpg`
 
+`lib/site/types.test.ts`: a type-only check that a `PageData` is assignable to Puck's `Data` with no cast (`const _: Data = {} as PageData;` inside a test). `npm run typecheck` fails if the two drift apart.
+
 `components/site/markup.test.tsx`: the components match the reference. Load `screens/site-render.js` with `node:vm` and a `{ window: {} }` context, call `window.renderSite(page)` for `REFERENCE_PAGE` and each sample; render `<SiteRoot page={page} />` with `renderToStaticMarkup` (mock `next/image` as a plain `<img>`). The ordered lists of `class` attribute values must be equal.
 
 ## 4. Code checks (Claude Code)
