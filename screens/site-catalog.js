@@ -67,5 +67,5 @@
   };
 
   // Prettify may only change these. Every other string on the page must come back exactly as it went in.
-  window.STYLE_KEYS = { root: ["theme", "font", "spacing"], section: ["layout", "image", "images.image", "items.image"] };
+  window.STYLE_KEYS = { root: ["theme", "font", "spacing", "favicon", "showBadge"], section: ["id", "hidden", "layout", "image", "images.image", "items.image"] };
 })();

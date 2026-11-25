@@ -33,9 +33,10 @@ export const SECTION_FIELDS: Record<SectionType, SectionField[]> = {
 };
 
 // Prettify may only change these. Every other string on the page must come back exactly as it went in.
+// Everything that isn't the person's words (used by pageWords in lib/site/words.ts).
 export const STYLE_KEYS = {
-  root: ["theme", "font", "spacing"],
-  section: ["layout", "image", "images.image", "items.image"],
+  root: ["theme", "font", "spacing", "favicon", "showBadge"],
+  section: ["id", "hidden", "layout", "image", "images.image", "items.image"],
 } as const;
 
 type CatalogEntry<T extends SectionType> = {

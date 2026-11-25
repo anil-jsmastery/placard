@@ -35,3 +35,8 @@
 
 /* Fields: Puck's form around the .field cards, spaced like #edFields. */
 #edFields > form{display:flex;flex-direction:column;gap:8px;min-width:0;font-family:inherit}
+
+/* AI runs: the prototype's .ed .site [data-sec].flash and .site.prettifying (Puck marks each section with data-puck-component). */
+.site [data-puck-component].flash{animation:flash 1.1s ease-out}
+.site.prettifying [data-puck-component]{animation:pulse 1.2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.site [data-puck-component].flash,.site.prettifying [data-puck-component]{animation:none}}

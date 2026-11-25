@@ -1,13 +1,13 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq, lte } from "drizzle-orm";
 import { z } from "zod";
-import { db, sites } from "@/lib/db";
+import { aiRuns, db, sites, snapshots } from "@/lib/db";
 import { CATALOG, SECTION_FIELDS } from "@/lib/sections/catalog";
 import { cleanPage } from "@/lib/sections/clean";
 import { SECTION_TYPES, type SectionType } from "@/lib/sections/schemas";
-import { toPage } from "@/lib/site/types";
+import { toPage, type PageData } from "@/lib/site/types";
 import { getAiUsage } from "@/lib/usage";
 
 export type SaveResult = { ok: true } | { ok: false; message: string; path: string };
@@ -52,14 +52,54 @@ export async function saveDraft(siteId: string, data: unknown): Promise<SaveResu
   return { ok: true };
 }
 
-// After a build whose result never arrived (a dropped connection): the draft the server has now and the usage, so the
-// editor shows what was really saved instead of guessing.
-export async function getSiteState(siteId: string) {
+// After a run whose result never arrived (a dropped connection): how that run ended (when the stream got as far as
+// its id), the draft the server has now and the usage, so the editor shows what was really saved instead of guessing.
+export async function getSiteState(siteId: string, runId?: string | null) {
   const { userId } = await auth();
   if (!userId) throw new Error("Not signed in");
   if (!z.uuid().safeParse(siteId).success) throw new Error("Portfolio not found");
   const [site] = await db.select({ draft: sites.draft }).from(sites).where(and(eq(sites.id, siteId), eq(sites.userId, userId))).limit(1);
   if (!site) throw new Error("Portfolio not found");
+  let status: string | null = null;
+  if (runId && z.uuid().safeParse(runId).success) {
+    const [run] = await db
+      .select({ status: aiRuns.status })
+      .from(aiRuns)
+      .where(and(eq(aiRuns.id, runId), eq(aiRuns.siteId, siteId), eq(aiRuns.userId, userId)))
+      .limit(1);
+    status = run?.status ?? null;
+  }
   const { left, allowance } = await getAiUsage(userId);
-  return { draft: toPage(site.draft), usage: { left, allowance } };
+  return { draft: toPage(site.draft), usage: { left, allowance }, status };
+}
+
+// "Undo AI change" / "Undo Prettify": put back the page saved before that run (the newest ai_run snapshot taken no
+// later than the run) as the draft, and return it. The AI request stays counted.
+export async function undoAiChange(siteId: string, runId: string): Promise<PageData> {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Not signed in");
+  if (!z.uuid().safeParse(siteId).success || !z.uuid().safeParse(runId).success) throw new Error("Portfolio not found");
+
+  const [run] = await db
+    .select({ createdAt: aiRuns.createdAt })
+    .from(aiRuns)
+    .where(and(eq(aiRuns.id, runId), eq(aiRuns.siteId, siteId), eq(aiRuns.userId, userId)))
+    .limit(1);
+  if (!run) throw new Error("Nothing to undo");
+  const [snapshot] = await db
+    .select({ data: snapshots.data })
+    .from(snapshots)
+    .where(and(eq(snapshots.siteId, siteId), eq(snapshots.reason, "ai_run"), lte(snapshots.createdAt, run.createdAt)))
+    .orderBy(desc(snapshots.createdAt))
+    .limit(1);
+  if (!snapshot) throw new Error("Nothing to undo");
+
+  const page = toPage(snapshot.data);
+  const updated = await db
+    .update(sites)
+    .set({ draft: page, name: page.root.props.title, updatedAt: new Date() })
+    .where(and(eq(sites.id, siteId), eq(sites.userId, userId)))
+    .returning({ id: sites.id });
+  if (updated.length === 0) throw new Error("Portfolio not found");
+  return page;
 }

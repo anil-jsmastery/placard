@@ -3,7 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { Editor } from "@/components/editor/editor";
-import { db, sites, users } from "@/lib/db";
+import { aiRuns, db, sites, users } from "@/lib/db";
 import { toPage } from "@/lib/site/types";
 import { getAiUsage } from "@/lib/usage";
 import "@puckeditor/core/no-external.css";
@@ -20,13 +20,14 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
     .from(sites)
     .where(and(eq(sites.id, id), eq(sites.userId, userId)));
   if (!site) notFound();
-  const [[user], usage] = await Promise.all([
+  const [[user], usage, runs] = await Promise.all([
     db.select({ useCase: users.useCase }).from(users).where(eq(users.id, userId)).limit(1),
     getAiUsage(userId),
+    db.$count(aiRuns, eq(aiRuns.siteId, site.id)),
   ]);
   return (
     <Editor
-      site={{ id: site.id, name: site.name, slug: site.slug, draft: toPage(site.draft), publishedAt: site.publishedAt?.toISOString() ?? null }}
+      site={{ id: site.id, name: site.name, slug: site.slug, draft: toPage(site.draft), publishedAt: site.publishedAt?.toISOString() ?? null, aiRuns: runs }}
       user={{ useCase: user?.useCase ?? "other", usage: { left: usage.left, allowance: usage.allowance } }}
     />
   );

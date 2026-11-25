@@ -45,12 +45,20 @@ export function CanvasFrame({ children, document: doc }: { children: React.React
   return <>{children}</>;
 }
 
-export function Canvas({ device }: { device: Device }) {
+// While Prettify runs the canvas gets .prettifying, on the portfolio's .site inside the iframe (the prototype's
+// .site.prettifying) as well as on .canvas.
+export function Canvas({ device, prettifying = false }: { device: Device; prettifying?: boolean }) {
+  useEffect(() => {
+    const doc = document.querySelector<HTMLIFrameElement>("#preview-frame")?.contentDocument;
+    const site = doc?.querySelector(".site");
+    site?.classList.toggle("prettifying", prettifying);
+    return () => site?.classList.remove("prettifying");
+  }, [prettifying]);
   const title = usePuck((s) => s.appState.data.root.props?.title as string | undefined);
   const favicon = usePuck((s) => s.appState.data.root.props?.favicon as (typeof TAB_ICONS)[number] | undefined);
   const Icon = TAB_ICON_COMPONENTS[favicon ?? "sparkles"] ?? TAB_ICON_COMPONENTS.sparkles;
   return (
-    <div className="canvas">
+    <div className={prettifying ? "canvas prettifying" : "canvas"}>
       <div className="frame" id="edFrame" data-device={device}>
         <div className="frame-bar">
           <span className="lights"><b /><b /><b /></span>

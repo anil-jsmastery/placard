@@ -10,12 +10,13 @@ export const MAX_SECTIONS = 10;
 const MAX_FAILURES = 3; // the original try plus 2 retries
 
 // What a run streams besides the model's own parts: the full page after every change (`data-page`, for the canvas,
-// never sent to the model) and how the run ended (`data-result`).
+// never sent to the model), Prettify's change list (`data-changes`) and how the run ended (`data-result`).
+// An ok result carries the run's id (for "Undo AI change") and the model's final reply.
 export type RunResult =
-  | { ok: true; page: PageData; name: string; sections: number; usage: Usage | null }
+  | { ok: true; runId: string; page: PageData; name: string; sections: number; reply: string; usage: Usage | null }
   | { ok: false; reason: string; usage: Usage | null };
 type Usage = { left: number; allowance: number };
-export type SiteUIMessage = UIMessage<never, { page: PageData; result: RunResult }>;
+export type SiteUIMessage = UIMessage<never, { run: { runId: string }; page: PageData; changes: [string, string][]; result: RunResult }>;
 
 export type ToolState = {
   page: PageData;

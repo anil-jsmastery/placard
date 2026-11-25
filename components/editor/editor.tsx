@@ -13,13 +13,13 @@ import type { PageData, SectionData } from "@/lib/site/types";
 import { ActionBar, ComponentOverlay } from "./action-bar";
 import { DrawerItem } from "./add-panel";
 import { Canvas, CanvasFrame } from "./canvas";
-import type { Usage } from "./ai-panel";
+import type { AiActions, RunKind, UndoRun, Usage } from "./ai-panel";
 import { FieldsPanel } from "./fields-panel";
-import { LeftPanel } from "./left-panel";
+import { LeftPanel, type Tab } from "./left-panel";
 import { ROOT_ZONE } from "./puck";
 import { TopBar, type Device, type SaveState } from "./top-bar";
 
-export type EditorSite = { id: string; name: string; slug: string | null; draft: PageData; publishedAt: string | null };
+export type EditorSite = { id: string; name: string; slug: string | null; draft: PageData; publishedAt: string | null; aiRuns: number };
 export type EditorUser = { useCase: string; usage: Usage };
 
 const DEBOUNCE_MS = 800;
@@ -30,7 +30,8 @@ const pageJson = (data: Partial<Data>) => JSON.stringify({ root: data.root, cont
 
 // Debounced autosave through saveDraft. Sends site_edited on the first change made by hand.
 // While an AI run is going it's paused: the server saves the run's result (markSaved tells it what's stored).
-function useAutosave(siteId: string, initial: PageData) {
+// onHandEdit hears every change made by hand (not the AI's, not an undo of the AI's).
+function useAutosave(siteId: string, initial: PageData, onHandEdit: () => void) {
   const [state, setState] = useState<SaveState>({ kind: "saved" });
   const [initialJson] = useState(() => pageJson(initial));
   const seen = useRef(initialJson);            // the latest page Puck showed us
@@ -100,6 +101,7 @@ function useAutosave(siteId: string, initial: PageData) {
     seen.current = json;
     latest.current = data;
     if (paused.current) return;
+    onHandEdit();
     blocked.current = true;
     if (!edited.current) {
       edited.current = true;
@@ -107,7 +109,7 @@ function useAutosave(siteId: string, initial: PageData) {
     }
     setState({ kind: "saving" });
     later(DEBOUNCE_MS);
-  }, [siteId]);
+  }, [siteId, onHandEdit]);
 
   // Leaving while a save is pending or the page can't be saved asks first.
   useEffect(() => {
@@ -180,8 +182,14 @@ const LOCKED = { drag: false, duplicate: false, delete: false, edit: false, inse
 
 export function Editor({ site, user }: { site: EditorSite; user: EditorUser }) {
   const [device, setDevice] = useState<Device>("desktop");
-  const [running, setRunning] = useState(false);
-  const { state, onChange: autosave, saveNow, flush, pause, markSaved } = useAutosave(site.id, site.draft);
+  const [runKind, setRunKind] = useState<RunKind | null>(null);
+  const running = runKind !== null;
+  const [tab, setTab] = useState<Tab>("ai");
+  // Only the newest AI change can be undone, until a newer one arrives or the page is edited by hand.
+  const [undoRun, setUndoRun] = useState<UndoRun | null>(null);
+  const clearUndo = useCallback(() => setUndoRun(null), []);
+  const aiActions = useRef<AiActions | null>(null);
+  const { state, onChange: autosave, saveNow, flush, pause, markSaved } = useAutosave(site.id, site.draft, clearUndo);
   const toast = useToast();
 
   // The visible sections go to root.render through Puck's metadata, so the canvas nav matches the published one.
@@ -192,9 +200,9 @@ export function Editor({ site, user }: { site: EditorSite; user: EditorUser }) {
     autosave(data);
   }, [autosave]);
 
-  const onRunning = useCallback((on: boolean) => {
-    pause(on);
-    setRunning(on);
+  const onRunning = useCallback((kind: RunKind | null) => {
+    pause(kind !== null);
+    setRunKind(kind);
   }, [pause]);
 
   const onAction = useCallback<OnAction>((action, _next, prev) => {
@@ -224,15 +232,21 @@ export function Editor({ site, user }: { site: EditorSite; user: EditorUser }) {
     >
       <Shortcuts saveNow={saveNow} locked={running} />
       <main className="ed">
-        <TopBar live={!!site.publishedAt} save={state} device={device} onDevice={setDevice} locked={running} />
+        <TopBar
+          live={!!site.publishedAt} save={state} device={device} onDevice={setDevice} locked={running}
+          prettifying={runKind === "prettify"} onPrettify={() => aiActions.current?.prettify()}
+        />
         <div className="ed-body">
           <LeftPanel
+            tab={tab}
+            setTab={setTab}
             ai={{
-              siteId: site.id, useCase: user.useCase, usage: user.usage, running, onRunning,
-              beforeRun: flush, onSaved: markSaved,
+              siteId: site.id, usage: user.usage, running, onRunning,
+              beforeRun: flush, onSaved: markSaved, onTab: setTab, undoRun, setUndoRun, actionsRef: aiActions,
+              blankStart: site.draft.content.length === 0 && site.aiRuns === 0,
             }}
           />
-          <Canvas device={device} />
+          <Canvas device={device} prettifying={runKind === "prettify"} />
           <FieldsPanel disabled={running} />
         </div>
       </main>

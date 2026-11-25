@@ -162,14 +162,14 @@ Port `screens/site-catalog.js` to TypeScript. One entry per section type with `l
 | Details | 2 to 4 key facts they gave: where they're based, what they're open to, who they write for. |
 | Contact | Always last. Their email, one line inviting the right kind of message, their links. |
 
-Also `SECTION_FIELDS` (the field list per type, used by the editor in Step 3) and `STYLE_KEYS` (used by Prettify in Step 5), both from `site-catalog.js`.
+Also `SECTION_FIELDS` (the field list per type, used by the editor in Step 3) and `STYLE_KEYS` (used by Prettify's words check in Step 5), both from `site-catalog.js`. `STYLE_KEYS` is exactly `{ root: ["theme", "font", "spacing", "favicon", "showBadge"], section: ["id", "hidden", "layout", "image", "images.image", "items.image"] }`: everything that isn't the person's words.
 
 ### 3.3 Themes: `lib/site/themes.ts`
 `THEME_META` (name and swatch colours `bg`, `card`, `ink`, `acc` from `SITE_THEMES`), `FONT_META` (labels "Sans", "Serif", "Techy" and the font variable for the "Aa" preview), `SPACING_META` ("Relaxed", "Compact"). The swatches are only for pickers; the real colours are in `app/site.css`.
 
 ### 3.4 Section components: `components/site/`
 - `sections/intro.tsx, work.tsx, about.tsx, experience.tsx, services.tsx, testimonials.tsx, gallery.tsx, writing.tsx, details.tsx, contact.tsx`: each renders exactly what `SECTION_RENDERERS[type]` in `site-render.js` returns, element for element and class for class (`pf-sec`, `pf-head-row` with the count label, `pf-label`, `pf-h pf-h3`, `pf-card`, `pf-row`, `pf-wrow`, `data-layout`, `data-cols`, `data-count` …). Empty optional fields render nothing; a Work grid card or a Gallery slot without an image renders `<div class="pf-img pf-ph" aria-hidden="true">`.
-- The first Work or Gallery section gets `id="work"`, About `id="about"`, Writing `id="writing"`, Contact `id="contact"`, for the navigation links.
+- The first Work or Gallery section gets `id="work"`, About `id="about"`, Writing `id="writing"`, Contact `id="contact"`, for the navigation links. `components/site/anchors.ts` holds `NAV_LINK` and works out which visible section gets which anchor; `SiteRoot` passes it to each section as its `anchor` prop (Step 6's live pages use the same file).
 - `site-nav.tsx`: `renderSite`'s `pf-nav`: the title, up to 3 links derived from the section types (`NAV_LINK` in `site-render.js`, pointing at the ids above), and the availability pill when it's set.
 - `site-footer.tsx`: `pf-foot` with "© {year} {title}" and, when `showBadge`, the `pf-badge` "Made with Placard" linking to `${APP_URL}/?ref=badge`.
 - `site-shell.tsx`: `SiteShell({ root, sections, children })`: `<div className="site" data-theme={root.theme} data-font={root.font} data-spacing={root.spacing}>` + `site-nav` + `children` + `site-footer`. `sections` (the visible sections) is what the nav builds its links from. It's the one place the `.site` wrapper is written: `site.css` sets `--pad` and `--gap` on `.site`, and every section's padding and gap uses them, so a section outside this wrapper loses all its spacing. Step 3's editor canvas uses it too.

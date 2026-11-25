@@ -39,3 +39,22 @@ export function revealSection(id: string) {
   };
   requestAnimationFrame(() => run(10));
 }
+
+// A section the AI just changed gets the prototype's .flash outline and comes into view.
+export function flashSection(id: string) {
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const run = (tries: number) => {
+    const doc = document.querySelector<HTMLIFrameElement>("#preview-frame")?.contentDocument;
+    const el = doc?.querySelector<HTMLElement>(`[data-puck-component="${CSS.escape(id)}"]`);
+    if (!el) {
+      if (tries > 0) requestAnimationFrame(() => run(tries - 1));
+      return;
+    }
+    el.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+    el.classList.remove("flash");
+    void el.offsetWidth; // restart the animation
+    el.classList.add("flash");
+    el.addEventListener("animationend", () => el.classList.remove("flash"), { once: true });
+  };
+  requestAnimationFrame(() => run(10));
+}
