@@ -3,7 +3,7 @@ import { withTracing } from "@posthog/ai/vercel";
 import { createUIMessageStream, isStepCount, ToolLoopAgent, type StopCondition, type ToolSet } from "ai";
 import { and, desc, eq, notInArray, sql } from "drizzle-orm";
 import { z } from "zod";
-import { posthog, captureServer } from "@/lib/analytics/server";
+import { posthog, captureServer, flushAfterRun } from "@/lib/analytics/server";
 import { APP_ENV } from "@/lib/config";
 import { aiRuns, db, sites, snapshots, users } from "@/lib/db";
 import { cleanPage } from "@/lib/sections/clean";
@@ -114,6 +114,7 @@ export async function startRun(input: StartRunInput): Promise<{ error: RunError 
   if (!admitted.run) return { error: admitted.error! };
   const run = admitted.run;
   const startedAt = Date.now();
+  flushAfterRun();
 
   // 3. Keep the newest 20 snapshots.
   try {

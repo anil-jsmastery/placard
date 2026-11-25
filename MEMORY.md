@@ -52,3 +52,9 @@ What the project has so far, one block per finished step. `/step` adds each step
 - The slug comes from the title on the first publish (`lib/domains.ts`) and never changes. The toast says where it's live and the button becomes "Update site". Unpublish and delete are in the card menu; there's no settings page.
 - The Puck config is split (`lib/site/render-config.ts` for live pages, `lib/site/puck-config.tsx` for the editor).
 - Not in the plan: publishing a page with no sections returns "Can't save: Add at least one section (Page)" and a failed publish or unpublish shows the toast "Something went wrong. Try again.", because the plan gives no copy for them, and `SiteShell`'s `children` became optional so `render-config.ts` can stay a `.ts` file (lint forbids `children` as a prop).
+
+## Step 7 · Deploy: Vercel and Neon `production`
+- Production runs on Vercel at its `vercel.app` address (`APP_DOMAIN`) with Neon's `production`; published sites are at `https://APP_DOMAIN/p/{slug}` (`NEXT_PUBLIC_SITE_PATHS=true`). There's no domain of its own.
+- Production signs in with the same Clerk development instance as this machine (test payments only, one 100-user list); only production has a Clerk webhook endpoint.
+- Every push to `main` deploys; the build runs `scripts/vercel-build.mjs` (migrations, then the library seed). Every preview gets its own Neon branch, `preview/<git branch>`; `instrumentation.ts` fetches its other variables.
+- The person pushes and deploys; `docs/deploy.md` describes it.
