@@ -136,11 +136,11 @@ export const EMPTY_PAGE = {
 } satisfies z.input<typeof PageSchema>;
 ```
 
-Refine `lib/site/types.ts`. Don't use `z.infer<typeof PageSchema>` for the page type: the `as never` that `Section` needs makes it infer `content` as `never[]`. Spell the types out from the schemas instead (compatible with Puck's `Data`):
+Refine `lib/site/types.ts`. Don't use `z.infer<typeof PageSchema>` for the page type: the `as never` that `Section` needs makes it infer `content` as `never[]`. Spell the types out from the schemas instead. `zones` is typed as lists of sections, so a `PageData` can be passed to Puck's `Data` with no cast (checked against `@puckeditor/core` 0.24; Placard never uses zones, Puck just expects the key):
 ```ts
 export type SectionProps<T extends SectionType> = z.infer<(typeof SECTION_SCHEMAS)[T]>;
 export type SectionData = { [T in SectionType]: { type: T; props: SectionProps<T> & { id: string } } }[SectionType];
-export type PageData = { root: { props: z.infer<typeof RootProps> }; content: SectionData[]; zones?: Record<string, unknown> };
+export type PageData = { root: { props: z.infer<typeof RootProps> }; content: SectionData[]; zones?: Record<string, SectionData[]> };
 ```
 and `toPage(json: unknown): PageData` (runs `PageSchema.parse` and returns it as `PageData`; used wherever a `draft`, `published` or snapshot `data` column is read).
 
@@ -183,7 +183,7 @@ Also `SECTION_FIELDS` (the field list per type, used by the editor in Step 3) an
 
 ### 3.6 Sample pages and the dev page
 - `lib/site/sample-pages.ts`: port `screens/sample-pages.js`: `KINDS`, `EXAMPLE_PROMPTS` (three per kind; the first builds the sample), `SAMPLE_PAGES` (designer, developer, photographer, artist, writer), `REFERENCE_PAGE` (every section once) and `HAND_BUILT_PAGE` (Step 5's Prettify demo), each a `PageData` with the exact copy and images.
-- `app/(main)/dev/sections/page.tsx`: renders `REFERENCE_PAGE` (or `SAMPLE_PAGES[page]` with `?page=`) in `SiteRoot` with the controls from `site-sections.html` (theme, font, Intro, Work and Gallery layouts, desktop/phone width, section labels; client component). Build the bar from the app's own classes: a sticky row of `.seg` groups from `app.css` (`.on` on the active button). Don't copy the reference's `<style>`: its `.bar` class is the usage meter's in `app.css`. The frame (1280 px wide, 390 px for Phone) and the labels (each section wrapped through `wrap` in an element with `data-type`, shown with a small mono tag) are a few Tailwind utilities in the dev page itself. Returns `notFound()` when `APP_ENV === "prod"`.
+- `app/(main)/dev/sections/page.tsx`: renders `REFERENCE_PAGE` (or `SAMPLE_PAGES[page]` with `?page=`) in `SiteRoot` with the controls from `site-sections.html` (theme, font, Intro, Work and Gallery layouts, desktop/phone width, section labels; client component). Build the bar from the app's own classes: a sticky row of `.seg` groups from `app.css`; the active button gets `aria-pressed="true"`, which is what `app.css` styles (there's no `.on` rule for `.seg`). Don't copy the reference's `<style>`: its `.bar` class is the usage meter's in `app.css`. The frame (1280 px wide, 390 px for Phone) and the labels (each section wrapped through `wrap` in an element with `data-type`, shown with a small mono tag) are a few Tailwind utilities in the dev page itself. Returns `notFound()` when `APP_ENV === "prod"`.
 
 ### 3.7 Tests (vitest)
 `vitest.config.mts` at the repo root (the first tests, so the config comes now), so tests resolve the app's `@/` imports:
