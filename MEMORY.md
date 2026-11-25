@@ -20,3 +20,9 @@ What the project has so far, one block per finished step. `/step` adds each step
 - `ensureUser()` creates the `users` row on a user's first signed-in page and sends `signed_up` from the server; there's no webhook for sign-ups.
 - PostHog events go only through `lib/analytics/events.ts`, and every event carries `environment` and `simulated`.
 - Not in the plan: the app bar's client parts (tabs with `.on`, Clerk's `UserButton` menu) live in `components/app/app-bar-client.tsx`, and `/sites` has the prototype's "New portfolio" button, because the app bar is a server component and the screenshot shows the button; `getPersonProps()` in `lib/users.ts` gives the PostHog provider `use_case` and `sites_count` from the database.
+
+## Step 2 · Portfolio sections, themes and the image library
+- 10 portfolio section types with zod schemas (`lib/sections/schemas.ts`), a catalog with labels, icons, fields, defaults and AI hints (`lib/sections/catalog.ts`), and components in `components/site/` that render exactly the markup of `screens/site-render.js` (checked by `components/site/markup.test.tsx`).
+- 6 themes, 3 heading fonts (Sans, Serif, Techy) and 2 spacings (`lib/site/themes.ts`), all CSS variables in `app/site.css`.
+- Sample pages for the five kinds, the reference page and the hand-built page are in `lib/site/sample-pages.ts`; `/dev/sections` shows them.
+- Not in the plan: `vitest.config.mts` (the `@/` alias for the tests), `PageData` types `content` per section in `lib/site/types.ts` because the plan's `PageSchema` union (`as never`) infers `content` as `never[]`, `SiteRoot` takes an optional `wrap` prop for the dev page's section labels, and the dev bar uses the app's `.seg` control because the prototype bar's own CSS isn't in `app.css` (its `.bar` clashes with the usage bar).
