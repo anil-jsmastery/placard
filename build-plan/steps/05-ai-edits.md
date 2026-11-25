@@ -116,29 +116,50 @@ Current page:
 
 ## 5. Your turn
 
-`npm run dev`, open Maya Chen's portfolio from Step 4.
+`npm run dev`, open Maya Chen's portfolio from Step 4. Keep an eye on the line under the chat box ("{n} of 10 AI requests left this month"): this step uses **6 AI requests** (4 edits and 2 Prettify runs). With Step 4's build that's 7 of your 10 free ones this month. Failed runs don't count, and Undo doesn't give one back.
 
-**Three edits.**
-1. Select the **Intro**, then type `Make the headline shorter`. The chip says "Editing: Intro"; only the Intro changes, it flashes, and the reply is one sentence.
-2. Clear the selection (× on the chip), then: `Add a testimonial from Priya Nair, Founder of Kopi: "Calm, fast and right the first time."` A Testimonials section appears above Contact with exactly that quote. Then `Add two more testimonials`: no change; the AI asks for real quotes, because the rules forbid inventing them.
-3. Click the chip **Try a darker theme**: Midnight.
+**1. An edit scoped to a section**
+1. Click the **Intro** on the canvas. Above the chat box the chip reads **Editing: Intro ×**, and the placeholder reads "Ask for a change to the intro…".
+2. Type `Make the headline shorter` and press Enter (Shift+Enter adds a line).
+3. While it runs you see "Updating your page"; the chat box, Prettify and Publish are disabled.
+4. You should see: only the Intro's headline changes, the Intro flashes blue and scrolls into view, and the reply is one short sentence in the past tense, with **Undo AI change** and three chips under it.
 
-**Undo.** Click **Undo AI change** under the last reply: the page is back exactly as it was. Before every AI run the server saves the page in `snapshots`. Neon SQL Editor on `dev`: `select reason, created_at from snapshots order by created_at desc limit 5;`.
+**2. A testimonial, and one the AI won't invent**
+1. Click **×** on the chip to clear the selection (the placeholder goes back to "Ask for a change…").
+2. Send: `Add a testimonial from Priya Nair, Founder of Kopi: "Calm, fast and right the first time."`
+   A Testimonials section appears **above Contact** with exactly that quote, name and role.
+3. Send: `Add two more testimonials`
+   Nothing on the page changes. The AI asks for real quotes, because the rules forbid inventing them. It still counts as a request: the model ran.
 
-**Prettify the AI's page.** Press **Prettify** in the top bar. The rows tick, the page restyles, and the reply lists what changed (a new theme and font pair, maybe Work as a list, a swapped photo) with "Every word is exactly as you wrote it". Click **Undo Prettify**.
+**3. A chip**
+Click **Try a darker theme** under the last reply: the page switches to Midnight.
 
-**Prettify a page you built by hand.**
-1. `/sites` › **New portfolio** › **Designer** › **Start with a blank page**. The AI tab explains the idea.
-2. Add **Intro**, **Work**, **About** and **Contact** from the Add tab. In the Intro, type your own headline and role; in Contact, your email. It looks plain: Mono, Sans, compact, a list, no photos (like `editor-hand-built-1440.png`).
-3. Press **Prettify**: theme and font change, Work becomes a grid, the empty photo slots fill from the library, spacing opens up (like `editor-prettified-1440.png`). Every word you typed is still there.
-4. Open `lib/site/words.ts` and the end of `app/api/ai/prettify/route.ts`: the server compares every word before and after, and rejects the run if one changed. That's what makes "style only" a promise.
+**4. Undo**
+1. Click **Undo AI change** under the newest reply: the page is back exactly as it was before that change, with no toast. Older Undo buttons disappear whenever a newer AI change arrives or you edit the page by hand.
+2. Before every AI run the server saves the page in `snapshots`. Neon SQL Editor on `dev`:
+   `select reason, created_at from snapshots order by created_at desc limit 5;`
 
-**Neon and PostHog.**
-- `select kind, model, status, cost_usd from ai_runs order by created_at desc limit 6;`: `edit` and `prettify` runs on `claude-haiku-5-5`.
-- **Activity:** `ai_edit_applied` (`had_selection` true for the Intro edit), `site_prettified` twice (`source = ai`, then `source = manual`), `ai_change_undone` with `kind = edit` and `kind = prettify`.
+**5. Prettify the AI's page**
+1. Press **Prettify** in the top bar. The AI tab opens; the button reads "Prettifying…" and the page pulses. The rows tick: "Looking at your sections", "Choosing a theme and fonts", "Picking layouts, spacing and photos".
+2. When it's done: "Done. Here's what changed:" with the list (a new theme and font pair, maybe Work as a list, a swapped photo), the green line "Every word is exactly as you wrote it", and **Undo Prettify**. Every heading and sentence is unchanged.
+3. Click **Undo Prettify**: the old look comes back.
+
+**6. Prettify a page you built by hand**
+1. `/sites` › **New portfolio** › **Designer** › **Start with a blank page** (the dashed box under the prompt). No AI request is used. The editor opens on an empty page, and the AI tab explains the idea, with the chip **Open the Add tab**.
+2. Add **Intro**, **Work**, **About** and **Contact** from the Add tab. In the Intro, type your own headline and role; in Contact, your email. It looks plain on purpose: Mono, Sans, compact, Work as a list, no photos (like `editor-hand-built-1440.png`).
+3. Press **Prettify**: the theme and font change, Work becomes a grid, the empty photo slots fill from the library, and the spacing opens up (like `editor-prettified-1440.png`). The list says what changed, for example "Theme: Mono → Paper", "Work: List → Grid", "Photos: Added 6 from the library". Every word you typed is still there.
+4. Open `lib/site/words.ts` and `app/api/ai/prettify/route.ts`: the server compares every word before and after, and rejects the run if one changed. That's what makes "style only" a promise.
+
+**Neon and PostHog**
+- `select kind, model, status, cost_usd from ai_runs order by created_at desc limit 6;`: `edit` and `prettify` runs on `claude-haiku-5-5`, all `succeeded`.
+- **Activity:** `ai_edit_applied` (`had_selection` true for the Intro edit, false for the testimonial), `site_prettified` twice (`source = ai`, then `source = manual`), `ai_change_undone` with `kind = edit` and `kind = prettify`, and `prompt_submitted` with `blank = true`.
 - **LLM analytics:** filter by model. A Prettify on Haiku costs a fraction of a build on Sonnet.
 
-**You should see:** the chat, the chip and the Undo button as in the prototype; Prettify's change list and the "every word" line; the usage meter down by one per edit and per Prettify (undo doesn't give it back).
+**You should see:** the chat, the chip and the Undo button as in the prototype; Prettify's change list and the "every word" line; the usage meter down by one per edit and per Prettify (Undo doesn't give it back).
+
+**If you run out of AI requests** (the toast "You've used all 10 AI requests this month"): the free allowance is 10 a month until Step 8 wires up plans. On `dev` only, you can give this month's requests back by moving them to last month in the Neon SQL Editor:
+`update ai_runs set created_at = created_at - interval '1 month' where status = 'succeeded' and created_at >= date_trunc('month', now() at time zone 'utc');`
+Then reload the editor.
 
 **Ship it** (skip what you already did above)
 1. `git push -u origin step-5`, then `gh pr create --fill-first`.

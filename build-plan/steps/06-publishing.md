@@ -21,7 +21,9 @@ Nothing.
 
 ### 3.1 Split the Puck config
 - `lib/site/render-config.ts`: server-safe config with only `render` for each component and root (no fields, no client imports). Used by published pages.
-- `lib/site/puck-config.tsx`: spreads `render-config` and adds fields and defaults (editor only).
+  - `root.render` is `SiteShell` (Step 2) with the sections directly inside it: no wrapper, the markup of `site-render.js`.
+  - Each section's `render` gives the first visible section of each kind its anchor (`NAV_LINK` in `components/site/anchors.ts`: `#work`, `#about`, `#writing`, `#contact`), worked out from `puck.metadata.content`, the same way `SiteRoot` does. `<Render>` calls a component with its props and `puck` only, so without this no section gets an `id` and the nav links go nowhere.
+- `lib/site/puck-config.tsx`: spreads `render-config`'s components and adds fields and defaults (editor only). It keeps its own `root.render` (Step 3's: `SiteShell` around the drop zone, with the `.pf-empty` state); never the live page's.
 - Section components, `SiteRoot`, `SiteNav`, `SiteFooter` and `SafeLink` are server components (no `"use client"`). `SiteFrame` stays a client component and is never imported by published pages.
 
 ### 3.2 Slugs, publish and unpublish
@@ -44,18 +46,18 @@ if (host === appHost && SITE_PATHS) {
   // production on a vercel.app address: a published site at /p/{slug} (Step 7). Clerk never runs for it.
   const match = path.match(/^\/p\/([a-z0-9-]{3,40})\/?$/);
   if (match) → rewrite to `/s/${encodeURIComponent(`${match[1]}.${appHost}`)}`
-  if (path.startsWith("/p/")) → rewrite to /s/_/not-found (a 404)
+  if (path.startsWith("/p/")) → rewrite to /s/_ (no site has the host "_", so the page calls notFound())
 }
 if (host !== appHost) {
   // a published portfolio on this machine: slug.localhost:3000
   if (path === "/api/view" || path.startsWith("/_next/") || path.startsWith("/library/") || path.startsWith("/uploads/")) → NextResponse.next()
-  if (path !== "/") → rewrite to /s/_/not-found (a 404)
+  if (path !== "/") → rewrite to /s/_ (the same 404)
   → rewrite to `/s/${encodeURIComponent(host)}`
 }
 if (path.startsWith("/s/")) → 404 on the app host
 → Clerk's clerkMiddleware for the app host
 ```
-Clerk must not run for site hosts, `/p/` paths or webhooks. `SITE_PATHS` comes from `lib/config.ts` (Step 1): false on your machine, so `/p/…` is a normal (missing) app route here; production turns it on (Step 7).
+Every 404 goes through `/s/_`, never a path like `/s/_/not-found`: only `s/[host]` exists, so a longer path matches no route and gets Next's plain 404 (this app has two root layouts and no `global-not-found`) instead of `s/[host]/not-found.tsx`. Clerk must not run for site hosts, `/p/` paths or webhooks. `SITE_PATHS` comes from `lib/config.ts` (Step 1): false on your machine, so `/p/…` is a normal (missing) app route here; production turns it on (Step 7).
 
 ### 3.4 The live page: `app/(sites)/s/[host]/page.tsx`
 - `lib/sites/resolve.ts`: `resolveHost(host)`: if the host ends with `.${APP_DOMAIN}` and the part before it has no dot, find the site by `slug`. Any other host is not found. Returns the site only if `published` is not null.
