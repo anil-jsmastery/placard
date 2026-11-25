@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { desc, eq } from "drizzle-orm";
 import { Plus } from "lucide-react";
@@ -8,7 +9,6 @@ import { db, sites } from "@/lib/db";
 import { getPlanKey } from "@/lib/plan";
 import { PLANS } from "@/lib/plans";
 import { toPage } from "@/lib/site/types";
-import { createSite } from "./actions";
 
 function editedAgo(date: Date) {
   const m = Math.round((Date.now() - date.getTime()) / 60000);
@@ -38,9 +38,7 @@ export default async function SitesPage() {
           <h1>Sites</h1>
           <p>{n} of {plan.sites} portfolio{plan.sites > 1 ? "s" : ""} on {plan.name}</p>
         </div>
-        <form action={createSite} className="contents">
-          <button type="submit" className="btn btn-blue"><Plus className="size-4" strokeWidth={2} />New portfolio</button>
-        </form>
+        <Link href="/start" className="btn btn-blue"><Plus className="size-4" strokeWidth={2} />New portfolio</Link>
       </div>
       {n === 0 ? (
         <EmptyState />

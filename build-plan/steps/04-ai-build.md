@@ -334,10 +334,32 @@ Each photo's tag and description becomes a 1024-number vector through the gatewa
 
 **6 · One more prompt** (optional): `/sites` › **New portfolio** › **Photographer**, then type `Street photographer in Kathmandu. I'm passionate about faces and old doors. Make it pop!` The page says neither "passionate" nor "pop", has no exclamation marks, and has no Contact section: there was no email, and the rules forbid inventing one.
 
-**7 · Read it before you merge it: CodeRabbit Change Stack.** This is the biggest change in the build, nearly all of it written by Claude Code in a few minutes. Before it reaches `main`, you should understand it.
+**7 · Read it before you merge it: CodeRabbit's Change Stack (Explain Change).** This is the biggest change in the build, nearly all of it written by Claude Code in a few minutes. Before it reaches `main`, you should understand it.
 1. Open the pull request: `git push -u origin step-4`, `gh pr create --fill-first`, then `gh pr view --web`. Within a few minutes CodeRabbit comments: a summary, a walkthrough of the changed files and line comments.
-2. In CodeRabbit's comment, click **Review Change Stack →**. The pull request opens as a stack of numbered layers, foundations first, and each block of changed lines has a short summary beside it. Walk down the layers: the tables (`ai_runs`, `library_images`) → `neon.ts` (the AI Gateway) → models and prices (`lib/ai/models.ts`, `lib/ai/cost.ts`) → photo search (`lib/images/`) → the six tools and their checks → the prompt and the ban list → the agent and its route → "What do you do?", describe and the build log.
-3. Ask about one line: on any change, ask CodeRabbit "why does a failed tool call return an error instead of throwing?" (in Change Stack, or as a reply on the pull request) and read its answer next to the code.
+2. At the top of CodeRabbit's summary comment, above **Walkthrough**, click **Explain Change ↗**. The pull request opens in Change Stack: the stack's title in the header (for example "Stack: AI Portfolio Generation"), numbered **Layers** in the left column, and a short summary beside each block of changed lines. CodeRabbit names and orders the layers itself, so yours may differ from anyone else's. Look for these pieces, whatever layer they're in:
+   - the tables (`ai_runs`, `library_images`)
+   - `neon.ts` (the AI Gateway)
+   - models and prices (`lib/ai/models.ts`, `lib/ai/cost.ts`)
+   - photo search (`lib/images/`)
+   - the six tools and their checks
+   - the prompt and the ban list
+   - the agent and its route
+   - the UI: "What do you do?", describe and the build log
+
+   The coloured dots next to a layer are CodeRabbit's findings in it (red is more serious). Start with the layers that have the most.
+3. Ask about one line:
+   1. In Change Stack, open the layer with the agent's tools (for example "Agent tools and run lifecycle"). Open its file list (the **File 1 of 4** drop-down, or the **›** arrow) and pick `lib/ai/tools.ts`.
+   2. On the line `const fail = (target: string, error: string): Failure => {`, click the **+** in the gutter and type `@coderabbitai why does a failed tool call return an error instead of throwing?`
+   3. The comment now shows **Pending**: it's a draft review, and CodeRabbit can't see it yet. Click **Submit review** (top right), choose **Comment**, and submit. If a "What should you review next?" pop-up opens, close it with **Stay on pull request**.
+   4. CodeRabbit answers in the same thread within a minute or two. To read it on GitHub, click **View in GitHub**.
+
+   Or ask on GitHub instead: the pull request › **Files changed**, the **+** on the same line in `lib/ai/tools.ts`, the same text, then **Add single comment**.
+
+   **What a good answer says**, so you can check yours:
+   - The tool returns `{ ok: false, error }`, so the validation message goes back to the model as a normal tool result, and the model can fix its input and try again. Throwing would send it down the AI SDK's error path instead.
+   - After the 3rd failure for the same target, the tool returns "Skip this and continue.". That's an instruction to the model, not an enforced block: a later valid call still works.
+   - The hard limits are elsewhere: 20 steps, 24,000 output tokens and the 90-second timeout.
+   - A run that fails never counts against the user's AI requests.
 4. **The fix loop.** If CodeRabbit flagged something real (an unchecked input, a missing ownership check), tell Claude Code `Fix CodeRabbit's review on PR #<number>`. It reads the comments with `gh`, fixes what's real, says what it left and why, and commits. Then `git push`: CodeRabbit reviews the new commit and marks what's fixed.
 5. Merge it: `gh pr merge --squash --delete-branch`, then `git switch main && git pull`. This ships the step.
 

@@ -7,6 +7,8 @@ import { db, sites } from "@/lib/db";
 import { CATALOG, SECTION_FIELDS } from "@/lib/sections/catalog";
 import { cleanPage } from "@/lib/sections/clean";
 import { SECTION_TYPES, type SectionType } from "@/lib/sections/schemas";
+import { toPage } from "@/lib/site/types";
+import { getAiUsage } from "@/lib/usage";
 
 export type SaveResult = { ok: true } | { ok: false; message: string; path: string };
 
@@ -48,4 +50,16 @@ export async function saveDraft(siteId: string, data: unknown): Promise<SaveResu
     .returning({ id: sites.id });
   if (updated.length === 0) throw new Error("Portfolio not found");
   return { ok: true };
+}
+
+// After a build whose result never arrived (a dropped connection): the draft the server has now and the usage, so the
+// editor shows what was really saved instead of guessing.
+export async function getSiteState(siteId: string) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Not signed in");
+  if (!z.uuid().safeParse(siteId).success) throw new Error("Portfolio not found");
+  const [site] = await db.select({ draft: sites.draft }).from(sites).where(and(eq(sites.id, siteId), eq(sites.userId, userId))).limit(1);
+  if (!site) throw new Error("Portfolio not found");
+  const { left, allowance } = await getAiUsage(userId);
+  return { draft: toPage(site.draft), usage: { left, allowance } };
 }

@@ -8,16 +8,19 @@ import { track } from "@/lib/analytics/client";
 import { CATALOG } from "@/lib/sections/catalog";
 import type { SectionType } from "@/lib/sections/schemas";
 import { puckConfig } from "@/lib/site/puck-config";
-import type { PageData } from "@/lib/site/types";
+import type { EditorMetadata } from "@/lib/site/puck-config";
+import type { PageData, SectionData } from "@/lib/site/types";
 import { ActionBar, ComponentOverlay } from "./action-bar";
 import { DrawerItem } from "./add-panel";
 import { Canvas, CanvasFrame } from "./canvas";
+import type { Usage } from "./ai-panel";
 import { FieldsPanel } from "./fields-panel";
 import { LeftPanel } from "./left-panel";
 import { ROOT_ZONE } from "./puck";
 import { TopBar, type Device, type SaveState } from "./top-bar";
 
 export type EditorSite = { id: string; name: string; slug: string | null; draft: PageData; publishedAt: string | null };
+export type EditorUser = { useCase: string; usage: Usage };
 
 const DEBOUNCE_MS = 800;
 const RETRY_MS = 3000;
@@ -26,6 +29,7 @@ const RETRY_MS = 3000;
 const pageJson = (data: Partial<Data>) => JSON.stringify({ root: data.root, content: data.content });
 
 // Debounced autosave through saveDraft. Sends site_edited on the first change made by hand.
+// While an AI run is going it's paused: the server saves the run's result (markSaved tells it what's stored).
 function useAutosave(siteId: string, initial: PageData) {
   const [state, setState] = useState<SaveState>({ kind: "saved" });
   const [initialJson] = useState(() => pageJson(initial));
@@ -33,9 +37,10 @@ function useAutosave(siteId: string, initial: PageData) {
   const saved = useRef(initialJson);           // the latest page the server accepted
   const latest = useRef<Data | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const inflight = useRef(false);
+  const inflight = useRef<Promise<void> | null>(null); // the save on its way to the server
   const edited = useRef(false);
   const blocked = useRef(false);               // pending changes, or the page can't be saved
+  const paused = useRef(false);                // an AI run is going
   const saveRef = useRef<() => Promise<void>>(async () => {});
   const later = (ms: number) => {
     if (timer.current) clearTimeout(timer.current);
@@ -46,14 +51,15 @@ function useAutosave(siteId: string, initial: PageData) {
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
     const data = latest.current;
-    if (!data || inflight.current) return;
+    if (!data || inflight.current || paused.current) return;
     const json = pageJson(data);
     if (json === saved.current) {
       blocked.current = false;
       setState({ kind: "saved" });
       return;
     }
-    inflight.current = true;
+    let release = () => {};
+    inflight.current = new Promise<void>((resolve) => (release = resolve));
     try {
       const res = await saveDraft(siteId, { root: data.root, content: data.content, zones: data.zones ?? {} });
       if (res.ok) saved.current = json;
@@ -70,9 +76,19 @@ function useAutosave(siteId: string, initial: PageData) {
       setState({ kind: "retrying" });
       later(RETRY_MS);
     } finally {
-      inflight.current = false;
+      inflight.current = null;
+      release();
     }
   }, [siteId]);
+
+  // Before an AI run: wait for any save on its way, save what's left, and say whether the server has the page.
+  const flush = useCallback(async () => {
+    while (inflight.current) await inflight.current;
+    await save();
+    while (inflight.current) await inflight.current;
+    const data = latest.current;
+    return !data || pageJson(data) === saved.current;
+  }, [save]);
 
   useEffect(() => {
     saveRef.current = save;
@@ -83,6 +99,7 @@ function useAutosave(siteId: string, initial: PageData) {
     if (json === seen.current) return;
     seen.current = json;
     latest.current = data;
+    if (paused.current) return;
     blocked.current = true;
     if (!edited.current) {
       edited.current = true;
@@ -106,7 +123,22 @@ function useAutosave(siteId: string, initial: PageData) {
     };
   }, []);
 
-  return { state, onChange, saveNow: save };
+  const pause = useCallback((on: boolean) => {
+    paused.current = on;
+  }, []);
+  // The page the server has now (an AI run's result, or the page from before a failed run).
+  const markSaved = useCallback((page: PageData) => {
+    const json = pageJson(page as unknown as Data);
+    latest.current = { ...(latest.current ?? {}), root: page.root, content: page.content } as Data;
+    seen.current = json;
+    saved.current = json;
+    blocked.current = false;
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = null;
+    setState({ kind: "saved" });
+  }, []);
+
+  return { state, onChange, saveNow: save, flush, pause, markSaved };
 }
 
 const isTyping = (el: EventTarget | null) =>
@@ -114,7 +146,7 @@ const isTyping = (el: EventTarget | null) =>
 
 // ⌘Z / Ctrl+Z undo, ⇧⌘Z / Ctrl+Shift+Z / Ctrl+Y redo, ⌘S / Ctrl+S save now, Esc clears the selection.
 // Only ⌘S works while typing in a field. Keys pressed inside the canvas iframe are forwarded here (CanvasFrame).
-function Shortcuts({ saveNow }: { saveNow: () => void }) {
+function Shortcuts({ saveNow, locked }: { saveNow: () => void; locked: boolean }) {
   const getPuck = useGetPuck();
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -125,7 +157,7 @@ function Shortcuts({ saveNow }: { saveNow: () => void }) {
         saveNow();
         return;
       }
-      if (isTyping(e.target)) return;
+      if (isTyping(e.target) || locked) return;
       const { history, dispatch } = getPuck();
       if (mod && key === "z" && !e.shiftKey) {
         e.preventDefault();
@@ -139,14 +171,31 @@ function Shortcuts({ saveNow }: { saveNow: () => void }) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [getPuck, saveNow]);
+  }, [getPuck, saveNow, locked]);
   return null;
 }
 
-export function Editor({ site }: { site: EditorSite }) {
+// While the AI runs, nothing on the page can be changed by hand.
+const LOCKED = { drag: false, duplicate: false, delete: false, edit: false, insert: false };
+
+export function Editor({ site, user }: { site: EditorSite; user: EditorUser }) {
   const [device, setDevice] = useState<Device>("desktop");
-  const { state, onChange, saveNow } = useAutosave(site.id, site.draft);
+  const [running, setRunning] = useState(false);
+  const { state, onChange: autosave, saveNow, flush, pause, markSaved } = useAutosave(site.id, site.draft);
   const toast = useToast();
+
+  // The visible sections go to root.render through Puck's metadata, so the canvas nav matches the published one.
+  const [content, setContent] = useState(site.draft.content);
+  const metadata = useMemo<EditorMetadata>(() => ({ content: content.filter((s) => !s.props.hidden) }), [content]);
+  const onChange = useCallback((data: Data) => {
+    setContent(data.content as SectionData[]);
+    autosave(data);
+  }, [autosave]);
+
+  const onRunning = useCallback((on: boolean) => {
+    pause(on);
+    setRunning(on);
+  }, [pause]);
 
   const onAction = useCallback<OnAction>((action, _next, prev) => {
     if (action.type !== "remove" || action.zone !== ROOT_ZONE) return;
@@ -168,16 +217,23 @@ export function Editor({ site }: { site: EditorSite }) {
       data={site.draft}
       onChange={onChange}
       onAction={onAction}
+      metadata={metadata}
       iframe={{ enabled: true }}
       overrides={overrides}
+      permissions={running ? LOCKED : undefined}
     >
-      <Shortcuts saveNow={saveNow} />
+      <Shortcuts saveNow={saveNow} locked={running} />
       <main className="ed">
-        <TopBar live={!!site.publishedAt} save={state} device={device} onDevice={setDevice} />
+        <TopBar live={!!site.publishedAt} save={state} device={device} onDevice={setDevice} locked={running} />
         <div className="ed-body">
-          <LeftPanel />
+          <LeftPanel
+            ai={{
+              siteId: site.id, useCase: user.useCase, usage: user.usage, running, onRunning,
+              beforeRun: flush, onSaved: markSaved,
+            }}
+          />
           <Canvas device={device} />
-          <FieldsPanel />
+          <FieldsPanel disabled={running} />
         </div>
       </main>
     </Puck>

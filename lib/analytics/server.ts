@@ -6,7 +6,8 @@ import { db, users } from "@/lib/db";
 import { isSimulatedEmail } from "@/lib/simulated";
 import type { ServerEvents } from "./events";
 
-const posthog = process.env.NEXT_PUBLIC_POSTHOG_KEY
+// The one posthog-node client: server events, flags (lib/ai/flags.ts) and LLM traces (lib/ai/run.ts).
+export const posthog = process.env.NEXT_PUBLIC_POSTHOG_KEY
   ? new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY, { host: process.env.NEXT_PUBLIC_POSTHOG_HOST, flushAt: 1, flushInterval: 0 })
   : null;
 

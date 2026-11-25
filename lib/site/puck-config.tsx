@@ -1,32 +1,30 @@
 "use client";
 
-import { createUsePuck, type ComponentConfig, type Config } from "@puckeditor/core";
+import type { ComponentConfig, Config } from "@puckeditor/core";
 import { SECTION_COMPONENTS } from "@/components/site/sections";
-import { SiteFooter } from "@/components/site/site-footer";
-import { SiteNav } from "@/components/site/site-nav";
+import { SiteShell } from "@/components/site/site-shell";
 import { sectionFields } from "@/lib/editor/fields";
 import { CATALOG } from "@/lib/sections/catalog";
 import { SECTION_TYPES, type SectionType } from "@/lib/sections/schemas";
 import type { PageData, SectionData } from "@/lib/site/types";
 
-const usePuck = createUsePuck();
-
 type RootProps = PageData["root"]["props"];
 
-// The editor's .site: SiteRoot's navigation and footer around Puck's drop zone (the sections).
-function EditorSite({ children, ...r }: RootProps & { children: React.ReactNode }) {
-  const content = usePuck((s) => s.appState.data.content) as SectionData[];
-  const visible = content.filter((s) => !s.props.hidden);
+// What the editor passes to <Puck metadata>: the page's visible sections (no hidden ones), for the nav links and the empty state.
+// root.render reads them from there, not from Puck's store, so it also renders outside <Puck> (the test).
+export type EditorMetadata = { content?: SectionData[] };
+
+// The editor's .site: Step 2's SiteShell around Puck's drop zone (the sections).
+function EditorSite({ children, puck, ...r }: RootProps & { children: React.ReactNode; puck?: { metadata?: EditorMetadata } }) {
+  const content = puck?.metadata?.content ?? [];
   return (
-    <div className="site" data-theme={r.theme} data-font={r.font} data-spacing={r.spacing}>
-      <SiteNav title={r.title} availability={r.availability} sections={visible} />
+    <SiteShell root={r} sections={content}>
       {/* The drop zone stays at the same place in the tree, so it isn't remounted when the first section arrives. */}
       <div className={content.length === 0 ? "pf-empty" : undefined}>
         {content.length === 0 && <div><b>Your page is empty</b>Add sections from the Add tab, then press Prettify to style it.</div>}
         {children}
       </div>
-      <SiteFooter title={r.title} showBadge={r.showBadge} />
-    </div>
+    </SiteShell>
   );
 }
 
@@ -46,6 +44,6 @@ export const puckConfig: Config = {
   root: {
     // Root fields are drawn by the Site settings panel, not by Puck.
     fields: {},
-    render: (props: Record<string, unknown>) => <EditorSite {...(props as unknown as RootProps & { children: React.ReactNode })} />,
+    render: (props: Record<string, unknown>) => <EditorSite {...(props as unknown as React.ComponentProps<typeof EditorSite>)} />,
   },
 };

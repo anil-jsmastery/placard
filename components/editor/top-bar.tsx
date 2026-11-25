@@ -31,7 +31,7 @@ function Saved({ state }: { state: SaveState }) {
   return <span className="saved" role="status"><Check strokeWidth={2} />Saved</span>;
 }
 
-export function TopBar({ live, save, device, onDevice }: { live: boolean; save: SaveState; device: Device; onDevice: (d: Device) => void }) {
+export function TopBar({ live, save, device, onDevice, locked }: { live: boolean; save: SaveState; device: Device; onDevice: (d: Device) => void; locked: boolean }) {
   const title = usePuck((s) => s.appState.data.root.props?.title as string | undefined);
   const hasPast = usePuck((s) => s.history.hasPast);
   const hasFuture = usePuck((s) => s.history.hasFuture);
@@ -57,8 +57,8 @@ export function TopBar({ live, save, device, onDevice }: { live: boolean; save: 
         ))}
       </div>
       <div className="ed-r">
-        <button type="button" className="icon-btn" id="edUndo" aria-label="Undo" disabled={!hasPast} onClick={back}><Undo2 /></button>
-        <button type="button" className="icon-btn" id="edRedo" aria-label="Redo" disabled={!hasFuture} onClick={forward}><Redo2 /></button>
+        <button type="button" className="icon-btn" id="edUndo" aria-label="Undo" disabled={locked || !hasPast} onClick={back}><Undo2 /></button>
+        <button type="button" className="icon-btn" id="edRedo" aria-label="Redo" disabled={locked || !hasFuture} onClick={forward}><Redo2 /></button>
         {/* Prettify arrives in Step 5, Publish in Step 6. */}
         <button type="button" className="btn btn-sm btn-soft btn-pretty" title="Restyle the page with AI. Your words stay the same." disabled>
           <WandSparkles />Prettify

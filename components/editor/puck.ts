@@ -21,3 +21,21 @@ export function scrollToSection(id: string) {
   };
   requestAnimationFrame(() => run(10));
 }
+
+// A section the AI just added fades up (the prototype's .shown: opacity and 10px, .45 s) and comes into view.
+export function revealSection(id: string) {
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const run = (tries: number) => {
+    const doc = document.querySelector<HTMLIFrameElement>("#preview-frame")?.contentDocument;
+    const el = doc?.querySelector<HTMLElement>(`[data-puck-component="${CSS.escape(id)}"]`);
+    if (!el) {
+      if (tries > 0) requestAnimationFrame(() => run(tries - 1));
+      return;
+    }
+    if (!reduce) {
+      el.animate([{ opacity: 0, transform: "translateY(10px)" }, { opacity: 1, transform: "none" }], { duration: 450, easing: "ease" });
+    }
+    el.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
+  };
+  requestAnimationFrame(() => run(10));
+}
