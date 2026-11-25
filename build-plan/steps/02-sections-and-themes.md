@@ -162,7 +162,7 @@ Port `screens/site-catalog.js` to TypeScript. One entry per section type with `l
 | Details | 2 to 4 key facts they gave: where they're based, what they're open to, who they write for. |
 | Contact | Always last. Their email, one line inviting the right kind of message, their links. |
 
-Also `SECTION_FIELDS` (the field list per type, used by the editor in Step 3) and `STYLE_KEYS` (used by Prettify in Step 5), both from `site-catalog.js`.
+Also `SECTION_FIELDS` (the field list per type, used by the editor in Step 3) and `STYLE_KEYS` (used by Prettify's words check in Step 5), both from `site-catalog.js`. `STYLE_KEYS` is exactly `{ root: ["theme", "font", "spacing", "favicon", "showBadge"], section: ["id", "hidden", "layout", "image", "images.image", "items.image"] }`: everything that isn't the person's words.
 
 ### 3.3 Themes: `lib/site/themes.ts`
 `THEME_META` (name and swatch colours `bg`, `card`, `ink`, `acc` from `SITE_THEMES`), `FONT_META` (labels "Sans", "Serif", "Techy" and the font variable for the "Aa" preview), `SPACING_META` ("Relaxed", "Compact"). The swatches are only for pickers; the real colours are in `app/site.css`.

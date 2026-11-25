@@ -273,8 +273,8 @@ Tone: {tone or "not given"}
 ### 3.9 The run: `lib/ai/run.ts`
 `startRun({ kind, userId, siteId, prompt, selection? })`:
 1. `checkCanRun`. Load the site (owner only). Validate prompt length (1–1000).
-2. Insert a `snapshots` row (`reason: "ai_run"`, current draft), then delete that site's snapshots beyond the newest 20.
-3. Insert `ai_runs` (`status: "running"`, `model`, `kind`, `prompt`).
+2. In one transaction: insert a `snapshots` row (`reason: "ai_run"`, current draft), then `ai_runs` (`status: "running"`, `model`, `kind`, `prompt`). Both `created_at`s are then the same `now()`, which is how Step 5's undo finds a run's snapshot.
+3. Delete that site's snapshots beyond the newest 20.
 4. Model: `withTracing(languageModel(modelId), posthogNodeClient, { posthogDistinctId: userId, posthogTraceId: runId, posthogProperties: { site_id, kind, environment, simulated } })`.
 5. `new ToolLoopAgent({ model, instructions: buildSystemPrompt(...), tools, maxOutputTokens: 4096, stopWhen: [isStepCount(20), totalOutputTokensOver(24000)] })`. `totalOutputTokensOver` is a custom stop condition summing `usage.outputTokens` across steps.
 6. Stream: create a UI message stream, merge the agent's stream into it and pass the writer to the tools. Return it from the route as the stream response.

@@ -25,16 +25,22 @@ Nothing.
 - System prompt: the Step 4 text, then this block:
   ```
   Editing an existing portfolio:
-  - The current page is below as JSON. Section ids are in props.id.
+  - The current page is in the user's message as JSON. Section ids are in props.id. Everything on it counts as something the user gave you.
   - Change only what the user asks for. Keep every other section and field exactly as it is.
   - Prefer updateSection over removing and re-adding a section. New text follows the Writing rules above.
   - When you're done, reply with one short sentence in the past tense that says what changed, for example "Shortened the headline so it reads at a glance." or "Added a testimonial above your contact details."
-  - If the request is unclear, would need facts they haven't given you (a quote, a client, a number), or needs something you can't do (custom code, forms, new section types), don't call any tools. Reply with one short sentence saying what you need or what you can do instead.
+  - If the request is unclear, would need facts that aren't on the page or in their request (a quote, a client, a number), or needs something you can't do (custom code, forms, new section types), don't call any tools. Reply with one short sentence saying what you need or what you can do instead.
+  ```
+- User message (`buildEditMessage({ prompt, page, selection })` in `lib/ai/prompts.ts`), exactly:
+  ```
+  {prompt}
+
   {selection block}
   Current page:
   {page JSON}
   ```
-  Selection block when `selectedId` is set: `The user has selected the {label} section (id {id}). Apply the request to that section unless the user clearly means something else.`
+  Selection block when `selectedId` is set (otherwise nothing, and no blank line): `The user has selected the {label} section (id {id}). Apply the request to that section unless the user clearly means something else. The selected section: {section JSON}`
+- Why the page goes in the user message, not at the end of the system prompt: after the long build prompt, a page at the end of the system prompt reads as background, so the model answers "I can't see the current headline" and calls no tools. In the user message, next to the request, it's the content to edit.
 - Edit runs fail only on an invalid page or an error. On success: save the draft, `ai_runs` succeeded, `captureServer(userId, "ai_edit_applied", { site_id, model, had_selection })`. A run that makes no tool calls is still a successful request (it used the model) and counts.
 - On failure the page is untouched and the client shows the edit-failure copy.
 
@@ -46,11 +52,11 @@ Nothing.
 
 ### 3.3 Undo AI change
 - Only the newest AI change (edit or Prettify) can be undone; older Undo buttons disappear when a newer change arrives or when the user edits by hand afterwards.
-- `undoAiChange(siteId, runId)` (server action): find the newest `snapshots` row for the site with `reason = 'ai_run'` and `created_at <= run.created_at`; write its `data` to `draft`; return it. The client calls Puck `setData` and sends `track("ai_change_undone", { site_id, kind })`.
+- `undoAiChange(siteId, runId)` (server action): find the newest `snapshots` row for the site with `reason = 'ai_run'` and `created_at <= run.created_at` (Step 4 writes a run's snapshot and its `ai_runs` row in one transaction, so they share the same `now()`); write its `data` to `draft`; return it. The client calls Puck `setData` and sends `track("ai_change_undone", { site_id, kind })`.
 - Undo does not give the AI request back.
 
 ### 3.4 Prettify
-**Words.** `lib/site/words.ts`: `pageWords(page)` returns every string on the page in order, skipping `STYLE_KEYS` (`theme`, `font`, `spacing`, `layout`, `favicon`, `showBadge`, `hidden`, `id`) and every `image` field. Two pages have the same words when their `pageWords` are equal. Tests (`lib/site/words.test.ts`): changing the theme, a layout or a photo keeps the words; changing a heading, a link, a tag, or removing a section or a list item does not.
+**Words.** `lib/site/words.ts`: `pageWords(page)` returns every string on the page in order, skipping `STYLE_KEYS` from `lib/sections/catalog.ts` (Step 2: root `theme`, `font`, `spacing`, `favicon`, `showBadge`; section `id`, `hidden`, `layout` and every `image` field). Two pages have the same words when their `pageWords` are equal. Tests (`lib/site/words.test.ts`): changing the theme, a layout or a photo keeps the words; changing a heading, a link, a tag, or removing a section or a list item does not.
 
 **Tools** (`lib/ai/prettify-tools.ts`, same loose-input-then-validate pattern as Step 4):
 
@@ -80,10 +86,15 @@ How to choose:
 
 Make between 2 and 8 changes, then stop calling tools and reply with one short sentence. Don't repeat a change.
 
+The current page is in the user's message as JSON. Section ids are in props.id.
+```
+The user message is, exactly:
+```
+Prettify this page.
+
 Current page:
 {page JSON}
 ```
-The user message is `Prettify this page.`
 
 **The run.** `app/api/ai/prettify/route.ts`: `POST { siteId }` → `startRun({ kind: "prettify", … })` with `EDIT_MODEL`, the four tools above only, `isStepCount(12)`. Same guards, snapshot and logging as the other runs. A page with no sections returns 400 `empty_page` before anything runs (not counted). On finish:
 1. `cleanPage`; then `pageWords(before) !== pageWords(after)` → the run fails with reason `words_changed`: the draft isn't touched, `ai_runs.status = "failed"`, not counted, and the client shows the "Prettify rejected" copy.
