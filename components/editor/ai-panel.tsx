@@ -104,9 +104,6 @@ const sortKeys = (v: unknown): unknown =>
   : v;
 const same = (a: unknown, b: unknown) => JSON.stringify(sortKeys(a)) === JSON.stringify(sortKeys(b));
 
-// The same page in any key order (jsonb doesn't keep the order it was given).
-const samePage = (a: PageData, b: PageData) => same({ root: a.root, content: a.content }, { root: b.root, content: b.content });
-
 // The first section an edit added or changed.
 function changedSection(before: PageData, after: PageData): string | null {
   for (const s of after.content) {
@@ -155,6 +152,7 @@ export function AiPanel({
   const getPuck = useGetPuck();
   const toast = useToast();
   const before = useRef<PageData | null>(null);
+  const runId = useRef<string | null>(null); // the current run's id, once the server has sent it
   const current = useRef<Turn | null>(null);
   const finished = useRef(true);
   const reconciling = useRef(false);
@@ -206,32 +204,43 @@ export function AiPanel({
     if (id) flashSection(id);
   }, [dispatch, setUndoRun]);
 
-  // The run ended without its result: read what the server saved. A changed draft means the run was saved
-  // (and counted); otherwise nothing was.
+  // The run ended without its result: ask the server how it ended. Only a run that succeeded was saved (and
+  // counted); one still going is asked again until it ends. Without a run id the run never started.
   const reconcile = useCallback(async () => {
     if (finished.current || reconciling.current) return;
     reconciling.current = true;
+    const id = runId.current;
     try {
-      const state = await getSiteState(siteId);
+      let state = await getSiteState(siteId, id);
+      for (let i = 0; id && state.status === "running" && i < 50; i++) {
+        await new Promise((r) => setTimeout(r, 2000));
+        state = await getSiteState(siteId, id);
+      }
       setUsage(state.usage);
-      const saved = !!before.current && !samePage(state.draft, before.current);
-      show(state.draft);
-      if (saved) {
-        const name = state.draft.root.props.title;
-        end({ result: { ok: true, runId: "", page: state.draft, name, sections: state.draft.content.length, reply: "", usage: state.usage } });
+      if (id && state.status === "succeeded") {
+        const result: RunResult = {
+          ok: true, runId: id, page: state.draft, name: state.draft.root.props.title, sections: state.draft.content.length, reply: "", usage: state.usage,
+        };
+        show(state.draft);
+        const turn = current.current;
+        end({ result });
+        if (turn) settle(turn, result);
         return;
       }
+      show(state.draft);
     } catch {
       if (before.current) show(before.current);
     }
     end({ failed: true });
-  }, [end, siteId, show]);
+  }, [end, settle, siteId, show]);
 
   const { messages, sendMessage } = useChat<SiteUIMessage>({
     transport,
     onData: (part) => {
       const turn = current.current;
-      if (part.type === "data-page") {
+      if (part.type === "data-run") {
+        runId.current = part.data.runId;
+      } else if (part.type === "data-page") {
         const known = new Set(getPuck().appState.data.content.map((c) => c.props.id as string));
         const added = part.data.content.find((s) => !known.has(s.props.id));
         show(part.data);
@@ -279,6 +288,7 @@ export function AiPanel({
     }
     finished.current = false;
     reconciling.current = false;
+    runId.current = null;
     // The run starts from the server's draft, so the page on screen has to be saved first.
     if (!(await beforeRun())) {
       finished.current = true;

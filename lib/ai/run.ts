@@ -144,6 +144,8 @@ export async function startRun(input: StartRunInput): Promise<{ error: RunError 
 
   const stream = createUIMessageStream<SiteUIMessage>({
     execute: async ({ writer }) => {
+      // The run's id first, so a client whose stream breaks can ask how this run ended.
+      writer.write({ type: "data-run", data: { runId: run.id }, transient: true });
       const state: ToolState = { page: structuredClone(draft), failures: new Map(), writer };
       const tools: ToolSet = kind === "prettify" ? createPrettifyTools(state) : createSiteTools(state);
 

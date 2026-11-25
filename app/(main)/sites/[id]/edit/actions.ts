@@ -52,16 +52,25 @@ export async function saveDraft(siteId: string, data: unknown): Promise<SaveResu
   return { ok: true };
 }
 
-// After a build whose result never arrived (a dropped connection): the draft the server has now and the usage, so the
-// editor shows what was really saved instead of guessing.
-export async function getSiteState(siteId: string) {
+// After a run whose result never arrived (a dropped connection): how that run ended (when the stream got as far as
+// its id), the draft the server has now and the usage, so the editor shows what was really saved instead of guessing.
+export async function getSiteState(siteId: string, runId?: string | null) {
   const { userId } = await auth();
   if (!userId) throw new Error("Not signed in");
   if (!z.uuid().safeParse(siteId).success) throw new Error("Portfolio not found");
   const [site] = await db.select({ draft: sites.draft }).from(sites).where(and(eq(sites.id, siteId), eq(sites.userId, userId))).limit(1);
   if (!site) throw new Error("Portfolio not found");
+  let status: string | null = null;
+  if (runId && z.uuid().safeParse(runId).success) {
+    const [run] = await db
+      .select({ status: aiRuns.status })
+      .from(aiRuns)
+      .where(and(eq(aiRuns.id, runId), eq(aiRuns.siteId, siteId), eq(aiRuns.userId, userId)))
+      .limit(1);
+    status = run?.status ?? null;
+  }
   const { left, allowance } = await getAiUsage(userId);
-  return { draft: toPage(site.draft), usage: { left, allowance } };
+  return { draft: toPage(site.draft), usage: { left, allowance }, status };
 }
 
 // "Undo AI change" / "Undo Prettify": put back the page saved before that run (the newest ai_run snapshot taken no

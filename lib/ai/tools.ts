@@ -16,7 +16,7 @@ export type RunResult =
   | { ok: true; runId: string; page: PageData; name: string; sections: number; reply: string; usage: Usage | null }
   | { ok: false; reason: string; usage: Usage | null };
 type Usage = { left: number; allowance: number };
-export type SiteUIMessage = UIMessage<never, { page: PageData; changes: [string, string][]; result: RunResult }>;
+export type SiteUIMessage = UIMessage<never, { run: { runId: string }; page: PageData; changes: [string, string][]; result: RunResult }>;
 
 export type ToolState = {
   page: PageData;
