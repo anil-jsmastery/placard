@@ -3,7 +3,7 @@ import { CATALOG } from "@/lib/sections/catalog";
 import { SECTION_TYPES } from "@/lib/sections/schemas";
 import { REFERENCE_PAGE } from "@/lib/site/sample-pages";
 import { BANNED_PHRASES, findBannedPhrases } from "./banned";
-import { buildGenerateMessage, buildPrettifyPrompt, buildSystemPrompt } from "./prompts";
+import { buildEditMessage, buildGenerateMessage, buildPrettifyMessage, buildPrettifyPrompt, buildSystemPrompt } from "./prompts";
 
 describe("buildSystemPrompt", () => {
   const prompt = buildSystemPrompt({ kind: "generate" });
@@ -38,20 +38,28 @@ describe("findBannedPhrases", () => {
 
 describe("edit and Prettify prompts", () => {
   const page = REFERENCE_PAGE;
-  const intro = page.content[0].props.id;
+  const intro = page.content[0];
+  const json = JSON.stringify({ root: page.root, content: page.content });
 
-  it("an edit adds the editing block, the selection and the page to the build prompt", () => {
-    const prompt = buildSystemPrompt({ kind: "edit", page, selection: { id: intro, label: "Intro" } });
+  it("an edit's system prompt is the build prompt and the editing block, without the page", () => {
+    const prompt = buildSystemPrompt({ kind: "edit" });
     expect(prompt.startsWith(buildSystemPrompt({ kind: "generate" }))).toBe(true);
-    expect(prompt).toContain("Editing an existing portfolio:");
-    expect(prompt).toContain(`The user has selected the Intro section (id ${intro}). Apply the request to that section unless the user clearly means something else.\nCurrent page:\n{`);
-    expect(buildSystemPrompt({ kind: "edit", page })).toContain("instead.\nCurrent page:\n{");
+    expect(prompt).toContain("Editing an existing portfolio:\n- The current page is in the user's message as JSON.");
+    expect(prompt).not.toContain("Current page:");
   });
 
-  it("Prettify gets what they do, the pairings and the page", () => {
-    const prompt = buildPrettifyPrompt({ page, useCase: "designer" });
+  it("an edit's user message has the request, the selected section and the page", () => {
+    expect(buildEditMessage({ prompt: "Make the headline shorter", page })).toBe(`Make the headline shorter\n\nCurrent page:\n${json}`);
+    expect(buildEditMessage({ prompt: "Make the headline shorter", page, selection: { label: "Intro", section: intro } })).toBe(
+      `Make the headline shorter\n\nThe user has selected the Intro section (id ${intro.props.id}). Apply the request to that section unless the user clearly means something else. The selected section: ${JSON.stringify(intro)}\nCurrent page:\n${json}`,
+    );
+  });
+
+  it("Prettify gets what they do and the pairings in the system prompt, the page in the user message", () => {
+    const prompt = buildPrettifyPrompt({ useCase: "designer" });
     expect(prompt).toContain("suit what they do (designer)");
     expect(prompt).toContain("- ocean with sans: research, product, science");
-    expect(prompt.endsWith(`Current page:\n${JSON.stringify({ root: page.root, content: page.content })}`)).toBe(true);
+    expect(prompt.endsWith("The current page is in the user's message as JSON. Section ids are in props.id.")).toBe(true);
+    expect(buildPrettifyMessage(page)).toBe(`Prettify this page.\n\nCurrent page:\n${json}`);
   });
 });

@@ -17,7 +17,7 @@ import { checkCanRun, type GuardFailure } from "./guards";
 import { EDIT_MODEL, getGenerationModel, languageModel, type ModelId } from "./models";
 import { describeStyleChanges } from "./prettify";
 import { createPrettifyTools } from "./prettify-tools";
-import { buildGenerateMessage, buildPrettifyPrompt, buildSystemPrompt, PRETTIFY_MESSAGE, type Selection } from "./prompts";
+import { buildEditMessage, buildGenerateMessage, buildPrettifyMessage, buildPrettifyPrompt, buildSystemPrompt, PRETTIFY_MESSAGE, type Selection } from "./prompts";
 import { createSiteTools, type RunResult, type SiteUIMessage, type ToolState } from "./tools";
 
 const KEEP_SNAPSHOTS = 20;
@@ -89,29 +89,29 @@ export async function startRun(input: StartRunInput): Promise<{ error: RunError 
   let selection: Selection | null = null;
   if (input.kind === "edit" && input.selectedId) {
     const selected = draft.content.find((s) => s.props.id === input.selectedId);
-    if (selected) selection = { id: selected.props.id, label: CATALOG[selected.type].label };
+    if (selected) selection = { label: CATALOG[selected.type].label, section: selected };
   }
 
-  // 2. The guards, the run's `running` row and 3. the snapshot of the draft before the run, in one step: a per-user
+  // 2. The guards, then the snapshot of the draft before the run and the run's `running` row, in one step: a per-user
   // lock makes overlapping requests wait, so the second one sees the first one's row (busy) and its count (hourly,
-  // monthly) instead of slipping past both. In one transaction the run and its snapshot share created_at (now()),
+  // monthly) instead of slipping past both. In one transaction the snapshot and the run share created_at (now()),
   // which is how undoAiChange finds the snapshot taken before a run.
   const admitted = await db.transaction(async (tx) => {
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}))`);
     const blocked = await checkCanRun(userId, kind);
     if (blocked) return { error: blocked as GuardFailure, run: null };
+    await tx.insert(snapshots).values({ siteId, data: draft, reason: "ai_run" });
     const [row] = await tx
       .insert(aiRuns)
       .values({ userId, siteId, kind, prompt: prompt.data, model: modelId, status: "running" })
       .returning({ id: aiRuns.id });
-    await tx.insert(snapshots).values({ siteId, data: draft, reason: "ai_run" });
     return { error: null, run: row };
   });
   if (!admitted.run) return { error: admitted.error! };
   const run = admitted.run;
   const startedAt = Date.now();
 
-  // Keep the newest 20 snapshots.
+  // 3. Keep the newest 20 snapshots.
   try {
     const keep = db
       .select({ id: snapshots.id })
@@ -168,8 +168,8 @@ export async function startRun(input: StartRunInput): Promise<{ error: RunError 
         model,
         instructions:
           kind === "prettify"
-            ? buildPrettifyPrompt({ page: draft, useCase: user?.useCase ?? "other" })
-            : buildSystemPrompt({ kind, page: draft, selection }),
+            ? buildPrettifyPrompt({ useCase: user?.useCase ?? "other" })
+            : buildSystemPrompt({ kind }),
         tools,
         maxOutputTokens: MAX_OUTPUT_TOKENS,
         stopWhen: [isStepCount(STEPS[kind]), totalOutputTokensOver(MAX_TOTAL_OUTPUT_TOKENS)],
@@ -213,7 +213,11 @@ export async function startRun(input: StartRunInput): Promise<{ error: RunError 
       try {
         // 6. Stream the agent's parts into the UI stream; the tools write data-page parts beside them.
         const result = await agent.stream({
-          prompt: input.kind === "generate" ? buildGenerateMessage({ prompt: prompt.data, ...input.brief }) : prompt.data,
+          // The page an edit or Prettify works on goes in the user message, next to the request.
+          prompt:
+            input.kind === "generate" ? buildGenerateMessage({ prompt: prompt.data, ...input.brief })
+            : input.kind === "edit" ? buildEditMessage({ prompt: prompt.data, page: draft, selection })
+            : buildPrettifyMessage(draft),
           abortSignal: controller.signal,
         });
         writer.merge(result.toUIMessageStream<SiteUIMessage>({ sendFinish: false, onError: () => "The run failed." }));

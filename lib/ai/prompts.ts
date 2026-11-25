@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { CATALOG } from "@/lib/sections/catalog";
 import { SECTION_SCHEMAS, SECTION_TYPES } from "@/lib/sections/schemas";
-import type { PageData } from "@/lib/site/types";
+import type { PageData, SectionData } from "@/lib/site/types";
 import { BANNED_PHRASES } from "./banned";
 
 // The section catalog the model reads: each section's label, when to use it, and its props as JSON Schema.
@@ -25,29 +25,36 @@ const pageJson = (page: PageData) => JSON.stringify({ root: page.root, content: 
 
 const banned = () => BANNED_PHRASES.map((p) => `"${p}"`).join(", ");
 
-export type Selection = { id: string; label: string };
+export type Selection = { label: string; section: SectionData };
 
-// The system prompt of a build, or of an edit (the build's text, then the editing block with the current page).
-export function buildSystemPrompt(opts: { kind: "generate" | "edit"; page?: PageData; selection?: Selection | null }): string {
+// The system prompt of a build, or of an edit (the build's text, then the editing block). An edit's page is in its
+// user message (buildEditMessage).
+export function buildSystemPrompt(opts: { kind: "generate" | "edit" }): string {
   const base = buildBasePrompt();
-  if (opts.kind === "generate" || !opts.page) return base;
-  const selection = opts.selection
-    ? `The user has selected the ${opts.selection.label} section (id ${opts.selection.id}). Apply the request to that section unless the user clearly means something else.\n`
-    : "";
+  if (opts.kind === "generate") return base;
   return `${base}
 
 Editing an existing portfolio:
-- The current page is below as JSON. Section ids are in props.id.
+- The current page is in the user's message as JSON. Section ids are in props.id. Everything on it counts as something the user gave you.
 - Change only what the user asks for. Keep every other section and field exactly as it is.
 - Prefer updateSection over removing and re-adding a section. New text follows the Writing rules above.
 - When you're done, reply with one short sentence in the past tense that says what changed, for example "Shortened the headline so it reads at a glance." or "Added a testimonial above your contact details."
-- If the request is unclear, would need facts they haven't given you (a quote, a client, a number), or needs something you can't do (custom code, forms, new section types), don't call any tools. Reply with one short sentence saying what you need or what you can do instead.
-${selection}Current page:
-${pageJson(opts.page)}`;
+- If the request is unclear, would need facts that aren't on the page or in their request (a quote, a client, a number), or needs something you can't do (custom code, forms, new section types), don't call any tools. Reply with one short sentence saying what you need or what you can do instead.`;
 }
 
-// Prettify's system prompt: style only, with the page as JSON.
-export function buildPrettifyPrompt({ page, useCase }: { page: PageData; useCase: string }): string {
+// The user message of an edit: the request, the selected section if there is one, and the page as JSON.
+export function buildEditMessage({ prompt, page, selection }: { prompt: string; page: PageData; selection?: Selection | null }): string {
+  const selected = selection
+    ? `The user has selected the ${selection.label} section (id ${selection.section.props.id}). Apply the request to that section unless the user clearly means something else. The selected section: ${JSON.stringify(selection.section)}\n`
+    : "";
+  return `${prompt}
+
+${selected}Current page:
+${pageJson(page)}`;
+}
+
+// Prettify's system prompt: style only. The page is in its user message (buildPrettifyMessage).
+export function buildPrettifyPrompt({ useCase }: { useCase: string }): string {
   return `You restyle a portfolio page by calling tools. You never change, add or remove text, links or sections: the server compares every word before and after and rejects the run if one changed.
 
 You can change only:
@@ -65,11 +72,18 @@ ${PAIRINGS}
 
 Make between 2 and 8 changes, then stop calling tools and reply with one short sentence. Don't repeat a change.
 
+The current page is in the user's message as JSON. Section ids are in props.id.`;
+}
+
+// Prettify's user message, stored as the run's prompt in ai_runs.
+export const PRETTIFY_MESSAGE = "Prettify this page.";
+
+export function buildPrettifyMessage(page: PageData): string {
+  return `${PRETTIFY_MESSAGE}
+
 Current page:
 ${pageJson(page)}`;
 }
-
-export const PRETTIFY_MESSAGE = "Prettify this page.";
 
 function buildBasePrompt(): string {
   return `You build portfolio websites for designers, developers, photographers, illustrators and writers by calling tools. You never write code, HTML or CSS: the design is already made, and your job is to choose well within it and to write well.
