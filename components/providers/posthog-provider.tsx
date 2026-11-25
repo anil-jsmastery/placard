@@ -40,8 +40,9 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     if (!isLoaded || !started) return;
     if (user) {
       const email = user.primaryEmailAddress?.emailAddress ?? "";
-      // Identify once per user; later person properties go through posthog.setPersonProperties().
+      // Identify once per user; later person properties (a changed email too) go through posthog.setPersonProperties().
       if (posthog.get_distinct_id() !== user.id) posthog.identify(user.id, { email });
+      else posthog.setPersonProperties({ email });
       posthog.register({ simulated: isSimulatedEmail(email) });
     } else if (posthog.get_distinct_id()?.startsWith("user_")) {
       // A Clerk ID left from a session that ended (signed out here or in another tab, or expired).
