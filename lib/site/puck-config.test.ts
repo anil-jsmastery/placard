@@ -20,7 +20,7 @@ describe("puck config", () => {
     const root = REFERENCE_PAGE.root.props;
     const section = createElement("section", { className: "pf-sec test-section" });
     const render = puckConfig.root!.render! as (props: Record<string, unknown>) => React.ReactElement;
-    const html = renderToStaticMarkup(render({ ...root, children: section, puck: { metadata: { content: REFERENCE_PAGE.content } } }));
+    const html = renderToStaticMarkup(render({ ...root, children: section, puck: { metadata: { content: REFERENCE_PAGE.content.filter((s) => !s.props.hidden) } } }));
     expect(html.startsWith(`<div class="site" data-theme="${root.theme}" data-font="${root.font}" data-spacing="${root.spacing}">`)).toBe(true);
     expect(html.match(/class="site"/g)).toHaveLength(1);
     const at = (needle: string) => html.indexOf(needle);

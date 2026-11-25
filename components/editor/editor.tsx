@@ -172,9 +172,9 @@ export function Editor({ site, user }: { site: EditorSite; user: EditorUser }) {
   const { state, onChange: autosave, saveNow, pause, markSaved } = useAutosave(site.id, site.draft);
   const toast = useToast();
 
-  // The sections go to root.render through Puck's metadata (navigation links, the empty state).
+  // The visible sections go to root.render through Puck's metadata, so the canvas nav matches the published one.
   const [content, setContent] = useState(site.draft.content);
-  const metadata = useMemo<EditorMetadata>(() => ({ content }), [content]);
+  const metadata = useMemo<EditorMetadata>(() => ({ content: content.filter((s) => !s.props.hidden) }), [content]);
   const onChange = useCallback((data: Data) => {
     setContent(data.content as SectionData[]);
     autosave(data);
