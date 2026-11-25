@@ -1,5 +1,6 @@
 import "server-only";
 import { eq } from "drizzle-orm";
+import { after } from "next/server";
 import { PostHog } from "posthog-node";
 import { APP_ENV } from "@/lib/config";
 import { db, users } from "@/lib/db";
@@ -10,6 +11,19 @@ import type { ServerEvents } from "./events";
 export const posthog = process.env.NEXT_PUBLIC_POSTHOG_KEY
   ? new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY, { host: process.env.NEXT_PUBLIC_POSTHOG_HOST, flushAt: 1, flushInterval: 0 })
   : null;
+
+// After an AI run's response has finished, flush the client, so LLM traces aren't lost when the function ends (Step 7).
+// Call it from the request that starts the run.
+export function flushAfterRun() {
+  if (!posthog) return;
+  after(async () => {
+    try {
+      await posthog.flush();
+    } catch (err) {
+      console.error("posthog flush failed", err);
+    }
+  });
+}
 
 // Server events, only through here. Every event carries environment and simulated.
 export async function captureServer<E extends keyof ServerEvents>(

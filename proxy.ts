@@ -17,6 +17,10 @@ export default function proxy(req: NextRequest, event: NextFetchEvent) {
   const host = (req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "").toLowerCase();
   const appHost = process.env.NEXT_PUBLIC_APP_DOMAIN!.toLowerCase();
   const path = req.nextUrl.pathname;
+  // The app's own deployment addresses are always the app, never a site: APP_DOMAIN, this deployment's VERCEL_URL and any
+  // *.vercel.app address (each preview has its own).
+  const vercelUrl = process.env.VERCEL_URL?.toLowerCase();
+  const isAppHost = host === appHost || (!!vercelUrl && host === vercelUrl) || host.endsWith(".vercel.app");
 
   // On any host; webhooks check their own signature.
   if (path.startsWith("/api/webhooks/")) return NextResponse.next();
@@ -27,7 +31,7 @@ export default function proxy(req: NextRequest, event: NextFetchEvent) {
     return NextResponse.redirect(url, 308);
   }
 
-  if (host === appHost && SITE_PATHS) {
+  if (isAppHost && SITE_PATHS) {
     // Production on a vercel.app address: a published site at /p/{slug}.
     const match = path.match(/^\/p\/([a-z0-9-]{3,40})\/?$/);
     if (match) return rewriteTo(req, `/s/${encodeURIComponent(`${match[1]}.${appHost}`)}`);
@@ -35,7 +39,7 @@ export default function proxy(req: NextRequest, event: NextFetchEvent) {
     if (path.startsWith("/p/")) return rewriteTo(req, "/s/_");
   }
 
-  if (host !== appHost) {
+  if (!isAppHost) {
     // A published portfolio on this machine: slug.localhost:3000.
     if (path === "/api/view" || path.startsWith("/_next/") || path.startsWith("/library/") || path.startsWith("/uploads/")) {
       return NextResponse.next();
