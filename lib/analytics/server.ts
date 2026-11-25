@@ -41,3 +41,11 @@ export async function captureServer<E extends keyof ServerEvents>(
     properties: { ...props, environment: APP_ENV, simulated, ...(opts?.personSet ? { $set: opts.personSet } : {}) },
   });
 }
+
+// Person properties with no event of their own (Pro ended → plan: free), as PostHog's $set, with environment and simulated.
+export async function setPersonServer(userId: string, set: Record<string, unknown>) {
+  if (!posthog) return;
+  const [user] = await db.select({ email: users.email }).from(users).where(eq(users.id, userId)).limit(1);
+  const simulated = user ? isSimulatedEmail(user.email) : false;
+  await posthog.captureImmediate({ distinctId: userId, event: "$set", properties: { $set: set, environment: APP_ENV, simulated } });
+}

@@ -7,6 +7,7 @@ import { useGetPuck, type Data } from "@puckeditor/core";
 import { ArrowUp, Check, Sparkle, Undo2 } from "lucide-react";
 import { getSiteState, undoAiChange } from "@/app/(main)/sites/[id]/edit/actions";
 import { useToast } from "@/components/app/toast";
+import { usePaywall } from "@/components/billing/paywall-provider";
 import { pendingBuildKey, type PendingBuild } from "@/components/new/describe-form";
 import { track } from "@/lib/analytics/client";
 import type { RunResult, SiteUIMessage } from "@/lib/ai/tools";
@@ -36,7 +37,7 @@ type Turn = {
 type Row = { label: string; state: "" | "run" | "ok" };
 type ToolPart = { type: string; state?: string; input?: { type?: SectionType }; output?: { ok?: boolean } };
 
-// The copy for each guard code (design-system §7). ai_limit is a toast until Step 8's paywall.
+// The copy for each guard code (design-system §7). ai_limit opens the paywall.
 const GUARD_COPY: Record<string, string> = {
   ai_disabled: "AI is paused for a few minutes. You can still edit your portfolio by hand.",
   busy: "The AI is still working on your last request.",
@@ -151,6 +152,7 @@ export function AiPanel({
   const dispatch = usePuck((s) => s.dispatch);
   const getPuck = useGetPuck();
   const toast = useToast();
+  const paywall = usePaywall();
   const before = useRef<PageData | null>(null);
   const runId = useRef<string | null>(null); // the current run's id, once the server has sent it
   const current = useRef<Turn | null>(null);
@@ -266,7 +268,8 @@ export function AiPanel({
       }
       if (before.current) show(before.current);
       if (code === "ai_limit" || code === "empty_page") {
-        toast.show(code === "ai_limit" ? `You’ve used all ${usage.allowance} AI requests this month` : EMPTY_PAGE);
+        if (code === "ai_limit") paywall.open("ai_limit", usage.allowance);
+        else toast.show(EMPTY_PAGE);
         finished.current = true;
         setTurns((t) => t.slice(0, -1));
         onRunning(null);
@@ -283,7 +286,7 @@ export function AiPanel({
   const start = useCallback(async (turn: Omit<Turn, "from">) => {
     if (!finished.current) return;
     if (usage.left <= 0) {
-      toast.show(`You’ve used all ${usage.allowance} AI requests this month`);
+      paywall.open("ai_limit", usage.allowance);
       return;
     }
     finished.current = false;
@@ -306,7 +309,7 @@ export function AiPanel({
       : turn.kind === "edit" ? { siteId, prompt: turn.prompt, selectedId: turn.selectedId ?? null }
       : { siteId };
     void sendMessage({ text: turn.prompt }, { body: { ...body, route: `/api/ai/${turn.kind}` } });
-  }, [beforeRun, dispatch, getPuck, messages.length, onRunning, sendMessage, siteId, toast, usage]);
+  }, [beforeRun, dispatch, getPuck, messages.length, onRunning, paywall, sendMessage, siteId, toast, usage]);
 
   // Prettify, from the top bar or a message that starts with "Prettify".
   const prettify = useCallback(() => {
@@ -317,12 +320,12 @@ export function AiPanel({
       return;
     }
     if (usage.left <= 0) {
-      toast.show(`You’ve used all ${usage.allowance} AI requests this month`);
+      paywall.open("ai_limit", usage.allowance);
       return;
     }
     onTab("ai");
     void start({ kind: "prettify", prompt: "Prettify" });
-  }, [getPuck, onTab, start, toast, usage]);
+  }, [getPuck, onTab, paywall, start, toast, usage]);
 
   useEffect(() => {
     actionsRef.current = { prettify };
