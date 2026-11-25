@@ -26,3 +26,9 @@ What the project has so far, one block per finished step. `/step` adds each step
 - 6 themes, 3 heading fonts (Sans, Serif, Techy) and 2 spacings (`lib/site/themes.ts`), all CSS variables in `app/site.css`.
 - Sample pages for the five kinds, the reference page and the hand-built page are in `lib/site/sample-pages.ts`; `/dev/sections` shows them.
 - `PageData` and `SectionData` are spelled out in `lib/site/types.ts` (not inferred from `PageSchema`); `toPage()` parses a stored page. `SiteRoot`'s optional `wrap` prop is only for `/dev/sections`. Tests run with `vitest.config.mts` (the `@/` alias).
+
+## Step 3 · The editor and the sites grid
+- `lib/plans.ts` holds the Free and Pro limits that every later step uses.
+- The editor at `/sites/{id}/edit` is Puck composed into the prototype's layout: top bar, Add (`Puck.Components` as `.blk` cards, click or drag), Layers (move, hide), the canvas frame with device widths, the action bar, the right panel (Site settings, or the section's fields from `lib/editor/fields.tsx`), undo/redo and autosave through `saveDraft`. Prettify and Publish buttons are in place but disabled.
+- `/sites` lists the user's portfolios as cards; "New portfolio" creates a blank one for now.
+- Not in the plan: a fourth Puck override, `overrides.iframe` (`CanvasFrame` in `components/editor/canvas.tsx`), copies the font variables onto the canvas iframe's `<html>`, grows the iframe to the page's height and forwards shortcut keys from it, because the iframe otherwise has no fonts, a fixed height and swallows ⌘Z after a click on a section; the "{Section} removed" toast comes from `onAction` so Puck's Delete key shows it too, and `components/editor/puck.ts` and `icons.tsx` hold the shared Puck hook and lucide icon maps.

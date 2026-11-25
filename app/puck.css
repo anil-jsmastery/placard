@@ -1,0 +1,37 @@
+/*
+  app/puck.css: fits Puck's own wrappers around the prototype's editor markup (Step 3).
+  Loaded only by the editor (app/(main)/sites/[id]/edit/page.tsx), after Puck's no-external.css.
+  Puck copies the page's stylesheets into the canvas iframe, so the overlay rules below apply there.
+  Nothing here restyles a prototype class; it only makes Puck's markup behave like the prototype's.
+*/
+
+/* Puck's UI font is Geist, like the rest of the app. */
+:root{--puck-font-family:var(--font-geist,"Geist"),system-ui,sans-serif}
+.Puck{font-family:inherit}
+
+/* Add tab: Puck's drawer holds the .blk cards (.panel-list > li > button.blk in the prototype). */
+#edAdd [data-puck-drawer]{display:grid;gap:6px;font-family:inherit}
+#edAdd [data-puck-drawer-item] > .blk{width:100%;display:flex;align-items:center;gap:12px;padding:10px;border:1px solid var(--line-2);border-radius:13px;background:#fff;font-size:14px;text-align:left;cursor:grab}
+#edAdd [data-puck-drawer-item] > .blk:hover{border-color:#C9CDF5}
+/* Puck draws each card twice (the copy stays behind while dragging); keep the copy out of the tab order. */
+#edAdd [class*="Drawer-draggableBg"]{visibility:hidden}
+
+/* Canvas: the iframe sits in .frame under .frame-bar and grows to the page (CanvasFrame sets its height). */
+.ed .frame [data-puck-preview]{height:auto}
+.ed .frame #preview-frame{display:block;width:100%;height:420px;border:0}
+
+/* An empty page: the whole .pf-empty area takes drops. */
+.pf-empty{position:relative}
+.pf-empty > [data-puck-dropzone]{position:absolute;inset:0;min-height:0}
+
+/* componentOverlay: the prototype's outlines (.ed .site [data-sec]:hover / .sel). */
+.ed-ov{position:absolute;inset:0;pointer-events:none;outline:2px solid transparent;outline-offset:-3px;transition:outline-color .15s}
+.ed-ov.hover{outline:2px dashed #B9C0FA}
+.ed-ov.sel{outline:2px solid var(--blue)}
+
+/* actionBar: .sec-bar sits on the selected section's top edge, on the right (.ed .site .pf-block > .sec-bar). */
+[data-puck-overlay] div:has(> .sec-bar){top:0!important;right:10px!important;padding:0!important;transform:translateY(-50%)!important;min-height:0;cursor:default}
+[data-puck-overlay] .sec-bar{position:static}
+
+/* Fields: Puck's form around the .field cards, spaced like #edFields. */
+#edFields > form{display:flex;flex-direction:column;gap:8px;min-width:0;font-family:inherit}

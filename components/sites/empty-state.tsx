@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { createSite } from "@/app/(main)/(app)/sites/actions";
 
 export function EmptyState() {
   return (
@@ -10,7 +10,10 @@ export function EmptyState() {
       </div>
       <h3>No portfolio yet</h3>
       <p>Tell Placard what you do in a sentence or two and it builds the first draft, photos included.</p>
-      <Link className="btn btn-blue" href="/start">Build your portfolio</Link>
+      {/* Step 4 points this at /start. */}
+      <form action={createSite} className="contents">
+        <button type="submit" className="btn btn-blue">Build your portfolio</button>
+      </form>
     </div>
   );
 }
