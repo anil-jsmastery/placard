@@ -19,6 +19,20 @@ reviews:
     - "!.claude/**"
   # Placard's own rules (CLAUDE.md › "Product rules"), so the review checks what matters in this app.
   path_instructions:
+    - path: "app/**"
+      instructions: >-
+        Placard is built one step at a time from build-plan/ (one pull request per step). A link to a route or anchor
+        that a later step adds (/start, /new, /account, /pricing, #demo) is an expected placeholder, not a bug.
+    - path: "app/(main)/(auth)/**"
+      instructions: >-
+        Sign-up uses forceRedirectUrl on purpose: a new account always starts in the app, whatever redirect_url says.
+        The legal line is plain text because this build has no Terms or Privacy pages.
+    - path: "components/providers/posthog-provider.tsx"
+      instructions: >-
+        Session replay uses maskAllInputs: false on purpose; private fields are masked per element with data-ph-mask.
+        Check that registered properties (environment, simulated) survive reset(), that identify is called once per
+        user and later person properties use setPersonProperties, and that a leftover Clerk ID is reset when Clerk has
+        no user.
     - path: "app/api/**"
       instructions: >-
         Every handler must get the signed-in user from Clerk, and for any site (portfolio), upload or run id in the request,
@@ -26,7 +40,7 @@ reviews:
         secrets, connection strings or another user's data. Webhooks must verify Clerk's signature.
     - path: "proxy.ts"
       instructions: >-
-        /api/webhooks must pass through on any host. Published portfolios are served only at /p/{slug} (or the
+        Protecting the app's pages here with auth.protect() is intended. /api/webhooks must pass through on any host. Published portfolios are served only at /p/{slug} (or the
         slug subdomain locally); a draft or unpublished portfolio must never be reachable without signing in as its owner.
     - path: "app/(sites)/**"
       instructions: >-

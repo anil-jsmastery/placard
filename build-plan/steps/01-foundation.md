@@ -42,6 +42,7 @@ Reply `done`. Claude Code checks that the three keys are filled in (names only) 
   export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME!;
   export const APP_DOMAIN = process.env.NEXT_PUBLIC_APP_DOMAIN!;   // "localhost:3000" in dev, the vercel.app address in production
   export const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
+  // APP_ENV is a server variable; next.config.ts copies it into the browser bundle at build time (3.7), so this works on both sides.
   export const APP_ENV = (process.env.APP_ENV ?? "dev") as "dev" | "prod";
   // Production runs on a vercel.app address with no domain of its own, so there sites live at APP_DOMAIN/p/{slug} (Step 7).
   export const SITE_PATHS = process.env.NEXT_PUBLIC_SITE_PATHS === "true";
@@ -54,13 +55,13 @@ Copy the markup from `placard-app.html` with the same classes (design-system §3
 
 ### 3.3 Pages
 - `app/(main)/(marketing)/layout.tsx`: the prototype's `header.nav` (`components/marketing/nav.tsx`: brand, Examples, How it works, Pricing, FAQ, Log in, Start building) and `footer.mkt` (`footer.tsx`). `app/(main)/(marketing)/page.tsx`: only `section.hero.wrap` (pill, headline, lead, two buttons, note), leaving out the demo. The rest of the landing page is Step 11.
-- `app/(main)/(auth)/sign-in/[[...sign-in]]/page.tsx` and `sign-up/[[...sign-up]]/page.tsx`: `components/auth/auth-shell.tsx`, the prototype's `.auth` layout (brand, `.auth-c` with Clerk's `<SignIn fallbackRedirectUrl="/sites" />` / `<SignUp forceRedirectUrl="/sites" />`, "Secured by Clerk", the legal line; on the right `.auth-art` with the `.aa-head` text of each page). The live preview under the text comes in Step 11. (Step 4 sends new sign-ups to `/start` instead.)
+- `app/(main)/(auth)/sign-in/[[...sign-in]]/page.tsx` and `sign-up/[[...sign-up]]/page.tsx`: `components/auth/auth-shell.tsx`, the prototype's `.auth` layout (brand, `.auth-c` with Clerk's `<SignIn fallbackRedirectUrl="/sites" />` / `<SignUp forceRedirectUrl="/sites" />` (forced on purpose: a new account always starts in the app, whatever `redirect_url` says), "Secured by Clerk", the legal line as plain text ("By continuing you agree to the Terms and Privacy policy.", no links: this build has no legal pages); on the right `.auth-art` with the `.aa-head` text of each page). The live preview under the text comes in Step 11. (Step 4 sends new sign-ups to `/start` instead.)
 - `app/(main)/(app)/layout.tsx`: `<AppBar />` + children inside `main.a-page > .wrap`. Calls `ensureUser()` (3.6).
 - `app/(main)/(app)/sites/page.tsx`: `.p-head` with "Sites" and "0 of 1 portfolio on Free", and the empty state ("No portfolio yet", its text and "Build your portfolio" to `/start`, which arrives in Step 4).
 - Signed-in visitors to `/` are redirected to `/sites`.
 
 ### 3.4 proxy.ts
-`proxy.ts` at the repo root with Clerk's `clerkMiddleware`. Protect `/sites(.*)`, `/new`, `/start`, `/account`. Use the matcher from Clerk's README for Next.js 16. (Host routing for published sites is added in Step 6.)
+`proxy.ts` at the repo root with Clerk's `clerkMiddleware(async (auth, req) => …)`: when the path is `/sites`, anything under `/sites/`, `/new`, `/start` or `/account`, call `await auth.protect()` (a plain path check; don't use `createRouteMatcher`, which Clerk 7 deprecates). Use the matcher from Clerk's README for Next.js 16. (Host routing for published sites is added in Step 6.)
 
 ### 3.5 Database (Neon Postgres, Drizzle ORM)
 You create the Neon project and the `dev` branch in "Your turn"; this step writes the code and the first migration, which needs no database to generate.
@@ -226,12 +227,14 @@ Then generate the first migration (no database needed): `npm run db:generate -- 
 `lib/site/types.ts`: `export type PageData = Data` (Puck's `Data` type from `@puckeditor/core`), refined in Step 2.
 
 ### 3.6 Users and `signed_up`
-- `lib/users.ts`: `ensureUser()` reads the Clerk user (`currentUser()`) and creates the `users` row if it's missing: `db.insert(users).values({ id, email }).onConflictDoNothing().returning({ id: users.id })`. When a row came back (this request created the user), send `captureServer(id, "signed_up", {})`. So `signed_up` is sent once per user per database, from the server, on their first signed-in page, with no webhook and no tunnel. Also `isSimulatedEmail(email)` → `email.includes("+clerk_test")`.
+- `lib/users.ts`: `ensureUser()` reads the Clerk user (`currentUser()`) and creates the `users` row if it's missing: `db.insert(users).values({ id, email }).onConflictDoNothing().returning({ id: users.id })`. When a row came back (this request created the user), send `captureServer(id, "signed_up", {})`. So `signed_up` is sent once per user per database, from the server, on their first signed-in page, with no webhook and no tunnel. `lib/simulated.ts`: `isSimulatedEmail(email)` → `email.includes("+clerk_test")` (used by the server and the browser).
 - `app/api/webhooks/clerk/route.ts`: verify with `verifyWebhook` from `@clerk/nextjs/webhooks`. For now every event returns 200 and does nothing; Step 8 handles the billing events. (Only production has a webhook endpoint, from Step 7.)
 
 ### 3.7 PostHog
-- `next.config.ts`: rewrites so events go through our domain: `/ingest/static/:path*` → `${assetsHost}/static/:path*` and `/ingest/:path*` → `${NEXT_PUBLIC_POSTHOG_HOST}/:path*`, where `assetsHost` is the host with `.i.posthog.com` replaced by `-assets.i.posthog.com`. Add `skipTrailingSlashRedirect: true`.
-- `components/providers/posthog-provider.tsx` (client): `posthog.init(key, { api_host: "/ingest", ui_host: "https://eu.posthog.com", person_profiles: "identified_only", capture_pageview: "history_change", session_recording: { maskAllInputs: false, maskTextSelector: "[data-ph-mask]" } })`, then `posthog.register({ environment: APP_ENV })`. When Clerk has a user: `posthog.identify(user.id, { email, use_case, sites_count })` and `posthog.register({ simulated: isSimulatedEmail(email) })`; on sign-out `posthog.reset()`.
+- `next.config.ts`: rewrites so events go through our domain: `/ingest/static/:path*` → `${assetsHost}/static/:path*` and `/ingest/:path*` → `${NEXT_PUBLIC_POSTHOG_HOST}/:path*`, where `assetsHost` is the host with `.i.posthog.com` replaced by `-assets.i.posthog.com`. Add `skipTrailingSlashRedirect: true`, and `env: { APP_ENV: process.env.APP_ENV ?? "dev" }` so the browser gets the same `APP_ENV` as the server (Next.js inlines it at build time; on Vercel each environment builds with its own value). Nothing passes `APP_ENV` through props.
+- `components/providers/posthog-provider.tsx` (client): `posthog.init(key, { api_host: "/ingest", ui_host: "https://eu.posthog.com", person_profiles: "identified_only", capture_pageview: "history_change", session_recording: { maskAllInputs: false, maskTextSelector: "[data-ph-mask]" } })` (masking is per element on purpose: Step 12 marks private fields with `data-ph-mask`), then `registerBase()`. `registerBase()` is a function in this file: `posthog.register({ environment: APP_ENV, simulated: false })`, so signed-out visitors' events carry both properties too. Then follow Clerk's `useUser()`, only once `isLoaded`:
+  - **A user:** if `posthog.get_distinct_id() !== user.id`, `posthog.identify(user.id, { email })`. Then `posthog.register({ simulated: isSimulatedEmail(email) })`. `isSimulatedEmail` lives in `lib/simulated.ts` (no database import, so the browser can use it). Person properties that arrive later (`use_case` in Step 4, `plan` and `sites_count` in Step 8) are sent with `posthog.setPersonProperties(…)`, never by calling `identify` again: a second `identify` with the same ID doesn't update them.
+  - **No user:** if `posthog.get_distinct_id()` starts with `user_` (a Clerk ID left from a session that ended: signed out here or in another tab, or expired), call `posthog.reset()` and then `registerBase()` again, because `reset()` also clears registered properties.
 - `lib/analytics/events.ts`: the one typed list of events (spec §7). Exactly:
   ```ts
   export type UseCase = "designer" | "developer" | "photographer" | "artist" | "writer" | "other";
