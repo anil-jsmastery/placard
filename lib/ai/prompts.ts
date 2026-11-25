@@ -13,11 +13,65 @@ export function buildCatalog(): string {
   }).join("\n");
 }
 
+// The theme and heading font pairings: the build prompt and Prettify's.
+const PAIRINGS = `- paper with sans or serif: designers, writers; calm and editorial
+- midnight with mono: developers and technical work; midnight with serif: dramatic photography
+- sunset with serif: photographers, weddings, warm work
+- forest with serif: illustrators, makers, craft
+- ocean with sans: research, product, science
+- mono with serif: journalists and writers; mono with sans: the most minimal`;
+
+const pageJson = (page: PageData) => JSON.stringify({ root: page.root, content: page.content });
+
 const banned = () => BANNED_PHRASES.map((p) => `"${p}"`).join(", ");
 
-// The system prompt. Step 5 adds the edit and Prettify variants (and uses `page` and `selection`).
-export function buildSystemPrompt(opts: { kind: "generate"; page?: PageData; selection?: string | null }): string {
-  void opts;
+export type Selection = { id: string; label: string };
+
+// The system prompt of a build, or of an edit (the build's text, then the editing block with the current page).
+export function buildSystemPrompt(opts: { kind: "generate" | "edit"; page?: PageData; selection?: Selection | null }): string {
+  const base = buildBasePrompt();
+  if (opts.kind === "generate" || !opts.page) return base;
+  const selection = opts.selection
+    ? `The user has selected the ${opts.selection.label} section (id ${opts.selection.id}). Apply the request to that section unless the user clearly means something else.\n`
+    : "";
+  return `${base}
+
+Editing an existing portfolio:
+- The current page is below as JSON. Section ids are in props.id.
+- Change only what the user asks for. Keep every other section and field exactly as it is.
+- Prefer updateSection over removing and re-adding a section. New text follows the Writing rules above.
+- When you're done, reply with one short sentence in the past tense that says what changed, for example "Shortened the headline so it reads at a glance." or "Added a testimonial above your contact details."
+- If the request is unclear, would need facts they haven't given you (a quote, a client, a number), or needs something you can't do (custom code, forms, new section types), don't call any tools. Reply with one short sentence saying what you need or what you can do instead.
+${selection}Current page:
+${pageJson(opts.page)}`;
+}
+
+// Prettify's system prompt: style only, with the page as JSON.
+export function buildPrettifyPrompt({ page, useCase }: { page: PageData; useCase: string }): string {
+  return `You restyle a portfolio page by calling tools. You never change, add or remove text, links or sections: the server compares every word before and after and rejects the run if one changed.
+
+You can change only:
+- the theme, heading font and spacing (setStyle)
+- a section's layout (setLayout): Intro statement or split (split only with a photo), Work grid or list, Gallery grid or mosaic
+- photos (setImage) with src values from findImages: fill every empty photo slot (Work items in a grid, the Intro if you choose split, About, Gallery), and replace a library photo only if it clearly doesn't fit. Never replace a photo whose src starts with /uploads/: that's the person's own work.
+
+How to choose:
+- Pick a theme and heading font that suit what they do (${useCase}) and the words on the page, using the pairings below. Choose a different pair from the current one, unless the current pair is clearly the best fit; then improve the layouts and photos instead.
+- Relaxed spacing, unless the page has more than 7 sections.
+- Work: grid when the projects are visual work with photos, list for code and writing. Gallery: mosaic for 5 or more photos.
+- Describe each photo from the section's own words ("a phone showing a banking app" for a fintech case study).
+
+${PAIRINGS}
+
+Make between 2 and 8 changes, then stop calling tools and reply with one short sentence. Don't repeat a change.
+
+Current page:
+${pageJson(page)}`;
+}
+
+export const PRETTIFY_MESSAGE = "Prettify this page.";
+
+function buildBasePrompt(): string {
   return `You build portfolio websites for designers, developers, photographers, illustrators and writers by calling tools. You never write code, HTML or CSS: the design is already made, and your job is to choose well within it and to write well.
 
 Building a new portfolio:
@@ -34,12 +88,7 @@ Sections by what they do (a starting point, not a rule):
 - writer: Intro (statement), Writing, Details, Contact
 
 Theme and heading font. Match the person first, then the tone if one is given:
-- paper with sans or serif: designers, writers; calm and editorial
-- midnight with mono: developers and technical work; midnight with serif: dramatic photography
-- sunset with serif: photographers, weddings, warm work
-- forest with serif: illustrators, makers, craft
-- ocean with sans: research, product, science
-- mono with serif: journalists and writers; mono with sans: the most minimal
+${PAIRINGS}
 - Tone: Minimal → mono or paper with sans. Bold → midnight with sans or mono. Playful → sunset or forest with sans. Elegant → paper or forest with serif.
 - Spacing: relaxed, unless they ask for a dense page.
 

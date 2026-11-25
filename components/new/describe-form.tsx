@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
-import { ChevronLeft, Sparkles } from "lucide-react";
+import { ChevronLeft, LayoutGrid, Sparkles } from "lucide-react";
 import { createSite } from "@/app/(main)/(app)/sites/actions";
 import { useToast } from "@/components/app/toast";
 import { KIND_ICONS } from "@/components/onboarding/kind-cards";
@@ -81,6 +81,25 @@ export function DescribeForm({
     }
   }
 
+  // A blank page: no AI request, the editor's Add tab and Prettify do the rest.
+  async function startBlank() {
+    if (busy) return;
+    // Step 8 opens the paywall (site_limit) here; until then its title as a toast.
+    if (full) {
+      toast.show("You’re using your 1 free portfolio");
+      return;
+    }
+    setBusy(true);
+    track("prompt_submitted", { use_case: useCase, used_example: false, prompt_length: 0, blank: true });
+    try {
+      const { id } = await createSite({ name: name.trim() || undefined });
+      router.push(`/sites/${id}/edit`);
+    } catch {
+      toast.show("Something went wrong. Try again.");
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="ds">
       <Link className="back" href="/start">
@@ -124,6 +143,14 @@ export function DescribeForm({
           You’re using {sites.count} of {sites.limit} portfolio{sites.limit > 1 ? "s" : ""}. You’ll need <Link href="/pricing">Pro</Link> to make another one.
         </div>
       ) : null}
+      <button className="ds-blank" id="dsBlank" type="button" disabled={busy} onClick={startBlank}>
+        <span className="em"><LayoutGrid /></span>
+        <span>
+          <b style={{ fontWeight: 500, color: "var(--ink)" }}>Start with a blank page</b><br />
+          <span style={{ color: "var(--mute)", fontSize: 13.5 }}>Add sections yourself, type your own words, then press Prettify to style it.</span>
+        </span>
+        <span className="use">Start blank</span>
+      </button>
 
       <div className="ds-fields">
         <div>

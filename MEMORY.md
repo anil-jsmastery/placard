@@ -40,3 +40,9 @@ What the project has so far, one block per finished step. `/step` adds each step
 - Photos are found with Lakebase Search over `library_images` (migration `drizzle/0001_library_search.sql`, seeded by `npm run db:seed-library`).
 - The editor's AI tab streams the build live with the prototype's build log.
 - Not in the plan: `findImages(tag, count)`, which 3.7 expects from Step 2, didn't exist, so it was added to `lib/images/library.ts`, and undo/redo are locked during a run (like the fields) so a half-built page can't be stepped back mid-stream.
+
+## Step 5 · Edit with AI, and Prettify
+- `/api/ai/edit` runs chat edits with Haiku 5.5 (`kind: "edit"`), scoped to the selected section when there is one. "Undo AI change" restores the snapshot taken before each AI run (`snapshots`).
+- `/api/ai/prettify` restyles a page with only `setStyle`, `setLayout`, `setImage` and `findImages` (`kind: "prettify"`, Haiku 5.5); the run fails if `pageWords` (`lib/site/words.ts`) differs before and after. The client shows the change list from `describeStyleChanges` and "Undo Prettify"; `site_prettified` carries `source` (manual or ai).
+- `/new` has "Start with a blank page" (a plain page, no AI request); the AI tab explains Prettify on a blank page.
+- Not in the plan: the `ai_run` snapshot is now written in the same transaction as the run's row (so it shares `created_at` and `undoAiChange`'s `created_at <= run.created_at` finds it), ok results carry `runId` and the model's `reply`, `setImage` also requires a `src` from `lib/images/library.json`, `.flash`/`.prettifying` are mirrored for Puck's `[data-puck-component]` in `app/puck.css`, and a failed blank start shows the toast "Something went wrong. Try again." because the plan gives no copy for it.

@@ -3,7 +3,7 @@ import { CATALOG } from "@/lib/sections/catalog";
 import { SECTION_TYPES } from "@/lib/sections/schemas";
 import { REFERENCE_PAGE } from "@/lib/site/sample-pages";
 import { BANNED_PHRASES, findBannedPhrases } from "./banned";
-import { buildGenerateMessage, buildSystemPrompt } from "./prompts";
+import { buildGenerateMessage, buildPrettifyPrompt, buildSystemPrompt } from "./prompts";
 
 describe("buildSystemPrompt", () => {
   const prompt = buildSystemPrompt({ kind: "generate" });
@@ -33,5 +33,25 @@ describe("findBannedPhrases", () => {
     const page = structuredClone(REFERENCE_PAGE);
     page.root.props.description = "A Passionate designer. Let’s work together!";
     expect(findBannedPhrases(page)).toEqual(["passionate", "let's work together!"]);
+  });
+});
+
+describe("edit and Prettify prompts", () => {
+  const page = REFERENCE_PAGE;
+  const intro = page.content[0].props.id;
+
+  it("an edit adds the editing block, the selection and the page to the build prompt", () => {
+    const prompt = buildSystemPrompt({ kind: "edit", page, selection: { id: intro, label: "Intro" } });
+    expect(prompt.startsWith(buildSystemPrompt({ kind: "generate" }))).toBe(true);
+    expect(prompt).toContain("Editing an existing portfolio:");
+    expect(prompt).toContain(`The user has selected the Intro section (id ${intro}). Apply the request to that section unless the user clearly means something else.\nCurrent page:\n{`);
+    expect(buildSystemPrompt({ kind: "edit", page })).toContain("instead.\nCurrent page:\n{");
+  });
+
+  it("Prettify gets what they do, the pairings and the page", () => {
+    const prompt = buildPrettifyPrompt({ page, useCase: "designer" });
+    expect(prompt).toContain("suit what they do (designer)");
+    expect(prompt).toContain("- ocean with sans: research, product, science");
+    expect(prompt.endsWith(`Current page:\n${JSON.stringify({ root: page.root, content: page.content })}`)).toBe(true);
   });
 });

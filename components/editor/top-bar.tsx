@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Check, Monitor, Redo2, Smartphone, Tablet, Undo2, WandSparkles } from "lucide-react";
+import { ArrowLeft, Check, Monitor, Redo2, Smartphone, Tablet, Undo2 } from "lucide-react";
 import { Status } from "@/components/app/status";
+import { PrettifyButton } from "./prettify-button";
 import { usePuck } from "./puck";
 
 export type Device = "desktop" | "tablet" | "mobile";
@@ -31,7 +32,17 @@ function Saved({ state }: { state: SaveState }) {
   return <span className="saved" role="status"><Check strokeWidth={2} />Saved</span>;
 }
 
-export function TopBar({ live, save, device, onDevice, locked }: { live: boolean; save: SaveState; device: Device; onDevice: (d: Device) => void; locked: boolean }) {
+export function TopBar({
+  live, save, device, onDevice, locked, prettifying, onPrettify,
+}: {
+  live: boolean;
+  save: SaveState;
+  device: Device;
+  onDevice: (d: Device) => void;
+  locked: boolean;
+  prettifying: boolean;
+  onPrettify: () => void;
+}) {
   const title = usePuck((s) => s.appState.data.root.props?.title as string | undefined);
   const hasPast = usePuck((s) => s.history.hasPast);
   const hasFuture = usePuck((s) => s.history.hasFuture);
@@ -59,10 +70,8 @@ export function TopBar({ live, save, device, onDevice, locked }: { live: boolean
       <div className="ed-r">
         <button type="button" className="icon-btn" id="edUndo" aria-label="Undo" disabled={locked || !hasPast} onClick={back}><Undo2 /></button>
         <button type="button" className="icon-btn" id="edRedo" aria-label="Redo" disabled={locked || !hasFuture} onClick={forward}><Redo2 /></button>
-        {/* Prettify arrives in Step 5, Publish in Step 6. */}
-        <button type="button" className="btn btn-sm btn-soft btn-pretty" title="Restyle the page with AI. Your words stay the same." disabled>
-          <WandSparkles />Prettify
-        </button>
+        <PrettifyButton running={prettifying} disabled={locked} onClick={onPrettify} />
+        {/* Publish arrives in Step 6; it stays disabled while an AI run is going. */}
         <button type="button" className="btn btn-sm btn-blue" disabled>Publish</button>
       </div>
     </div>
