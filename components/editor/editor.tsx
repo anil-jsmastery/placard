@@ -37,7 +37,7 @@ function useAutosave(siteId: string, initial: PageData) {
   const saved = useRef(initialJson);           // the latest page the server accepted
   const latest = useRef<Data | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const inflight = useRef(false);
+  const inflight = useRef<Promise<void> | null>(null); // the save on its way to the server
   const edited = useRef(false);
   const blocked = useRef(false);               // pending changes, or the page can't be saved
   const paused = useRef(false);                // an AI run is going
@@ -58,7 +58,8 @@ function useAutosave(siteId: string, initial: PageData) {
       setState({ kind: "saved" });
       return;
     }
-    inflight.current = true;
+    let release = () => {};
+    inflight.current = new Promise<void>((resolve) => (release = resolve));
     try {
       const res = await saveDraft(siteId, { root: data.root, content: data.content, zones: data.zones ?? {} });
       if (res.ok) saved.current = json;
@@ -75,9 +76,19 @@ function useAutosave(siteId: string, initial: PageData) {
       setState({ kind: "retrying" });
       later(RETRY_MS);
     } finally {
-      inflight.current = false;
+      inflight.current = null;
+      release();
     }
   }, [siteId]);
+
+  // Before an AI run: wait for any save on its way, save what's left, and say whether the server has the page.
+  const flush = useCallback(async () => {
+    while (inflight.current) await inflight.current;
+    await save();
+    while (inflight.current) await inflight.current;
+    const data = latest.current;
+    return !data || pageJson(data) === saved.current;
+  }, [save]);
 
   useEffect(() => {
     saveRef.current = save;
@@ -118,6 +129,7 @@ function useAutosave(siteId: string, initial: PageData) {
   // The page the server has now (an AI run's result, or the page from before a failed run).
   const markSaved = useCallback((page: PageData) => {
     const json = pageJson(page as unknown as Data);
+    latest.current = { ...(latest.current ?? {}), root: page.root, content: page.content } as Data;
     seen.current = json;
     saved.current = json;
     blocked.current = false;
@@ -126,7 +138,7 @@ function useAutosave(siteId: string, initial: PageData) {
     setState({ kind: "saved" });
   }, []);
 
-  return { state, onChange, saveNow: save, pause, markSaved };
+  return { state, onChange, saveNow: save, flush, pause, markSaved };
 }
 
 const isTyping = (el: EventTarget | null) =>
@@ -169,7 +181,7 @@ const LOCKED = { drag: false, duplicate: false, delete: false, edit: false, inse
 export function Editor({ site, user }: { site: EditorSite; user: EditorUser }) {
   const [device, setDevice] = useState<Device>("desktop");
   const [running, setRunning] = useState(false);
-  const { state, onChange: autosave, saveNow, pause, markSaved } = useAutosave(site.id, site.draft);
+  const { state, onChange: autosave, saveNow, flush, pause, markSaved } = useAutosave(site.id, site.draft);
   const toast = useToast();
 
   // The visible sections go to root.render through Puck's metadata, so the canvas nav matches the published one.
@@ -217,7 +229,7 @@ export function Editor({ site, user }: { site: EditorSite; user: EditorUser }) {
           <LeftPanel
             ai={{
               siteId: site.id, useCase: user.useCase, usage: user.usage, running, onRunning,
-              beforeRun: saveNow, onSaved: markSaved,
+              beforeRun: flush, onSaved: markSaved,
             }}
           />
           <Canvas device={device} />

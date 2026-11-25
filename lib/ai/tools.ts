@@ -12,8 +12,9 @@ const MAX_FAILURES = 3; // the original try plus 2 retries
 // What a run streams besides the model's own parts: the full page after every change (`data-page`, for the canvas,
 // never sent to the model) and how the run ended (`data-result`).
 export type RunResult =
-  | { ok: true; page: PageData; name: string; sections: number; usage: { left: number; allowance: number } }
-  | { ok: false; reason: string; usage: { left: number; allowance: number } };
+  | { ok: true; page: PageData; name: string; sections: number; usage: Usage | null }
+  | { ok: false; reason: string; usage: Usage | null };
+type Usage = { left: number; allowance: number };
 export type SiteUIMessage = UIMessage<never, { page: PageData; result: RunResult }>;
 
 export type ToolState = {

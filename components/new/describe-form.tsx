@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
@@ -46,6 +46,7 @@ export function DescribeForm({
   const [busy, setBusy] = useState(false);
   const router = useRouter();
   const toast = useToast();
+  const created = useRef<string | null>(null); // the portfolio made by an earlier try, so a retry doesn't make another
 
   // Experiment prompt-examples (Step 12): `blank` hides "Try an example"; control or no flag shows it.
   useEffect(() => posthog.onFeatureFlags(() => setShowExamples(posthog.getFeatureFlag("prompt-examples") !== "blank")), []);
@@ -69,11 +70,13 @@ export function DescribeForm({
     setBusy(true);
     track("prompt_submitted", { use_case: useCase, used_example: usedExample, prompt_length: text.length, blank: false });
     try {
-      const { id } = await createSite({ name: name.trim() || undefined });
+      created.current ??= (await createSite({ name: name.trim() || undefined })).id;
+      const id = created.current;
       const pending: PendingBuild = { prompt: text, name: name.trim(), tone, useCase };
       sessionStorage.setItem(pendingBuildKey(id), JSON.stringify(pending));
       router.push(`/sites/${id}/edit`);
     } catch {
+      toast.show("Something went wrong building your portfolio. Try again (this request wasn't counted).");
       setBusy(false);
     }
   }

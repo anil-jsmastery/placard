@@ -5,6 +5,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useGetPuck, type Data } from "@puckeditor/core";
 import { ArrowUp, Sparkle } from "lucide-react";
+import { getSiteState } from "@/app/(main)/sites/[id]/edit/actions";
 import { useToast } from "@/components/app/toast";
 import { pendingBuildKey, type PendingBuild } from "@/components/new/describe-form";
 import type { RunResult, SiteUIMessage } from "@/lib/ai/tools";
@@ -60,6 +61,15 @@ function buildRows(message: SiteUIMessage | undefined, turn: Turn, themeName: st
   ];
 }
 
+// The same page in any key order (jsonb doesn't keep the order it was given).
+function samePage(a: PageData, b: PageData) {
+  const sort = (v: unknown): unknown =>
+    Array.isArray(v) ? v.map(sort)
+    : v && typeof v === "object" ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, sort((v as Record<string, unknown>)[k])]))
+    : v;
+  return JSON.stringify(sort({ root: a.root, content: a.content })) === JSON.stringify(sort({ root: b.root, content: b.content }));
+}
+
 function Who() {
   return <div className="who"><i><Sparkle fill="#fff" strokeWidth={0} /></i>Placard</div>;
 }
@@ -73,7 +83,7 @@ export function AiPanel({
   usage: Usage;
   running: boolean;
   onRunning: (running: boolean) => void;
-  beforeRun: () => Promise<void>;
+  beforeRun: () => Promise<boolean>;
   onSaved: (page: PageData) => void;
 }) {
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -86,6 +96,7 @@ export function AiPanel({
   const toast = useToast();
   const before = useRef<PageData | null>(null);
   const finished = useRef(true);
+  const reconciling = useRef(false);
   const log = useRef<HTMLDivElement>(null);
 
   const transport = useMemo(
@@ -106,6 +117,27 @@ export function AiPanel({
     onRunning(false);
   }, [onRunning]);
 
+  // The run ended without its result: read what the server saved. A changed draft means the build was saved
+  // (and counted); otherwise nothing was.
+  const reconcile = useCallback(async () => {
+    if (finished.current || reconciling.current) return;
+    reconciling.current = true;
+    try {
+      const state = await getSiteState(siteId);
+      setUsage(state.usage);
+      const saved = !!before.current && !samePage(state.draft, before.current);
+      show(state.draft);
+      if (saved) {
+        const name = state.draft.root.props.title;
+        end({ result: { ok: true, page: state.draft, name, sections: state.draft.content.length, usage: state.usage } });
+        return;
+      }
+    } catch {
+      if (before.current) show(before.current);
+    }
+    end({ failed: true });
+  }, [end, siteId, show]);
+
   const { messages, sendMessage } = useChat<SiteUIMessage>({
     transport,
     onData: (part) => {
@@ -116,7 +148,7 @@ export function AiPanel({
         if (added) revealSection(added.props.id);
       } else if (part.type === "data-result") {
         const result = part.data;
-        setUsage(result.usage);
+        if (result.usage) setUsage(result.usage);
         if (result.ok) show(result.page);
         else if (before.current) show(before.current);
         end({ result, failed: !result.ok });
@@ -124,6 +156,11 @@ export function AiPanel({
     },
     onError: (error) => {
       const code = codeOf(error);
+      // Not a guard's answer: the stream broke, so the server may already have saved the build.
+      if (code === "model_error") {
+        void reconcile();
+        return;
+      }
       if (before.current) show(before.current);
       if (code === "ai_limit") {
         toast.show(`You’ve used all ${usage.allowance} AI requests this month`);
@@ -136,10 +173,7 @@ export function AiPanel({
     },
     onFinish: () => {
       // The stream ended without a result (a dropped connection): the server didn't save anything.
-      if (!finished.current) {
-        if (before.current) show(before.current);
-        end({ failed: true });
-      }
+      if (!finished.current) void reconcile();
     },
   });
 
@@ -150,7 +184,13 @@ export function AiPanel({
       return;
     }
     finished.current = false;
-    await beforeRun();
+    reconciling.current = false;
+    // The run starts from the server's draft, so the page on screen has to be saved first.
+    if (!(await beforeRun())) {
+      finished.current = true;
+      toast.show("Couldn't save. Retrying…");
+      return;
+    }
     before.current = structuredClone(getPuck().appState.data) as unknown as PageData;
     dispatch({ type: "setUi", ui: { itemSelector: null } });
     setTurns((t) => [...t, { prompt, brief, from: messages.length }]);

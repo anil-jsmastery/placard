@@ -1,7 +1,7 @@
 import "server-only";
 import { withTracing } from "@posthog/ai/vercel";
 import { createUIMessageStream, isStepCount, ToolLoopAgent, type StopCondition } from "ai";
-import { and, desc, eq, notInArray } from "drizzle-orm";
+import { and, desc, eq, notInArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { posthog, captureServer } from "@/lib/analytics/server";
 import { APP_ENV } from "@/lib/config";
@@ -56,9 +56,7 @@ function checkGenerated(page: PageData): { ok: true; page: PageData } | { ok: fa
 export async function startRun(input: StartRunInput): Promise<{ error: RunError } | { stream: ReadableStream }> {
   const { kind, userId, siteId } = input;
 
-  // 1. Guards, the site (owner only) and the prompt.
-  const blocked = await checkCanRun(userId, kind);
-  if (blocked) return { error: blocked };
+  // 1. The site (owner only) and the prompt.
   const [site] = await db
     .select({ draft: sites.draft })
     .from(sites)
@@ -68,24 +66,38 @@ export async function startRun(input: StartRunInput): Promise<{ error: RunError 
   const prompt = Prompt.safeParse(input.prompt);
   if (!prompt.success) return { error: { status: 400, code: "invalid_prompt" } };
   const draft = toPage(site.draft);
-
-  // 2. A snapshot of the draft before the run; keep the newest 20.
-  await db.insert(snapshots).values({ siteId, data: draft, reason: "ai_run" });
-  const keep = db
-    .select({ id: snapshots.id })
-    .from(snapshots)
-    .where(eq(snapshots.siteId, siteId))
-    .orderBy(desc(snapshots.createdAt))
-    .limit(KEEP_SNAPSHOTS);
-  await db.delete(snapshots).where(and(eq(snapshots.siteId, siteId), notInArray(snapshots.id, keep)));
-
-  // 3. The run's row.
   const modelId: ModelId = await getGenerationModel(userId);
-  const [run] = await db
-    .insert(aiRuns)
-    .values({ userId, siteId, kind, prompt: prompt.data, model: modelId, status: "running" })
-    .returning({ id: aiRuns.id });
+
+  // 2. The guards and the run's `running` row in one step: a per-user lock makes overlapping requests wait, so the
+  // second one sees the first one's row (busy) and its count (hourly, monthly) instead of slipping past both.
+  const admitted = await db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}))`);
+    const blocked = await checkCanRun(userId, kind);
+    if (blocked) return { error: blocked as GuardFailure, run: null };
+    const [row] = await tx
+      .insert(aiRuns)
+      .values({ userId, siteId, kind, prompt: prompt.data, model: modelId, status: "running" })
+      .returning({ id: aiRuns.id });
+    return { error: null, run: row };
+  });
+  if (!admitted.run) return { error: admitted.error! };
+  const run = admitted.run;
   const startedAt = Date.now();
+
+  // 3. A snapshot of the draft before the run; keep the newest 20.
+  try {
+    await db.insert(snapshots).values({ siteId, data: draft, reason: "ai_run" });
+    const keep = db
+      .select({ id: snapshots.id })
+      .from(snapshots)
+      .where(eq(snapshots.siteId, siteId))
+      .orderBy(desc(snapshots.createdAt))
+      .limit(KEEP_SNAPSHOTS);
+    await db.delete(snapshots).where(and(eq(snapshots.siteId, siteId), notInArray(snapshots.id, keep)));
+  } catch (err) {
+    await db.update(aiRuns).set({ status: "failed", error: "snapshot failed" }).where(eq(aiRuns.id, run.id));
+    throw err;
+  }
 
   // 4. The model, traced in PostHog's LLM analytics.
   const [user] = await db.select({ email: users.email }).from(users).where(eq(users.id, userId)).limit(1);
@@ -96,6 +108,8 @@ export async function startRun(input: StartRunInput): Promise<{ error: RunError 
         posthogDistinctId: userId,
         posthogTraceId: run.id,
         posthogProperties: { site_id: siteId, kind, environment: APP_ENV, simulated },
+        // Tokens, cost and latency only: the prompt and the model's output never go into event properties.
+        posthogPrivacyMode: true,
       })
     : base;
 
@@ -116,9 +130,12 @@ export async function startRun(input: StartRunInput): Promise<{ error: RunError 
         controller.abort(new Error("timeout"));
       }, TIMEOUT_MS);
       const onDisconnect = () => controller.abort(new Error("disconnect"));
+      // The client may have left while the run was being set up; a listener added now wouldn't hear that.
+      if (input.signal?.aborted) onDisconnect();
       input.signal?.addEventListener("abort", onDisconnect);
 
       let modelError: unknown = null;
+      let committed = false;
       // 5. The agent.
       const agent = new ToolLoopAgent({
         model,
@@ -140,6 +157,16 @@ export async function startRun(input: StartRunInput): Promise<{ error: RunError 
         }
       };
 
+      // Usage for the reply; reading it must never change how the run ended.
+      const usageNow = async () => {
+        try {
+          return await getAiUsage(userId);
+        } catch (err) {
+          console.error("usage read failed", err);
+          return null;
+        }
+      };
+
       const fail = async (reason: FailReason, error: unknown, status: "failed" | "aborted" = "failed") => {
         const message = error instanceof Error ? error.message : String(error ?? reason);
         await finish(status, { error: `${reason}: ${message}`.slice(0, 1000) });
@@ -150,7 +177,7 @@ export async function startRun(input: StartRunInput): Promise<{ error: RunError 
             console.error("generation_failed capture failed", err);
           }
         }
-        send({ ok: false, reason, usage: await getAiUsage(userId) });
+        send({ ok: false, reason, usage: await usageNow() });
       };
 
       try {
@@ -184,8 +211,15 @@ export async function startRun(input: StartRunInput): Promise<{ error: RunError 
         const cost = costUsd(modelId, { input: Math.max(0, inputTokens - cacheRead), output: outputTokens, cacheRead });
         const durationMs = Date.now() - startedAt;
 
-        await db.update(sites).set({ draft: page, name, updatedAt: new Date() }).where(and(eq(sites.id, siteId), eq(sites.userId, userId)));
-        await finish("succeeded", { inputTokens, outputTokens, costUsd: cost.toFixed(6) });
+        // The draft and the run's success are saved together, or neither is.
+        await db.transaction(async (tx) => {
+          await tx.update(sites).set({ draft: page, name, updatedAt: new Date() }).where(and(eq(sites.id, siteId), eq(sites.userId, userId)));
+          await tx
+            .update(aiRuns)
+            .set({ status: "succeeded", durationMs, inputTokens, outputTokens, costUsd: cost.toFixed(6) })
+            .where(eq(aiRuns.id, run.id));
+        });
+        committed = true;
         try {
           await captureServer(userId, "site_generated", {
             site_id: siteId, sections_count: page.content.length, model: modelId, duration_ms: durationMs, cost_usd: cost,
@@ -193,8 +227,13 @@ export async function startRun(input: StartRunInput): Promise<{ error: RunError 
         } catch (err) {
           console.error("site_generated capture failed", err);
         }
-        send({ ok: true, page, name, sections: page.content.length, usage: await getAiUsage(userId) });
+        send({ ok: true, page, name, sections: page.content.length, usage: await usageNow() });
       } catch (err) {
+        // After the commit the run has succeeded, whatever goes wrong while replying.
+        if (committed) {
+          console.error("reply after a saved run failed", err);
+          return;
+        }
         // 8. Anything else: the draft isn't touched and the run doesn't count.
         await fail(timedOut ? "timeout" : "model_error", err, input.signal?.aborted && !timedOut ? "aborted" : "failed");
       } finally {

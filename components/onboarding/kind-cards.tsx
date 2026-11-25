@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import { BookOpen, Camera, Code, Palette, PenTool, type LucideIcon } from "lucide-react";
@@ -19,9 +19,15 @@ export function KindCards({ initial }: { initial: Kind | null }) {
   const [pending, start] = useTransition();
   const router = useRouter();
 
+  const cards = useRef<(HTMLButtonElement | null)[]>([]);
+
   const go = (useCase: Kind | "other", skipped: boolean) =>
     start(async () => {
-      await saveUseCase(useCase);
+      try {
+        await saveUseCase(useCase);
+      } catch {
+        return; // nothing was saved: the choice stays and Continue works again
+      }
       track("onboarding_completed", { use_case: useCase, skipped });
       posthog.setPersonProperties({ use_case: useCase });
       router.push("/new");
@@ -30,8 +36,10 @@ export function KindCards({ initial }: { initial: Kind | null }) {
   return (
     <>
       <div className="kgrid" role="radiogroup" aria-label="Kind of site" id="kgrid">
-        {KINDS.map((k) => {
+        {KINDS.map((k, i) => {
           const Icon = KIND_ICONS[k.key];
+          // One tab stop for the group (the chosen card, or the first); arrow keys move and choose.
+          const focusable = kind ? kind === k.key : i === 0;
           const wide = "wide" in k && k.wide;
           return (
             <button
@@ -40,7 +48,19 @@ export function KindCards({ initial }: { initial: Kind | null }) {
               className={wide ? "kcard wide" : "kcard"}
               role="radio"
               aria-checked={kind === k.key}
+              tabIndex={focusable ? 0 : -1}
+              ref={(el) => {
+                cards.current[i] = el;
+              }}
               onClick={() => setKind(k.key)}
+              onKeyDown={(e) => {
+                const step = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
+                if (!step) return;
+                e.preventDefault();
+                const j = (i + step + KINDS.length) % KINDS.length;
+                setKind(KINDS[j].key);
+                cards.current[j]?.focus();
+              }}
             >
               <span className="ki"><Icon strokeWidth={1.75} /></span>
               <span><b>{k.label}</b><span className="d">{k.desc}</span></span>

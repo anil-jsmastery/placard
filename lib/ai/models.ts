@@ -20,7 +20,7 @@ export async function getGenerationModel(userId: string): Promise<ModelId> {
   } catch (err) {
     console.warn("generation-model flag unavailable", err);
   }
-  return typeof variant === "string" && variant in GENERATE_MODELS
+  return typeof variant === "string" && Object.hasOwn(GENERATE_MODELS, variant)
     ? GENERATE_MODELS[variant as keyof typeof GENERATE_MODELS]
     : GENERATE_MODELS.control;
 }
