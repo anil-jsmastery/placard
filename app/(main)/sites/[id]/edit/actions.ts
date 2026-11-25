@@ -2,7 +2,6 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { and, desc, eq, lte, notInArray } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { captureServer } from "@/lib/analytics/server";
 import { siteHost, siteUrl } from "@/lib/config";
@@ -174,7 +173,8 @@ export async function publishSite(siteId: string): Promise<PublishResult> {
   } catch (err) {
     console.error("site_published capture failed", err);
   }
-  revalidatePath("/sites");
+  // No revalidatePath here: called from the editor it refreshes the editor page from the server (a full reload that
+  // drops the toast and the button's state). /sites is dynamic, and its card calls router.refresh() itself.
   return { ok: true, firstPublish, host: siteHost(slug), url: siteUrl(slug) };
 }
 
@@ -190,5 +190,4 @@ export async function unpublishSite(siteId: string): Promise<void> {
     .where(and(eq(sites.id, siteId), eq(sites.userId, userId)))
     .returning({ id: sites.id });
   if (updated.length === 0) throw new Error("Portfolio not found");
-  revalidatePath("/sites");
 }
