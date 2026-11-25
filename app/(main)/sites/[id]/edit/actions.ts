@@ -1,9 +1,14 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { and, desc, eq, lte } from "drizzle-orm";
+import { and, desc, eq, lte, notInArray } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { captureServer } from "@/lib/analytics/server";
+import { siteHost, siteUrl } from "@/lib/config";
 import { aiRuns, db, sites, snapshots } from "@/lib/db";
+import { isUniqueViolation } from "@/lib/db/errors";
+import { slugify, uniqueSlug } from "@/lib/domains";
 import { CATALOG, SECTION_FIELDS } from "@/lib/sections/catalog";
 import { cleanPage } from "@/lib/sections/clean";
 import { SECTION_TYPES, type SectionType } from "@/lib/sections/schemas";
@@ -102,4 +107,88 @@ export async function undoAiChange(siteId: string, runId: string): Promise<PageD
     .returning({ id: sites.id });
   if (updated.length === 0) throw new Error("Portfolio not found");
   return page;
+}
+
+export type PublishResult =
+  | { ok: true; firstPublish: boolean; host: string; url: string }
+  | { ok: false; message: string; path: string };
+
+const KEEP_SNAPSHOTS = 20;
+
+// Publish / Update site: the cleaned draft becomes the live page. The first publish gives the portfolio its slug,
+// from the title; it never changes after that.
+export async function publishSite(siteId: string): Promise<PublishResult> {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Not signed in");
+  if (!z.uuid().safeParse(siteId).success) throw new Error("Portfolio not found");
+  const [site] = await db
+    .select({ draft: sites.draft, slug: sites.slug, publishedAt: sites.publishedAt })
+    .from(sites)
+    .where(and(eq(sites.id, siteId), eq(sites.userId, userId)))
+    .limit(1);
+  if (!site) throw new Error("Portfolio not found");
+
+  const parsed = cleanPage(site.draft);
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    return { ok: false, message: issue?.message ?? "Something on the page isn't valid", path: describePath(site.draft, issue?.path ?? []) };
+  }
+  const page = parsed.data;
+  if (page.content.length === 0) return { ok: false, message: "Add at least one section", path: "Page" };
+
+  const firstPublish = site.publishedAt === null;
+  const write = (slug: string) =>
+    db.transaction(async (tx) => {
+      await tx.insert(snapshots).values({ siteId, data: page, reason: "publish" });
+      await tx
+        .update(sites)
+        .set({ slug, published: page, publishedAt: new Date() })
+        .where(and(eq(sites.id, siteId), eq(sites.userId, userId)));
+    });
+
+  let slug = site.slug ?? (await uniqueSlug(slugify(page.root.props.title)));
+  try {
+    await write(slug);
+  } catch (err) {
+    // Someone took the same slug a moment ago: pick the next free one, once.
+    if (site.slug || !isUniqueViolation(err, "sites_slug_key")) throw err;
+    slug = await uniqueSlug(slugify(page.root.props.title));
+    await write(slug);
+  }
+
+  // Keep the newest 20 snapshots.
+  try {
+    const keep = db
+      .select({ id: snapshots.id })
+      .from(snapshots)
+      .where(eq(snapshots.siteId, siteId))
+      .orderBy(desc(snapshots.createdAt))
+      .limit(KEEP_SNAPSHOTS);
+    await db.delete(snapshots).where(and(eq(snapshots.siteId, siteId), notInArray(snapshots.id, keep)));
+  } catch (err) {
+    console.error("snapshot cleanup failed", err);
+  }
+
+  try {
+    await captureServer(userId, "site_published", { site_id: siteId, first_publish: firstPublish, sections_count: page.content.length });
+  } catch (err) {
+    console.error("site_published capture failed", err);
+  }
+  revalidatePath("/sites");
+  return { ok: true, firstPublish, host: siteHost(slug), url: siteUrl(slug) };
+}
+
+// Unpublish (the card menu): the live page goes away; the slug and published_at stay, so publishing again gives the
+// same address.
+export async function unpublishSite(siteId: string): Promise<void> {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Not signed in");
+  if (!z.uuid().safeParse(siteId).success) throw new Error("Portfolio not found");
+  const updated = await db
+    .update(sites)
+    .set({ published: null })
+    .where(and(eq(sites.id, siteId), eq(sites.userId, userId)))
+    .returning({ id: sites.id });
+  if (updated.length === 0) throw new Error("Portfolio not found");
+  revalidatePath("/sites");
 }

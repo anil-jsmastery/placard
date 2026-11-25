@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Puck, useGetPuck, type Data, type OnAction, type Overrides } from "@puckeditor/core";
-import { saveDraft } from "@/app/(main)/sites/[id]/edit/actions";
+import { publishSite, saveDraft } from "@/app/(main)/sites/[id]/edit/actions";
 import { useToast } from "@/components/app/toast";
 import { track } from "@/lib/analytics/client";
+import { siteHost, siteUrl } from "@/lib/config";
 import { CATALOG } from "@/lib/sections/catalog";
 import type { SectionType } from "@/lib/sections/schemas";
 import { puckConfig } from "@/lib/site/puck-config";
@@ -19,7 +20,7 @@ import { LeftPanel, type Tab } from "./left-panel";
 import { ROOT_ZONE } from "./puck";
 import { TopBar, type Device, type SaveState } from "./top-bar";
 
-export type EditorSite = { id: string; name: string; slug: string | null; draft: PageData; publishedAt: string | null; aiRuns: number };
+export type EditorSite = { id: string; name: string; slug: string | null; draft: PageData; live: boolean; publishedAt: string | null; aiRuns: number };
 export type EditorUser = { useCase: string; usage: Usage };
 
 const DEBOUNCE_MS = 800;
@@ -192,6 +193,30 @@ export function Editor({ site, user }: { site: EditorSite; user: EditorUser }) {
   const { state, onChange: autosave, saveNow, flush, pause, markSaved } = useAutosave(site.id, site.draft, clearUndo);
   const toast = useToast();
 
+  // Publish / Update site: save what's pending first, then copy the draft to the live page.
+  const [live, setLive] = useState(site.live);
+  const [address, setAddress] = useState(() => (site.slug ? { host: siteHost(site.slug), url: siteUrl(site.slug) } : null));
+  const [publishing, setPublishing] = useState(false);
+  const publish = useCallback(async () => {
+    if (publishing || running) return;
+    setPublishing(true);
+    try {
+      if (!(await flush())) return;
+      const res = await publishSite(site.id);
+      if (!res.ok) {
+        toast.show(`Can't save: ${res.message} (${res.path})`);
+        return;
+      }
+      toast.show(live ? "Your live portfolio is up to date." : `Published. Live at ${res.host}`);
+      setAddress({ host: res.host, url: res.url });
+      setLive(true);
+    } catch {
+      toast.show("Something went wrong. Try again.");
+    } finally {
+      setPublishing(false);
+    }
+  }, [publishing, running, flush, site.id, toast, live]);
+
   // The visible sections go to root.render through Puck's metadata, so the canvas nav matches the published one.
   const [content, setContent] = useState(site.draft.content);
   const metadata = useMemo<EditorMetadata>(() => ({ content: content.filter((s) => !s.props.hidden) }), [content]);
@@ -233,8 +258,9 @@ export function Editor({ site, user }: { site: EditorSite; user: EditorUser }) {
       <Shortcuts saveNow={saveNow} locked={running} />
       <main className="ed">
         <TopBar
-          live={!!site.publishedAt} save={state} device={device} onDevice={setDevice} locked={running}
+          live={live} save={state} device={device} onDevice={setDevice} locked={running}
           prettifying={runKind === "prettify"} onPrettify={() => aiActions.current?.prettify()}
+          publishing={publishing} onPublish={() => void publish()}
         />
         <div className="ed-body">
           <LeftPanel
@@ -246,7 +272,7 @@ export function Editor({ site, user }: { site: EditorSite; user: EditorUser }) {
               blankStart: site.draft.content.length === 0 && site.aiRuns === 0,
             }}
           />
-          <Canvas device={device} prettifying={runKind === "prettify"} />
+          <Canvas device={device} prettifying={runKind === "prettify"} live={live ? address : null} />
           <FieldsPanel disabled={running} />
         </div>
       </main>

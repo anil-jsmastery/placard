@@ -33,7 +33,7 @@ function Saved({ state }: { state: SaveState }) {
 }
 
 export function TopBar({
-  live, save, device, onDevice, locked, prettifying, onPrettify,
+  live, save, device, onDevice, locked, prettifying, onPrettify, publishing, onPublish,
 }: {
   live: boolean;
   save: SaveState;
@@ -42,6 +42,8 @@ export function TopBar({
   locked: boolean;
   prettifying: boolean;
   onPrettify: () => void;
+  publishing: boolean;
+  onPublish: () => void;
 }) {
   const title = usePuck((s) => s.appState.data.root.props?.title as string | undefined);
   const hasPast = usePuck((s) => s.history.hasPast);
@@ -56,7 +58,7 @@ export function TopBar({
           <ArrowLeft />
         </Link>
         <span className="t">{title || "Untitled portfolio"}</span>
-        <Status live={live} />
+        <Status live={live}>{live ? "Live" : "Draft"}</Status>
         <span className="vr" />
         <Saved state={save} />
       </div>
@@ -71,8 +73,16 @@ export function TopBar({
         <button type="button" className="icon-btn" id="edUndo" aria-label="Undo" disabled={locked || !hasPast} onClick={back}><Undo2 /></button>
         <button type="button" className="icon-btn" id="edRedo" aria-label="Redo" disabled={locked || !hasFuture} onClick={forward}><Redo2 /></button>
         <PrettifyButton running={prettifying} disabled={locked} onClick={onPrettify} />
-        {/* Publish arrives in Step 6; it stays disabled while an AI run is going. */}
-        <button type="button" className="btn btn-sm btn-blue" disabled>Publish</button>
+        {/* Enabled when no AI run is going and the last save went through. */}
+        <button
+          type="button"
+          className="btn btn-sm btn-blue"
+          id="edPublish"
+          disabled={locked || publishing || save.kind === "invalid" || save.kind === "retrying"}
+          onClick={onPublish}
+        >
+          {publishing ? (live ? "Updating…" : "Publishing…") : live ? "Update site" : "Publish"}
+        </button>
       </div>
     </div>
   );

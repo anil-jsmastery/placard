@@ -5,13 +5,15 @@ import { useRouter } from "next/navigation";
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
 import { Eye } from "lucide-react";
 import { deleteSite } from "@/app/(main)/(app)/sites/actions";
+import { publishSite, unpublishSite } from "@/app/(main)/sites/[id]/edit/actions";
 import { Status } from "@/components/app/status";
 import { useToast } from "@/components/app/toast";
 import { SiteFrame } from "@/components/site/site-frame";
 import { DropdownMenu, DropdownMenuPortal, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { siteHost, siteUrl } from "@/lib/config";
 import type { PageData } from "@/lib/site/types";
 
-export type SiteCardData = { id: string; name: string; live: boolean; page: PageData; edited: string };
+export type SiteCardData = { id: string; name: string; slug: string | null; live: boolean; page: PageData; edited: string };
 
 // .shell.scard: the live thumbnail (opens the editor), name, status, address line, views and the ••• menu.
 export function SiteCard({ site }: { site: SiteCardData }) {
@@ -20,6 +22,28 @@ export function SiteCard({ site }: { site: SiteCardData }) {
   const [sure, setSure] = useState(false);
   const [, startTransition] = useTransition();
   const href = `/sites/${site.id}/edit`;
+
+  const publish = () =>
+    startTransition(async () => {
+      try {
+        const res = await publishSite(site.id);
+        toast.show(res.ok ? `Published. Live at ${res.host}` : `Can't save: ${res.message} (${res.path})`);
+      } catch {
+        toast.show("Something went wrong. Try again.");
+      }
+      router.refresh();
+    });
+
+  const unpublish = () =>
+    startTransition(async () => {
+      try {
+        await unpublishSite(site.id);
+        toast.show(`${site.name} is a draft again.`);
+      } catch {
+        toast.show("Something went wrong. Try again.");
+      }
+      router.refresh();
+    });
 
   const remove = () =>
     startTransition(async () => {
@@ -54,9 +78,8 @@ export function SiteCard({ site }: { site: SiteCardData }) {
                     <DropdownMenuPrimitive.Item asChild onSelect={() => router.push(href)}>
                       <button type="button">Open editor</button>
                     </DropdownMenuPrimitive.Item>
-                    {/* Publishing arrives in Step 6. */}
-                    <DropdownMenuPrimitive.Item asChild disabled>
-                      <button type="button" disabled>Publish</button>
+                    <DropdownMenuPrimitive.Item asChild onSelect={site.live ? unpublish : publish}>
+                      <button type="button">{site.live ? "Unpublish" : "Publish"}</button>
                     </DropdownMenuPrimitive.Item>
                     <DropdownMenuPrimitive.Item
                       asChild
@@ -76,8 +99,13 @@ export function SiteCard({ site }: { site: SiteCardData }) {
               </DropdownMenu>
             </span>
           </div>
-          {/* Step 6 shows the live address here. */}
-          <div className="s-url">Not published yet, edited {site.edited}</div>
+          {site.live && site.slug ? (
+            <div className="s-url live">
+              <a href={siteUrl(site.slug)} target="_blank" rel="noopener">{siteHost(site.slug)}</a>
+            </div>
+          ) : (
+            <div className="s-url">Not published yet, edited {site.edited}</div>
+          )}
           {/* Step 9 counts views. */}
           <div className="r3"><Eye />No views yet</div>
         </div>
