@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import posthog from "posthog-js";
-import { useUser } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { APP_ENV } from "@/lib/config";
 import { isSimulatedEmail } from "@/lib/simulated";
 
@@ -28,9 +28,12 @@ function init() {
   return true;
 }
 
+const SitesCountContext = createContext<(count: number) => void>(() => {});
+
 // App pages only; published portfolios use the (sites) layout and never load PostHog.
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   const { isLoaded, user } = useUser();
+  const [sitesCount, setSitesCount] = useState<number | null>(null);
 
   useEffect(() => {
     init();
@@ -51,5 +54,26 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isLoaded, user]);
 
-  return <>{children}</>;
+  // Person properties, whenever they change (after identify above): plan, read from Clerk like the server does,
+  // and sites_count from the /sites query.
+  const { has } = useAuth();
+  const plan = user && has ? (has({ plan: "pro" }) ? "pro" : "free") : null;
+  const userId = user?.id;
+  useEffect(() => {
+    if (!started || !userId || !plan) return;
+    posthog.setPersonProperties({ plan });
+  }, [plan, userId]);
+  useEffect(() => {
+    if (!started || !userId || sitesCount === null) return;
+    posthog.setPersonProperties({ sites_count: sitesCount });
+  }, [sitesCount, userId]);
+
+  return <SitesCountContext.Provider value={setSitesCount}>{children}</SitesCountContext.Provider>;
+}
+
+// /sites renders this with its query's count; the provider sends it as sites_count.
+export function SitesCount({ count }: { count: number }) {
+  const set = useContext(SitesCountContext);
+  useEffect(() => set(count), [count, set]);
+  return null;
 }

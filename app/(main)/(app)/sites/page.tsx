@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { desc, eq } from "drizzle-orm";
-import { Plus } from "lucide-react";
+import { SitesCount } from "@/components/providers/posthog-provider";
 import { EmptyState } from "@/components/sites/empty-state";
+import { NewPortfolioButton } from "@/components/sites/new-portfolio-button";
 import { SiteCard } from "@/components/sites/site-card";
 import { UpCard } from "@/components/sites/up-card";
 import { db, sites } from "@/lib/db";
@@ -33,12 +33,13 @@ export default async function SitesPage() {
 
   return (
     <>
+      <SitesCount count={n} />
       <div className="p-head">
         <div>
           <h1>Sites</h1>
           <p>{n} of {plan.sites} portfolio{plan.sites > 1 ? "s" : ""} on {plan.name}</p>
         </div>
-        <Link href="/start" className="btn btn-blue"><Plus className="size-4" strokeWidth={2} />New portfolio</Link>
+        <NewPortfolioButton full={n >= plan.sites} />
       </div>
       {n === 0 ? (
         <EmptyState />

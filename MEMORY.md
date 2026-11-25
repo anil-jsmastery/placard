@@ -58,3 +58,9 @@ What the project has so far, one block per finished step. `/step` adds each step
 - Production signs in with the same Clerk development instance as this machine (test payments only, one 100-user list); only production has a Clerk webhook endpoint.
 - Every push to `main` deploys; the build runs `scripts/vercel-build.mjs` (migrations, then the library seed). Every preview gets its own Neon branch, `preview/<git branch>`; `instrumentation.ts` fetches its other variables.
 - The person pushes and deploys; `docs/deploy.md` describes it.
+
+## Step 8 · Plans, limits and billing
+- Free and Pro exist in Clerk Billing on the development instance with test payments (`NEXT_PUBLIC_CLERK_PRO_PLAN_ID`); the plan is read from Clerk, never stored. No Stripe. `/pricing` and `/account` are the prototype's pages; checkout is Clerk's button on "Upgrade to Pro".
+- Limits are enforced on the server and shown before they're hit; one paywall modal opens with its reason (`paywall_shown`; reasons `site_limit`, `ai_limit`, `stats`, `remove_badge`, `storage`). The Free allowance is the `free-ai-allowance` flag's payload (10).
+- `subscription_started` comes from Clerk's webhook in production and from `recordCheckout()` on this machine. Downgrading keeps portfolios live.
+- Not in the plan: the paywall's `open(reason, allowance?)` takes the used-up allowance for the `ai_limit` title, Pro ending sets `plan = free` with a `$set` from `setPersonServer()` in `lib/analytics/server.ts` (no event is named for it), the sign-up page returns to `/pricing` when `redirect_url=/pricing` (its `forceRedirectUrl="/start"` otherwise overrides it), `/sites` passes `sites_count` to the PostHog provider through `<SitesCount />`, and `resetDate()`/`formatBytes()` live in `lib/plans.ts`.

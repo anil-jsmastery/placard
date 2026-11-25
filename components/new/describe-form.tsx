@@ -7,8 +7,10 @@ import posthog from "posthog-js";
 import { ChevronLeft, LayoutGrid, Sparkles } from "lucide-react";
 import { createSite } from "@/app/(main)/(app)/sites/actions";
 import { useToast } from "@/components/app/toast";
+import { usePaywall } from "@/components/billing/paywall-provider";
 import { KIND_ICONS } from "@/components/onboarding/kind-cards";
 import { track } from "@/lib/analytics/client";
+import { resetDate } from "@/lib/plans";
 import { EXAMPLE_PROMPTS, KINDS, type Kind } from "@/lib/site/sample-pages";
 
 const TONES = ["Minimal", "Bold", "Playful", "Elegant"] as const;
@@ -20,13 +22,6 @@ const MAX = 1000;
 const MIN = 10;
 const fmt = (n: number) => n.toLocaleString("en-US");
 const label = (k: Kind) => KINDS.find((x) => x.key === k)!.label;
-
-// "December 1": when this month's AI requests come back (the 1st of next month, UTC).
-function resetDate() {
-  const now = new Date();
-  const next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
-  return next.toLocaleDateString("en-US", { month: "long", day: "numeric", timeZone: "UTC" });
-}
 
 // The prototype's .ds: the prompt box, name and tone, and the example prompts for what they do.
 export function DescribeForm({
@@ -46,6 +41,7 @@ export function DescribeForm({
   const [busy, setBusy] = useState(false);
   const router = useRouter();
   const toast = useToast();
+  const paywall = usePaywall();
   const created = useRef<string | null>(null); // the portfolio made by an earlier try, so a retry doesn't make another
 
   // Experiment prompt-examples (Step 12): `blank` hides "Try an example"; control or no flag shows it.
@@ -62,15 +58,22 @@ export function DescribeForm({
   async function build() {
     const text = prompt.trim();
     if (text.length < MIN || busy) return;
-    // Step 8 opens the paywall here; until then its title as a toast.
     if (noRequests) {
-      toast.show(`You’ve used all ${allowance} AI requests this month`);
+      paywall.open("ai_limit", allowance);
       return;
     }
     setBusy(true);
     track("prompt_submitted", { use_case: useCase, used_example: usedExample, prompt_length: text.length, blank: false });
     try {
-      created.current ??= (await createSite({ name: name.trim() || undefined })).id;
+      if (!created.current) {
+        const res = await createSite({ name: name.trim() || undefined });
+        if ("code" in res) {
+          paywall.open(res.code);
+          setBusy(false);
+          return;
+        }
+        created.current = res.id;
+      }
       const id = created.current;
       const pending: PendingBuild = { prompt: text, name: name.trim(), tone, useCase };
       sessionStorage.setItem(pendingBuildKey(id), JSON.stringify(pending));
@@ -84,16 +87,20 @@ export function DescribeForm({
   // A blank page: no AI request, the editor's Add tab and Prettify do the rest.
   async function startBlank() {
     if (busy) return;
-    // Step 8 opens the paywall (site_limit) here; until then its title as a toast.
     if (full) {
-      toast.show("You’re using your 1 free portfolio");
+      paywall.open("site_limit");
       return;
     }
     setBusy(true);
     track("prompt_submitted", { use_case: useCase, used_example: false, prompt_length: 0, blank: true });
     try {
-      const { id } = await createSite({ name: name.trim() || undefined });
-      router.push(`/sites/${id}/edit`);
+      const res = await createSite({ name: name.trim() || undefined });
+      if ("code" in res) {
+        paywall.open(res.code);
+        setBusy(false);
+        return;
+      }
+      router.push(`/sites/${res.id}/edit`);
     } catch {
       toast.show("Something went wrong. Try again.");
       setBusy(false);

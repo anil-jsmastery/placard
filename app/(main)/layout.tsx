@@ -4,6 +4,7 @@ import { fontVars } from "../fonts";
 import { clerkAppearance } from "@/lib/clerk-appearance";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { ToastProvider } from "@/components/app/toast";
+import { PaywallProvider } from "@/components/billing/paywall-provider";
 import "../globals.css";
 
 export const metadata: Metadata = {
@@ -17,7 +18,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ClerkProvider appearance={clerkAppearance}>
           <PostHogProvider>
-            <ToastProvider>{children}</ToastProvider>
+            <ToastProvider>
+              <PaywallProvider>{children}</PaywallProvider>
+            </ToastProvider>
           </PostHogProvider>
         </ClerkProvider>
       </body>
