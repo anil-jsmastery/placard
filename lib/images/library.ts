@@ -16,3 +16,8 @@ export function libraryImage(id: string): { src: string; alt: string } {
   if (!img) throw new Error(`No library image "${id}"`);
   return { src: img.src, alt: img.alt };
 }
+
+// The first `count` library photos with this tag (with no tag, the first `count` photos). Photo search's fallback.
+export function findImages(tag: ImageTag | undefined, count: number): LibraryImage[] {
+  return (tag ? LIBRARY.filter((img) => img.tag === tag) : LIBRARY).slice(0, count);
+}

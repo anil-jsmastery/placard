@@ -98,13 +98,17 @@ function SiteSettings() {
   );
 }
 
-// aside.settings: Site settings with nothing selected, else the selected section's fields.
-export function FieldsPanel() {
+// aside.settings: Site settings with nothing selected, else the selected section's fields. Disabled while the AI runs.
+export function FieldsPanel({ disabled }: { disabled: boolean }) {
   const type = usePuck((s) => s.selectedItem?.type as SectionType | undefined);
   const dispatch = usePuck((s) => s.dispatch);
 
   if (!type) {
-    return <aside className="settings" aria-label="Site settings"><SiteSettings /></aside>;
+    return (
+      <aside className="settings" aria-label="Site settings">
+        <fieldset disabled={disabled} style={{ display: "contents" }}><SiteSettings /></fieldset>
+      </aside>
+    );
   }
   const Icon = SECTION_ICONS[type];
   return (
@@ -119,7 +123,7 @@ export function FieldsPanel() {
           <span className="lyr-ic"><Icon /></span>
         </div>
         <p className="f-note">Changes here are free. Press Prettify to restyle; it never changes these words.</p>
-        <Puck.Fields wrapFields={false} />
+        <fieldset disabled={disabled} style={{ display: "contents" }}><Puck.Fields wrapFields={false} /></fieldset>
       </div>
     </aside>
   );
