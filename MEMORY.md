@@ -12,3 +12,11 @@ What the project has so far, one block per finished step. `/step` adds each step
 - `.env.example` lists every variable; `.env.local` is filled by the person and the Neon CLI and is never committed.
 - The repo is on GitHub with CodeRabbit installed (`.coderabbit.yaml`, from the starter). From Step 1 on, each step is built on a branch `step-N`; the person pushes it, opens a pull request, CodeRabbit reviews it, Claude Code fixes the review when asked, and the person merges it.
 - Not in the plan: shadcn's `add dialog` also wrote `components/ui/button.tsx`, which `dialog.tsx` imports for its close button, so it stays as a dependency rather than a fourth primitive.
+
+## Step 1 · Foundation
+- Clerk sign-in works (Email, Google and GitHub, development instance; the same instance serves production later) inside the prototype's auth layout; signed-in pages have the app bar with the usage meter; `/sites` shows the empty state. Shared pieces: `brand`, `app-bar`, `usage-meter`, `status`, `toast` (`useToast()`).
+- The person made the Neon project `placard` (Postgres 18, `aws-us-east-1`) with `production` (the default branch) and `dev`; `.neon` and `.env.local` point at `dev`. `neon.ts` is the backend as code.
+- The Drizzle schema (`lib/db/schema.ts`) has 7 tables (migration `drizzle/0000_init.sql`); the person runs `npm run db:migrate`.
+- `ensureUser()` creates the `users` row on a user's first signed-in page and sends `signed_up` from the server; there's no webhook for sign-ups.
+- PostHog events go only through `lib/analytics/events.ts`, and every event carries `environment` and `simulated`.
+- Not in the plan: the app bar's client parts (tabs with `.on`, Clerk's `UserButton` menu) live in `components/app/app-bar-client.tsx`, and `/sites` has the prototype's "New portfolio" button, because the app bar is a server component and the screenshot shows the button; `getPersonProps()` in `lib/users.ts` gives the PostHog provider `use_case` and `sites_count` from the database.
