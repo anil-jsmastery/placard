@@ -172,7 +172,8 @@ Also `SECTION_FIELDS` (the field list per type, used by the editor in Step 3) an
 - The first Work or Gallery section gets `id="work"`, About `id="about"`, Writing `id="writing"`, Contact `id="contact"`, for the navigation links.
 - `site-nav.tsx`: `renderSite`'s `pf-nav`: the title, up to 3 links derived from the section types (`NAV_LINK` in `site-render.js`, pointing at the ids above), and the availability pill when it's set.
 - `site-footer.tsx`: `pf-foot` with "© {year} {title}" and, when `showBadge`, the `pf-badge` "Made with Placard" linking to `${APP_URL}/?ref=badge`.
-- `site-root.tsx`: `<div className="site" data-theme data-font data-spacing>` + nav + visible sections (skip `hidden`) + footer. An optional `wrap?: (type: SectionType, node: ReactNode) => ReactNode` prop wraps each rendered section; only `/dev/sections` uses it (for the section labels). Published pages, the editor and the tests never pass it, so the markup stays identical to `site-render.js`.
+- `site-shell.tsx`: `SiteShell({ root, children })`: `<div className="site" data-theme={root.theme} data-font={root.font} data-spacing={root.spacing}>` + `site-nav` + `children` + `site-footer`. It's the one place the `.site` wrapper is written: `site.css` sets `--pad` and `--gap` on `.site`, and every section's padding and gap uses them, so a section outside this wrapper loses all its spacing. Step 3's editor canvas uses it too.
+- `site-root.tsx`: `<SiteShell root={page.root.props}>` with the visible sections (skip `hidden`) inside. An optional `wrap?: (type: SectionType, node: ReactNode) => ReactNode` prop wraps each rendered section; only `/dev/sections` uses it (for the section labels). Published pages, the editor and the tests never pass it, so the markup stays identical to `site-render.js`.
 - `safe-link.tsx`: renders `<a>` only when the href passes `Link`; adds `target="_blank" rel="noopener"` for http(s) (as `site-render.js` does); otherwise renders the children in a `<span>` with the same class.
 - `site-image.tsx`: `next/image` with `fill` and `sizes="(min-width: 1024px) 50vw, 100vw"` inside the `pf-img` box (no extra classes: `site.css` sizes it).
 - `site-frame.tsx` (client, design-system §5): renders a page at 1100 px and scales it to its box with a `ResizeObserver`; `interactive={false}` sets `inert` and `aria-hidden`. Outer element gets `min-w-0`.
@@ -203,7 +204,7 @@ If the `.tsx` test fails on JSX, set the installed Vite's JSX transform to `auto
 - `Link` rejects `javascript:alert(1)`, `data:text/html,x`, `//evil.com`, `www.example.com` and `tel:+9771555`; accepts `https://a.co` and `mailto:a@b.co`
 - `Image` rejects `https://example.com/x.jpg`
 
-`lib/site/types.test.ts`: a type-only check that a `PageData` is assignable to Puck's `Data` with no cast (`const _: Data = {} as PageData;` inside a test). `npm run typecheck` fails if the two drift apart.
+`lib/site/types.test.ts`: a type-only check that a `PageData` is assignable to Puck's `Data` with no cast (`expectTypeOf<PageData>().toExtend<Data>()` from vitest). `npm run typecheck` fails if the two drift apart.
 
 `components/site/markup.test.tsx`: the components match the reference. Load `screens/site-render.js` with `node:vm` and a `{ window: {} }` context, call `window.renderSite(page)` for `REFERENCE_PAGE` and each sample; render `<SiteRoot page={page} />` with `renderToStaticMarkup` (mock `next/image` as a plain `<img>`). The ordered lists of `class` attribute values must be equal.
 

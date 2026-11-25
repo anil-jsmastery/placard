@@ -42,8 +42,8 @@ If Puck wraps fields in markup of its own, use `overrides.fieldLabel` and `app/p
 
 ### 3.3 Puck config: `lib/site/puck-config.tsx`
 - `components`: one per section type with `label` and `defaultProps` from the catalog, `fields` from 3.2, `render` = the section component (Step 2).
-- `root`: `render` = the `.site` wrapper with the nav, the sections and the footer (Step 2's `SiteRoot` parts); with no sections it renders `.pf-empty` ("Your page is empty" / "Add sections from the Add tab, then press Prettify to style it."). Root fields are drawn by the Site settings panel (3.5), not by Puck.
-- Test (`lib/site/puck-config.test.ts`): for every section, the field keys equal the schema keys (minus `id` and `hidden`).
+- `root`: `render` = `<SiteShell root={props}>{children}</SiteShell>` (Step 2), so the canvas gets the same `.site` wrapper, with `data-theme`, `data-font`, `data-spacing` and the `--pad`/`--gap` spacing, as the published page; never write a second `.site` div here. With no sections it renders `.pf-empty` ("Your page is empty" / "Add sections from the Add tab, then press Prettify to style it."). Root fields are drawn by the Site settings panel (3.5), not by Puck.
+- Test (`lib/site/puck-config.test.ts`): for every section, the field keys equal the schema keys (minus `id` and `hidden`); and `root.render` for `REFERENCE_PAGE`'s root (with one section as children, `renderToStaticMarkup`) outputs a `div.site` with the three data attributes, the `pf-nav`, the section and the `pf-foot`, in that order.
 
 ### 3.4 Editor route and layout
 - `app/(main)/sites/[id]/edit/page.tsx` (server): require auth, load the site, `notFound()` if it isn't the user's. Render `<Editor site={{ id, name, slug, draft, publishedAt }} />` full screen (no app bar).
@@ -96,7 +96,7 @@ The prototype's `#edRoot`, reading and writing `root.props` through Puck: Site t
 
 **Sites.** Back on `/sites`: the card with a live thumbnail of your page. Try **Delete portfolio** from its menu (two clicks), then make a new one.
 
-**You should see:** the editor matches `editor-blank-1440.png` empty, `editor-add-1440.png` on the Add tab, `editor-section-1440.png` with a section selected and `editor-layers-1440.png` on Layers (your words, not Maya's); the cards match `sites-pro-1440.png`'s layout.
+**You should see:** the canvas has the same side padding and section gaps as `/dev/sections` (nothing touches the frame's left edge); the editor matches `editor-blank-1440.png` empty, `editor-add-1440.png` on the Add tab, `editor-section-1440.png` with a section selected and `editor-layers-1440.png` on Layers (your words, not Maya's); the cards match `sites-pro-1440.png`'s layout.
 
 **Ship it** (skip what you already did above)
 1. `git push -u origin step-3`, then `gh pr create --fill-first`.

@@ -25,6 +25,8 @@ Screenshots of every state are in `screens/screenshots/` (open `screens/index.ht
 
 All three CSS files are copied in Step 0 and never edited. If a screen needs a style that isn't there, ask.
 
+Layer `components` (app.css) outranks layer `site` (site.css) whatever the specificity. So app.css's bare element rules (the `*` reset, `a`, `button`) are written to skip everything inside `.site`: without that, the reset would zero every padding and margin on a portfolio and `a` would recolour its buttons. Never add a bare element rule to app.css that could reach a portfolio.
+
 ## 3. How to build a screen
 
 1. Find it in `placard-app.html`: each page is a `<main class="page" data-page="…">` (table below). Modals and menus are at the end of the body.
