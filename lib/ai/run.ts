@@ -52,7 +52,11 @@ function checkChanged(kind: "edit" | "prettify", before: PageData, page: PageDat
   const parsed = cleanPage(page);
   if (!parsed.success) return { ok: false, reason: "invalid_page" };
   const clean = parsed.data as PageData;
-  if (kind === "prettify" && !sameWords(before, clean)) return { ok: false, reason: "words_changed" };
+  // Both sides cleaned: cleanPage drops empty optional strings, which aren't words the person wrote.
+  if (kind === "prettify") {
+    const cleanBefore = cleanPage(before);
+    if (!cleanBefore.success || !sameWords(cleanBefore.data as PageData, clean)) return { ok: false, reason: "words_changed" };
+  }
   return { ok: true, page: clean };
 }
 
