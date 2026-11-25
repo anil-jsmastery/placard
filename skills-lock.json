@@ -1,0 +1,201 @@
+{
+  "version": 2,
+  "skills": {
+    "ai-sdk": {
+      "source": "vercel/ai",
+      "commit": "b54b35a195c079fe572b1c746c186f126f5f2bd0",
+      "sourceType": "github",
+      "skillPath": "skills/ai-sdk/SKILL.md",
+      "computedHash": "59cd2dc82c5458f2819992fc3d27204ed16edfc9170870c6f8f04c44bac17772",
+      "installMode": "copy"
+    },
+    "clerk": {
+      "source": "clerk/skills",
+      "commit": "95f241aff9922e430c7348c2d242d91d424bbb44",
+      "sourceType": "github",
+      "skillPath": "skills/clerk/SKILL.md",
+      "computedHash": "8a4817e50aea0088f6d1dea236f5a70a72efa1ac057a232396b0d99e1a872838",
+      "installMode": "copy"
+    },
+    "clerk-billing": {
+      "source": "clerk/skills",
+      "commit": "95f241aff9922e430c7348c2d242d91d424bbb44",
+      "sourceType": "github",
+      "skillPath": "skills/clerk-billing/SKILL.md",
+      "computedHash": "c0d175b12dc1757e6e7a41afa1bf5d5194c53cce7030aaedeebbf11f0b45cd83",
+      "installMode": "copy"
+    },
+    "clerk-nextjs-patterns": {
+      "source": "clerk/skills",
+      "commit": "95f241aff9922e430c7348c2d242d91d424bbb44",
+      "sourceType": "github",
+      "skillPath": "skills/clerk-nextjs-patterns/SKILL.md",
+      "computedHash": "5775102acceae0b132c1818a51147623da645880aa27ee2d9e3aa2a6358af357",
+      "installMode": "copy"
+    },
+    "clerk-setup": {
+      "source": "clerk/skills",
+      "commit": "95f241aff9922e430c7348c2d242d91d424bbb44",
+      "sourceType": "github",
+      "skillPath": "skills/clerk-setup/SKILL.md",
+      "computedHash": "e51760c42bda041a237b5f5a420ef74204ca3174c68797235efbd493e770363d",
+      "installMode": "copy"
+    },
+    "clerk-webhooks": {
+      "source": "clerk/skills",
+      "commit": "95f241aff9922e430c7348c2d242d91d424bbb44",
+      "sourceType": "github",
+      "skillPath": "skills/clerk-webhooks/SKILL.md",
+      "computedHash": "b50cef6155462607f633da76c99f761a80eeae52819c6ba0b4ce0293561f165f",
+      "installMode": "copy"
+    },
+    "code-review": {
+      "source": "coderabbitai/skills",
+      "commit": "d8e182b7e7c5128e354fd7ff335286cf157cb500",
+      "sourceType": "github",
+      "skillPath": "skills/code-review/SKILL.md",
+      "computedHash": "da4db4c2f1cb3c808fcab4de58614165a78041f697d54c0a942d739ca92a68d5",
+      "installMode": "copy"
+    },
+    "deployments-cicd": {
+      "source": "vercel/vercel-plugin",
+      "commit": "250769d9353c3f38a7c41ce9b908d3ca80ab19db",
+      "sourceType": "github",
+      "skillPath": "skills/deployments-cicd/SKILL.md",
+      "computedHash": "d312a670cbe5dd86e2a0d076a4b255d3271a0f5d9651cbf4231153fc4d6d5816",
+      "installMode": "copy"
+    },
+    "env-vars": {
+      "source": "vercel/vercel-plugin",
+      "commit": "250769d9353c3f38a7c41ce9b908d3ca80ab19db",
+      "sourceType": "github",
+      "skillPath": "skills/env-vars/SKILL.md",
+      "computedHash": "6ce018252d0ae993b0b6b7ce1945afb41a3df47379e16c8a84da86e6fabf389e",
+      "installMode": "copy"
+    },
+    "implementing-api-surveys": {
+      "source": "PostHog/skills",
+      "commit": "2e4df80f5c41975f6fe598149acc6242b314688d",
+      "sourceType": "github",
+      "skillPath": "skills/omnibus/implementing-api-surveys/SKILL.md",
+      "computedHash": "5f596a244af3b1a55503202e18f0c0bd16019c613e31b414a055071443662989",
+      "installMode": "copy"
+    },
+    "instrument-feature-flags": {
+      "source": "PostHog/skills",
+      "commit": "2e4df80f5c41975f6fe598149acc6242b314688d",
+      "sourceType": "github",
+      "skillPath": "skills/omnibus/instrument-feature-flags/SKILL.md",
+      "computedHash": "dedb566249e5cbd709174b7878ffdf772369a6b0efb26e6c7d647c9422a1ae30",
+      "installMode": "copy"
+    },
+    "instrument-integration": {
+      "source": "PostHog/skills",
+      "commit": "2e4df80f5c41975f6fe598149acc6242b314688d",
+      "sourceType": "github",
+      "skillPath": "skills/omnibus/instrument-integration/SKILL.md",
+      "computedHash": "0c91cd062e094c291666e05fba42d479b12b9768f4d22340fc81b6e8dd61a548",
+      "installMode": "copy"
+    },
+    "instrument-llm-analytics": {
+      "source": "PostHog/skills",
+      "commit": "2e4df80f5c41975f6fe598149acc6242b314688d",
+      "sourceType": "github",
+      "skillPath": "skills/omnibus/instrument-llm-analytics/SKILL.md",
+      "computedHash": "8e3767026452fe63376f7fd82e9a90750c8de076951440d43972579bc58b5541",
+      "installMode": "copy"
+    },
+    "instrument-product-analytics": {
+      "source": "PostHog/skills",
+      "commit": "2e4df80f5c41975f6fe598149acc6242b314688d",
+      "sourceType": "github",
+      "skillPath": "skills/omnibus/instrument-product-analytics/SKILL.md",
+      "computedHash": "587743330a51d8ad7ab6d473df2e6a6c24b82948b28d5cd18ddd0dbe3532e5c2",
+      "installMode": "copy"
+    },
+    "instrument-reverse-proxy": {
+      "source": "PostHog/skills",
+      "commit": "2e4df80f5c41975f6fe598149acc6242b314688d",
+      "sourceType": "github",
+      "skillPath": "skills/omnibus/instrument-reverse-proxy/SKILL.md",
+      "computedHash": "0666db4ae27ccca8cf06e6663755149aaff7f375c8a916bfcf43b43895413116",
+      "installMode": "copy"
+    },
+    "neon": {
+      "source": "neondatabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/neon/SKILL.md",
+      "computedHash": "8794b9b86d45f893b2b3e71f45d4b24d56daf07b2c5ba8258c65b67411a4c688"
+    },
+    "neon-ai-gateway": {
+      "source": "neondatabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/neon-ai-gateway/SKILL.md",
+      "computedHash": "5124cb9f0ca1417f1b185504f854360570ce2e75ad38a29615a06e66884d6dd1"
+    },
+    "neon-functions": {
+      "source": "neondatabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/neon-functions/SKILL.md",
+      "computedHash": "6ec12cc01706f8062dfe90dc7d1d13e30089d00efe5b7cccbd8dcd80bcb20ff5"
+    },
+    "neon-object-storage": {
+      "source": "neondatabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/neon-object-storage/SKILL.md",
+      "computedHash": "257069dffd0080b5265b9d3d2162d3e45d6581bd26d25449d8de05bb7a2ac687"
+    },
+    "neon-postgres": {
+      "source": "neondatabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/neon-postgres/SKILL.md",
+      "computedHash": "0e1db49f25e9208cb24fa2084a542d52d60a85c09271b915acc3dad6901de6a0"
+    },
+    "neon-realtime": {
+      "source": "neondatabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/neon-realtime/SKILL.md",
+      "computedHash": "7c055573fbfa784959800d81485819e51dd11f20e788a0258b84a6ab39d3cd0f"
+    },
+    "puck": {
+      "source": "puckeditor/skills",
+      "commit": "e576025d914f90d2edbaac40d48dd66acf2daa85",
+      "sourceType": "github",
+      "skillPath": "skills/puck/SKILL.md",
+      "computedHash": "df0acd40a7829be1a026ba95aa71e7c562f43ff34901f46348cb321c8b44fc49",
+      "installMode": "copy"
+    },
+    "querying-posthog-data": {
+      "source": "PostHog/skills",
+      "commit": "2e4df80f5c41975f6fe598149acc6242b314688d",
+      "sourceType": "github",
+      "skillPath": "skills/omnibus/querying-posthog-data/SKILL.md",
+      "computedHash": "b0a17b96bc1742254224befce2d9f3815733b5d7c928d86d85fbff3b0d1d5462",
+      "installMode": "copy"
+    },
+    "react-best-practices": {
+      "source": "vercel/vercel-plugin",
+      "commit": "250769d9353c3f38a7c41ce9b908d3ca80ab19db",
+      "sourceType": "github",
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "computedHash": "1876ac7002b37ef489eccdd6c43182a591c01ba9459714c77c4ce5b66f533c54",
+      "installMode": "copy"
+    },
+    "routing-middleware": {
+      "source": "vercel/vercel-plugin",
+      "commit": "250769d9353c3f38a7c41ce9b908d3ca80ab19db",
+      "sourceType": "github",
+      "skillPath": "skills/routing-middleware/SKILL.md",
+      "computedHash": "f4e88d05aee8b308e1c825699dc8f0b3ff769de43b45f1068de8927e22ddd2e0",
+      "installMode": "copy"
+    },
+    "shadcn": {
+      "source": "shadcn/ui",
+      "commit": "f50887ae68d0fdcbfbe86b57be08af94a4c88a68",
+      "sourceType": "github",
+      "skillPath": "skills/shadcn/SKILL.md",
+      "computedHash": "388962d16c7a4f13aaeee0d8f128e50a87df8553d42ef7988c39c0e1c74a40e8",
+      "installMode": "copy"
+    }
+  }
+}

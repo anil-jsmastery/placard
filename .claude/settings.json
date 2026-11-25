@@ -1,0 +1,39 @@
+{
+  "model": "claude-opus-5-5",
+  "effortLevel": "medium",
+  "autoMemoryEnabled": false,
+  "enableAllProjectMcpServers": true,
+  "permissions": {
+    "allow": [
+      "mcp__next-devtools__*",
+      "mcp__shadcn__*",
+      "mcp__vercel__search_vercel_documentation",
+      "Bash(npx neon skills:*)"
+    ],
+    "deny": [
+      "Read(./.env.local)",
+      "Read(./.env.vercel)",
+      "Edit(./.env.local)",
+      "Edit(./.env.vercel)",
+      "Bash(git push:*)",
+      "Bash(npx neon deploy:*)",
+      "Bash(npx neon env:*)",
+      "Bash(npx neon branches:*)",
+      "Bash(npx neon checkout:*)",
+      "Bash(npx neon projects:*)",
+      "Bash(npm run db:migrate:*)",
+      "Bash(npm run db:seed-library:*)",
+      "Bash(node --env-file=.env.local swarm/:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(gh pr comment:*)",
+      "Bash(gh pr review:*)",
+      "Bash(gh pr close:*)",
+      "Bash(gh pr edit:*)",
+      "Bash(coderabbit:*)",
+      "Bash(cr:*)",
+      "Bash(npx vercel:*)",
+      "Bash(vercel:*)"
+    ]
+  }
+}

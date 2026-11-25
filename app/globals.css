@@ -1,0 +1,74 @@
+/*
+  app/globals.css: copy this file as-is. Do not add, rename or change tokens.
+  Three layers of styling, in this order (later wins):
+    site        app/site.css   the generated portfolios (.site, .pf-*). Copied from screens/site.css.
+    components  app/app.css    the app's UI classes (.btn, .shell, .ed, …). Copied from ui/app.css.
+    utilities   Tailwind       small layout fixes only.
+  The shadcn tokens below are mapped to the same palette as app.css, so shadcn primitives
+  (Dialog, DropdownMenu, Switch, Tooltip, Sonner) look like the rest of the app before any class is added.
+  Font variables (--font-geist, --font-geist-mono, --font-bricolage, --font-instrument-serif) come from app/fonts.ts.
+*/
+@layer theme, base, site, components, utilities;
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "./site.css" layer(site);
+@import "./app.css" layer(components);
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --radius: 14px;                  /* app.css --r-md */
+
+  --background: #ffffff;           /* --page */
+  --foreground: #17171c;           /* --ink */
+  --card: #ffffff;
+  --card-foreground: #17171c;
+  --popover: #ffffff;
+  --popover-foreground: #17171c;
+  --primary: #5466f0;              /* --blue: the one accent */
+  --primary-foreground: #ffffff;
+  --secondary: #f0f0f3;            /* --well */
+  --secondary-foreground: #17171c;
+  --muted: #f0f0f3;
+  --muted-foreground: #7c7c88;     /* --mute */
+  --accent: #eef0ff;               /* --blue-soft: hover and selected fills */
+  --accent-foreground: #3442c9;
+  --destructive: #c2353a;
+  --border: #e6e6eb;               /* --line */
+  --input: #e6e6eb;
+  --ring: #5466f0;
+  --success: #1f9d63;              /* --green: Live status */
+}
+
+@theme inline {
+  --font-sans: var(--font-geist), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 30px;
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  body { @apply bg-background text-foreground font-sans antialiased; }
+}

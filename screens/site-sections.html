@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Placard · portfolio sections reference</title>
+<!--
+  The reference for Step 2. Every section type, in every layout, theme and heading font.
+  components/site/sections/*.tsx must produce this markup class for class (see site-render.js);
+  the styles are site.css, which Step 0 copies to app/site.css.
+  Use the bar to switch theme, font, layouts and width. ?theme=…&font=…&w=390 work too (used for screenshots).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site.css">
+<style>
+  body{margin:0;background:#E9E9EE;font:14px/1.4 "Geist",system-ui,sans-serif;color:#17171C}
+  .bar{position:sticky;top:0;z-index:10;display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;padding:12px 20px;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,0,0,.08)}
+  .bar b{font-weight:600;margin-right:6px}
+  .grp{display:flex;align-items:center;gap:4px}
+  .grp span{font-size:12px;color:#6B6B76;margin-right:4px}
+  .grp button{height:30px;padding:0 11px;border:1px solid rgba(0,0,0,.1);background:#fff;border-radius:8px;font:500 13px "Geist",system-ui;cursor:pointer;color:#17171C}
+  .grp button[aria-pressed="true"]{background:#17171C;color:#fff;border-color:#17171C}
+  .sw{width:14px;height:14px;border-radius:50%;display:inline-block;vertical-align:-2px;margin-right:6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+  .stage{padding:28px 20px 60px;display:grid;justify-items:center}
+  .frame{width:100%;max-width:1280px;border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.06),0 20px 50px -20px rgba(0,0,0,.25);transition:max-width .3s}
+  .frame.phone{max-width:390px}
+  .tag{position:relative}
+  .tag::before{content:attr(data-type);position:absolute;left:8px;top:-10px;z-index:2;font:500 11px "Geist Mono",monospace;background:#17171C;color:#fff;padding:2px 7px;border-radius:5px;opacity:0;transition:opacity .2s}
+  body.show-names .tag::before{opacity:1}
+  body.bare .bar{display:none} body.bare .stage{padding:0} body.bare .frame{max-width:none;border-radius:0;box-shadow:none} body.bare .frame.phone{max-width:390px}
+</style>
+</head>
+<body>
+<div class="bar">
+  <b>Portfolio sections</b>
+  <div class="grp" id="theme"><span>Theme</span></div>
+  <div class="grp" id="font"><span>Font</span></div>
+  <div class="grp" id="intro"><span>Intro</span></div>
+  <div class="grp" id="work"><span>Work</span></div>
+  <div class="grp" id="gal"><span>Gallery</span></div>
+  <div class="grp" id="width"><span>Width</span></div>
+  <div class="grp" id="names"><span>Labels</span></div>
+</div>
+<div class="stage"><div class="frame" id="frame"><div class="site" id="site"></div></div></div>
+
+<script>window.SITE_IMG_BASE = "../public";</script>
+<script src="sample-pages.js"></script>
+<script src="site-render.js"></script>
+<script>
+  const THEMES = { paper: "#F2EFE7,#2B44FF", midnight: "#0F100D,#D2F34C", sunset: "#F7E9DC,#E2552B", forest: "#E8ECE2,#24573B", ocean: "#E9EFEF,#0B6E7A", mono: "#FAFAF9,#0A0A0A" };
+  const FONTS = { sans: "Sans", serif: "Serif", mono: "Techy" };
+  const q = new URLSearchParams(location.search);
+  const kind = q.get("page"), page = structuredClone(kind && window.PAGES[kind] ? window.PAGES[kind] : window.REFERENCE_PAGE);
+  if (q.get("bare") === "1") document.body.classList.add("bare");
+  const R0 = page.root.props, find0 = (t) => (page.content.find((s) => s.type === t) || { props: {} }).props;
+  const S = {
+    theme: q.get("theme") || R0.theme, font: q.get("font") || R0.font,
+    intro: q.get("intro") || find0("Intro").layout || "statement", work: q.get("work") || find0("Work").layout || "grid", gal: q.get("gal") || find0("Gallery").layout || "grid",
+    width: q.get("w") === "390" ? "390" : "1280", names: q.get("names") === "1",
+  };
+  const find = (t) => (page.content.find((s) => s.type === t) || { props: {} }).props;
+
+  function render() {
+    const site = document.getElementById("site");
+    R0.theme = S.theme; R0.font = S.font;
+    find("Intro").layout = S.intro; find("Work").layout = S.work; find("Gallery").layout = S.gal;
+    window.mountSite(site, page, { editor: true });
+    site.querySelectorAll(".pf-block").forEach((b) => { b.classList.add("tag"); });
+    document.getElementById("frame").classList.toggle("phone", S.width === "390");
+    document.body.classList.toggle("show-names", S.names);
+    document.querySelectorAll(".grp button").forEach((b) => b.setAttribute("aria-pressed", String(S[b.dataset.k] === b.dataset.v || (b.dataset.k === "names" && String(S.names) === b.dataset.v))));
+  }
+  function group(id, k, opts) {
+    const g = document.getElementById(id);
+    Object.entries(opts).forEach(([v, label]) => {
+      const b = document.createElement("button");
+      b.dataset.k = k; b.dataset.v = v; b.innerHTML = label;
+      b.onclick = () => { S[k] = k === "names" ? v === "true" : v; render(); };
+      g.appendChild(b);
+    });
+  }
+  group("theme", "theme", Object.fromEntries(Object.entries(THEMES).map(([k, c]) => { const [bg, acc] = c.split(","); return [k, `<i class="sw" style="background:linear-gradient(135deg,${bg} 50%,${acc} 50%)"></i>${k[0].toUpperCase() + k.slice(1)}`]; })));
+  group("font", "font", FONTS);
+  group("intro", "intro", { statement: "Statement", split: "Split" });
+  group("work", "work", { grid: "Grid", list: "List" });
+  group("gal", "gal", { mosaic: "Mosaic", grid: "Grid" });
+  group("width", "width", { "1280": "Desktop", "390": "Phone" });
+  group("names", "names", { "false": "Off", "true": "On" });
+  render();
+</script>
+</body>
+</html>

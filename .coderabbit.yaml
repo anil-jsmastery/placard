@@ -1,0 +1,63 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# CodeRabbit reviews every pull request in this repo with these settings (Steps 1–15).
+# It's part of the starter: don't edit it during the build.
+language: en-US
+reviews:
+  profile: chill
+  high_level_summary: true
+  auto_review:
+    enabled: true
+    drafts: false
+  # The plan, the reference screens, the photos and the swarm's output aren't app code.
+  path_filters:
+    - "!build-plan/**"
+    - "!screens/**"
+    - "!public/library/**"
+    - "!swarm/**"
+    - "!MEMORY.md"
+    - "!drizzle/meta/**"
+    - "!.claude/**"
+  # Placard's own rules (CLAUDE.md › "Product rules"), so the review checks what matters in this app.
+  path_instructions:
+    - path: "app/api/**"
+      instructions: >-
+        Every handler must get the signed-in user from Clerk, and for any site (portfolio), upload or run id in the request,
+        check that this user owns it before reading or changing it. Validate every input with zod. Never return
+        secrets, connection strings or another user's data. Webhooks must verify Clerk's signature.
+    - path: "proxy.ts"
+      instructions: >-
+        /api/webhooks must pass through on any host. Published portfolios are served only at /p/{slug} (or the
+        slug subdomain locally); a draft or unpublished portfolio must never be reachable without signing in as its owner.
+    - path: "app/(sites)/**"
+      instructions: >-
+        Render only the published version of a portfolio. Links accept only https, http and mailto. PostHog must
+        never load on a published portfolio.
+    - path: "lib/ai/**"
+      instructions: >-
+        Models are reached only through lib/ai/models.ts (the Neon AI Gateway). The AI changes the page only through
+        its tools, and every tool input is validated with the section's zod schema. Check the kill switch, the rate
+        limit and the monthly allowance before a run; failed runs must not count. Prettify gets only the style tools
+        (setStyle, setLayout, setImage, findImages), may never replace a photo under /uploads/, and its run must fail
+        when pageWords differs before and after. Prompts must keep the rule "only facts the user gave".
+    - path: "lib/storage/**"
+      instructions: >-
+        Presigned upload links must be limited to one content type and the size limit, with a key under the user's
+        own prefix. Files are only reached through lib/storage/.
+    - path: "app/api/uploads/**"
+      instructions: >-
+        The user must own the portfolio. The upload link is limited to JPG, PNG or WebP and 5 MB; the function re-checks
+        the real file type.
+    - path: "functions/**"
+      instructions: >-
+        Treat every uploaded file as untrusted: check its real type and size before processing it.
+    - path: "lib/realtime/**"
+      instructions: >-
+        A live query is sealed only on the server after the same ownership and plan checks as the page that shows
+        it. NEON_REALTIME_SECRET must never reach the browser.
+    - path: "lib/analytics/**"
+      instructions: >-
+        Events are sent only through lib/analytics/events.ts, with the names and properties in the spec; every event
+        carries environment and simulated. Never put prompt text or secrets in event properties (the email is a
+        person property, set by identify).
+chat:
+  auto_reply: true
