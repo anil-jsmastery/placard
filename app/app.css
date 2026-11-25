@@ -5,7 +5,8 @@
   The class names are the component API. To build a screen, copy its markup from placard-app.html into JSX
   with the same classes, swap each inline <svg> or data-ic icon for the lucide-react icon of the same name,
   and keep the copy word for word. Tailwind utilities are for small layout fixes only.
-  Generated portfolios are styled by app/site.css, never by this file.
+  Generated portfolios are styled by app/site.css, never by this file. This file's layer outranks site.css's,
+  so its bare element rules (the reset, a, button) skip anything inside .site; site.css has its own reset.
 */
 :root{
   --page:#FFFFFF;
@@ -21,14 +22,14 @@
   --green:#1F9D63;
   --r-xl:30px; --r-lg:22px; --r-md:14px; --r-sm:10px;
 }
-*{box-sizing:border-box;margin:0;padding:0}
+:where(:not(.site, .site *)){box-sizing:border-box;margin:0;padding:0}
 [hidden]{display:none!important}
 html{scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 body{font-family:var(--font-geist,"Geist"),system-ui,sans-serif;background:var(--page);color:var(--ink);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
-button,input,textarea,select{font:inherit;color:inherit}
-button{cursor:pointer;background:none;border:0}
-a{color:inherit;text-decoration:none}
+:is(button,input,textarea,select):where(:not(.site *)){font:inherit;color:inherit}
+button:where(:not(.site *)){cursor:pointer;background:none;border:0}
+a:where(:not(.site *)){color:inherit;text-decoration:none}
 :focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:8px}
 .wrap{max-width:1240px;margin:0 auto;padding:0 24px}
 

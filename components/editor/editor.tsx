@@ -8,7 +8,8 @@ import { track } from "@/lib/analytics/client";
 import { CATALOG } from "@/lib/sections/catalog";
 import type { SectionType } from "@/lib/sections/schemas";
 import { puckConfig } from "@/lib/site/puck-config";
-import type { PageData } from "@/lib/site/types";
+import type { EditorMetadata } from "@/lib/site/puck-config";
+import type { PageData, SectionData } from "@/lib/site/types";
 import { ActionBar, ComponentOverlay } from "./action-bar";
 import { DrawerItem } from "./add-panel";
 import { Canvas, CanvasFrame } from "./canvas";
@@ -168,8 +169,16 @@ const LOCKED = { drag: false, duplicate: false, delete: false, edit: false, inse
 export function Editor({ site, user }: { site: EditorSite; user: EditorUser }) {
   const [device, setDevice] = useState<Device>("desktop");
   const [running, setRunning] = useState(false);
-  const { state, onChange, saveNow, pause, markSaved } = useAutosave(site.id, site.draft);
+  const { state, onChange: autosave, saveNow, pause, markSaved } = useAutosave(site.id, site.draft);
   const toast = useToast();
+
+  // The sections go to root.render through Puck's metadata (navigation links, the empty state).
+  const [content, setContent] = useState(site.draft.content);
+  const metadata = useMemo<EditorMetadata>(() => ({ content }), [content]);
+  const onChange = useCallback((data: Data) => {
+    setContent(data.content as SectionData[]);
+    autosave(data);
+  }, [autosave]);
 
   const onRunning = useCallback((on: boolean) => {
     pause(on);
@@ -196,6 +205,7 @@ export function Editor({ site, user }: { site: EditorSite; user: EditorUser }) {
       data={site.draft}
       onChange={onChange}
       onAction={onAction}
+      metadata={metadata}
       iframe={{ enabled: true }}
       overrides={overrides}
       permissions={running ? LOCKED : undefined}

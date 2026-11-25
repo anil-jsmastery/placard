@@ -3,8 +3,7 @@ import type { SectionType } from "@/lib/sections/schemas";
 import type { PageData, SectionData } from "@/lib/site/types";
 import { NAV_LINK } from "./anchors";
 import { SECTION_COMPONENTS } from "./sections";
-import { SiteFooter } from "./site-footer";
-import { SiteNav } from "./site-nav";
+import { SiteShell } from "./site-shell";
 
 function renderSection(s: SectionData, anchor?: string) {
   const Component = SECTION_COMPONENTS[s.type] as React.ComponentType<{ props: SectionData["props"]; anchor?: string }>;
@@ -18,8 +17,7 @@ export function SiteRoot({ page, wrap }: { page: PageData; wrap?: (type: Section
   const sections = page.content.filter((s) => !s.props.hidden);
   const used = new Set<string>();
   return (
-    <div className="site" data-theme={r.theme} data-font={r.font} data-spacing={r.spacing}>
-      <SiteNav title={r.title} availability={r.availability} sections={sections} />
+    <SiteShell root={r} sections={sections}>
       {sections.map((s) => {
         // The first section of each kind gets the id the navigation points at.
         const anchor = NAV_LINK[s.type]?.anchor;
@@ -27,7 +25,6 @@ export function SiteRoot({ page, wrap }: { page: PageData; wrap?: (type: Section
         const node = renderSection(s, id);
         return wrap ? <Fragment key={s.props.id}>{wrap(s.type, node)}</Fragment> : node;
       })}
-      <SiteFooter title={r.title} showBadge={r.showBadge} />
-    </div>
+    </SiteShell>
   );
 }
