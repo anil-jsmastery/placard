@@ -16,7 +16,7 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
   const [site] = await db
-    .select({ id: sites.id, name: sites.name, slug: sites.slug, draft: sites.draft, publishedAt: sites.publishedAt })
+    .select({ id: sites.id, name: sites.name, slug: sites.slug, draft: sites.draft, published: sites.published, publishedAt: sites.publishedAt })
     .from(sites)
     .where(and(eq(sites.id, id), eq(sites.userId, userId)));
   if (!site) notFound();
@@ -27,7 +27,7 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
   ]);
   return (
     <Editor
-      site={{ id: site.id, name: site.name, slug: site.slug, draft: toPage(site.draft), publishedAt: site.publishedAt?.toISOString() ?? null, aiRuns: runs }}
+      site={{ id: site.id, name: site.name, slug: site.slug, draft: toPage(site.draft), live: site.published !== null, publishedAt: site.publishedAt?.toISOString() ?? null, aiRuns: runs }}
       user={{ useCase: user?.useCase ?? "other", usage: { left: usage.left, allowance: usage.allowance } }}
     />
   );

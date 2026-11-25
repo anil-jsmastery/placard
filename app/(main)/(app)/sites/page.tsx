@@ -25,7 +25,7 @@ export default async function SitesPage() {
   const planKey = await getPlanKey();
   const plan = PLANS[planKey];
   const rows = await db
-    .select({ id: sites.id, name: sites.name, draft: sites.draft, published: sites.published, publishedAt: sites.publishedAt, updatedAt: sites.updatedAt })
+    .select({ id: sites.id, name: sites.name, slug: sites.slug, draft: sites.draft, published: sites.published, updatedAt: sites.updatedAt })
     .from(sites)
     .where(eq(sites.userId, userId))
     .orderBy(desc(sites.updatedAt));
@@ -50,7 +50,8 @@ export default async function SitesPage() {
               site={{
                 id: s.id,
                 name: s.name,
-                live: !!s.publishedAt,
+                slug: s.slug,
+                live: s.published !== null,
                 page: toPage(s.published ?? s.draft),
                 edited: editedAgo(s.updatedAt),
               }}

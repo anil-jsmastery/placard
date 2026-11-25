@@ -47,7 +47,12 @@ export function CanvasFrame({ children, document: doc }: { children: React.React
 
 // While Prettify runs the canvas gets .prettifying, on the portfolio's .site inside the iframe (the prototype's
 // .site.prettifying) as well as on .canvas.
-export function Canvas({ device, prettifying = false }: { device: Device; prettifying?: boolean }) {
+// `live`: the portfolio's address while it's published (the URL line links to the live page), null on a draft.
+export function Canvas({ device, prettifying = false, live = null }: {
+  device: Device;
+  prettifying?: boolean;
+  live?: { host: string; url: string } | null;
+}) {
   useEffect(() => {
     const doc = document.querySelector<HTMLIFrameElement>("#preview-frame")?.contentDocument;
     const site = doc?.querySelector(".site");
@@ -63,8 +68,9 @@ export function Canvas({ device, prettifying = false }: { device: Device; pretti
         <div className="frame-bar">
           <span className="lights"><b /><b /><b /></span>
           <span className="frame-tab"><span className="tab-ic"><Icon /></span> <span>{title || "Untitled portfolio"}</span></span>
-          {/* Step 6 shows the address once the portfolio has one. */}
-          <span className="frame-url">Draft</span>
+          <span className="frame-url" id="edUrl">
+            {live ? <a href={live.url} target="_blank" rel="noopener">{live.host}</a> : "Draft"}
+          </span>
         </div>
         <Puck.Preview />
       </div>
