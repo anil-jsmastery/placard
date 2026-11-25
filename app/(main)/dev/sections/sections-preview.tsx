@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { SiteRoot } from "@/components/site/site-root";
-import { FONTS, THEMES } from "@/lib/sections/schemas";
+import { FONTS, THEMES, type SectionType } from "@/lib/sections/schemas";
 import { FONT_META, THEME_META } from "@/lib/site/themes";
 import type { PageData, SectionData } from "@/lib/site/types";
 import { cn } from "@/lib/utils";
@@ -15,7 +15,7 @@ function Group({ label, options, value, onChange }: { label: string; options: Op
       <span className="text-xs text-muted-foreground">{label}</span>
       <div className="seg flex-wrap">
         {options.map((o) => (
-          <button key={o.value} type="button" aria-pressed={value === o.value} onClick={() => onChange(o.value)}>
+          <button key={o.value} type="button" className={cn(value === o.value && "on")} aria-pressed={value === o.value} onClick={() => onChange(o.value)}>
             {o.label}
           </button>
         ))}
@@ -52,11 +52,11 @@ export function SectionsPreview({ page }: { page: PageData }) {
     return { ...page, root: { props: { ...r, theme: theme as PageData["root"]["props"]["theme"], font: font as PageData["root"]["props"]["font"] } }, content };
   }, [page, r, theme, font, intro, work, gal]);
 
-  const wrap = (s: SectionData, node: React.ReactNode) => (
-    <div className="relative">
+  const wrap = (type: SectionType, node: React.ReactNode) => (
+    <div className="relative" data-type={type}>
       {names === "true" && (
         <span className="absolute left-2 -top-2.5 z-[2] rounded-[5px] bg-foreground px-[7px] py-0.5 font-mono text-[11px] font-medium text-background">
-          {s.type}
+          {type}
         </span>
       )}
       {node}

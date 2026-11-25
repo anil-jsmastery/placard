@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import type { SectionType } from "@/lib/sections/schemas";
 import type { PageData, SectionData } from "@/lib/site/types";
 import { NAV_LINK } from "./anchors";
 import { SECTION_COMPONENTS } from "./sections";
@@ -11,8 +12,8 @@ function renderSection(s: SectionData, anchor?: string) {
 }
 
 // A whole portfolio: <div class="site"> with the navigation, the visible sections and the footer.
-// `wrap` lets a caller put something around each section (the dev page's labels, the editor's blocks).
-export function SiteRoot({ page, wrap }: { page: PageData; wrap?: (section: SectionData, node: React.ReactNode) => React.ReactNode }) {
+// `wrap` puts something around each section; only /dev/sections uses it (the section labels).
+export function SiteRoot({ page, wrap }: { page: PageData; wrap?: (type: SectionType, node: React.ReactNode) => React.ReactNode }) {
   const r = page.root.props;
   const sections = page.content.filter((s) => !s.props.hidden);
   const used = new Set<string>();
@@ -24,7 +25,7 @@ export function SiteRoot({ page, wrap }: { page: PageData; wrap?: (section: Sect
         const anchor = NAV_LINK[s.type]?.anchor;
         const id = anchor && !used.has(anchor) ? (used.add(anchor), anchor) : undefined;
         const node = renderSection(s, id);
-        return wrap ? <Fragment key={s.props.id}>{wrap(s, node)}</Fragment> : node;
+        return wrap ? <Fragment key={s.props.id}>{wrap(s.type, node)}</Fragment> : node;
       })}
       <SiteFooter title={r.title} showBadge={r.showBadge} />
     </div>
