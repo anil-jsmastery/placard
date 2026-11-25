@@ -21,6 +21,8 @@ const nextConfig: NextConfig = {
   },
   // PostHog's API paths end in a slash
   skipTrailingSlashRedirect: true,
+  // The browser gets the same APP_ENV as the server (inlined at build time; each Vercel environment builds with its own)
+  env: { APP_ENV: process.env.APP_ENV ?? "dev" },
 };
 
 export default nextConfig;

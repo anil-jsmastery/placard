@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { PostHog } from "posthog-node";
 import { APP_ENV } from "@/lib/config";
 import { db, users } from "@/lib/db";
-import { isSimulatedEmail } from "@/lib/users";
+import { isSimulatedEmail } from "@/lib/simulated";
 import type { ServerEvents } from "./events";
 
 const posthog = process.env.NEXT_PUBLIC_POSTHOG_KEY

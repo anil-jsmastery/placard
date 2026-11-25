@@ -4,7 +4,6 @@ import { fontVars } from "../fonts";
 import { clerkAppearance } from "@/lib/clerk-appearance";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { ToastProvider } from "@/components/app/toast";
-import { getPersonProps } from "@/lib/users";
 import "../globals.css";
 
 export const metadata: Metadata = {
@@ -12,13 +11,12 @@ export const metadata: Metadata = {
   description: "Describe your work. Get a portfolio.",
 };
 
-export default async function MainLayout({ children }: { children: React.ReactNode }) {
-  const person = await getPersonProps();
+export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={fontVars}>
       <body>
         <ClerkProvider appearance={clerkAppearance}>
-          <PostHogProvider person={person}>
+          <PostHogProvider>
             <ToastProvider>{children}</ToastProvider>
           </PostHogProvider>
         </ClerkProvider>

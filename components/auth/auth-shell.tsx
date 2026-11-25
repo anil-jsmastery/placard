@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Globe, LayoutGrid, ShieldCheck, Sparkles } from "lucide-react";
 import { Brand } from "@/components/app/brand";
 
@@ -16,7 +15,7 @@ export function AuthShell({ art, children }: { art: Art; children: React.ReactNo
             {children}
             <p className="ck-sec"><i className="ic-slot"><ShieldCheck /></i>Secured by Clerk</p>
           </div>
-          <p className="auth-legal">By continuing you agree to the <Link href="/">Terms</Link> and <Link href="/">Privacy policy</Link>.</p>
+          <p className="auth-legal">By continuing you agree to the Terms and Privacy policy.</p>
         </div>
         <aside className="auth-r" aria-hidden="true">
           <div className="auth-art" data-art={art}>

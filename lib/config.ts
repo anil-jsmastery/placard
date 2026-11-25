@@ -1,6 +1,7 @@
 export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME!;
 export const APP_DOMAIN = process.env.NEXT_PUBLIC_APP_DOMAIN!;   // "localhost:3000" in dev, the vercel.app address in production
 export const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
+// APP_ENV is a server variable; next.config.ts copies it into the browser bundle at build time (3.7), so this works on both sides.
 export const APP_ENV = (process.env.APP_ENV ?? "dev") as "dev" | "prod";
 // Production runs on a vercel.app address with no domain of its own, so there sites live at APP_DOMAIN/p/{slug} (Step 7).
 export const SITE_PATHS = process.env.NEXT_PUBLIC_SITE_PATHS === "true";
