@@ -136,7 +136,13 @@ export const EMPTY_PAGE = {
 } satisfies z.input<typeof PageSchema>;
 ```
 
-Refine `lib/site/types.ts`: `PageData = z.infer<typeof PageSchema>` (compatible with Puck's `Data`), `SectionProps<T extends SectionType> = z.infer<(typeof SECTION_SCHEMAS)[T]>`, and `toPage(json: unknown): PageData` (runs `PageSchema.parse`; used wherever a `draft`, `published` or snapshot `data` column is read).
+Refine `lib/site/types.ts`. Don't use `z.infer<typeof PageSchema>` for the page type: the `as never` that `Section` needs makes it infer `content` as `never[]`. Spell the types out from the schemas instead (compatible with Puck's `Data`):
+```ts
+export type SectionProps<T extends SectionType> = z.infer<(typeof SECTION_SCHEMAS)[T]>;
+export type SectionData = { [T in SectionType]: { type: T; props: SectionProps<T> & { id: string } } }[SectionType];
+export type PageData = { root: { props: z.infer<typeof RootProps> }; content: SectionData[]; zones?: Record<string, unknown> };
+```
+and `toPage(json: unknown): PageData` (runs `PageSchema.parse` and returns it as `PageData`; used wherever a `draft`, `published` or snapshot `data` column is read).
 
 `lib/sections/clean.ts`: `cleanPage(data)` turns empty strings in optional fields into `undefined`, drops buttons and links whose fields are all empty, then returns `PageSchema.safeParse(...)`. Every save, publish and AI change goes through it.
 
@@ -166,7 +172,7 @@ Also `SECTION_FIELDS` (the field list per type, used by the editor in Step 3) an
 - The first Work or Gallery section gets `id="work"`, About `id="about"`, Writing `id="writing"`, Contact `id="contact"`, for the navigation links.
 - `site-nav.tsx`: `renderSite`'s `pf-nav`: the title, up to 3 links derived from the section types (`NAV_LINK` in `site-render.js`, pointing at the ids above), and the availability pill when it's set.
 - `site-footer.tsx`: `pf-foot` with "© {year} {title}" and, when `showBadge`, the `pf-badge` "Made with Placard" linking to `${APP_URL}/?ref=badge`.
-- `site-root.tsx`: `<div className="site" data-theme data-font data-spacing>` + nav + visible sections (skip `hidden`) + footer.
+- `site-root.tsx`: `<div className="site" data-theme data-font data-spacing>` + nav + visible sections (skip `hidden`) + footer. An optional `wrap?: (type: SectionType, node: ReactNode) => ReactNode` prop wraps each rendered section; only `/dev/sections` uses it (for the section labels). Published pages, the editor and the tests never pass it, so the markup stays identical to `site-render.js`.
 - `safe-link.tsx`: renders `<a>` only when the href passes `Link`; adds `target="_blank" rel="noopener"` for http(s) (as `site-render.js` does); otherwise renders the children in a `<span>` with the same class.
 - `site-image.tsx`: `next/image` with `fill` and `sizes="(min-width: 1024px) 50vw, 100vw"` inside the `pf-img` box (no extra classes: `site.css` sizes it).
 - `site-frame.tsx` (client, design-system §5): renders a page at 1100 px and scales it to its box with a `ResizeObserver`; `interactive={false}` sets `inert` and `aria-hidden`. Outer element gets `min-w-0`.
@@ -177,9 +183,21 @@ Also `SECTION_FIELDS` (the field list per type, used by the editor in Step 3) an
 
 ### 3.6 Sample pages and the dev page
 - `lib/site/sample-pages.ts`: port `screens/sample-pages.js`: `KINDS`, `EXAMPLE_PROMPTS` (three per kind; the first builds the sample), `SAMPLE_PAGES` (designer, developer, photographer, artist, writer), `REFERENCE_PAGE` (every section once) and `HAND_BUILT_PAGE` (Step 5's Prettify demo), each a `PageData` with the exact copy and images.
-- `app/(main)/dev/sections/page.tsx`: renders `REFERENCE_PAGE` (or `SAMPLE_PAGES[page]` with `?page=`) in `SiteRoot` with the bar from `site-sections.html` (theme, font, Intro, Work and Gallery layouts, desktop/phone width, section labels; client component). Returns `notFound()` when `APP_ENV === "prod"`.
+- `app/(main)/dev/sections/page.tsx`: renders `REFERENCE_PAGE` (or `SAMPLE_PAGES[page]` with `?page=`) in `SiteRoot` with the controls from `site-sections.html` (theme, font, Intro, Work and Gallery layouts, desktop/phone width, section labels; client component). Build the bar from the app's own classes: a sticky row of `.seg` groups from `app.css` (`.on` on the active button). Don't copy the reference's `<style>`: its `.bar` class is the usage meter's in `app.css`. The frame (1280 px wide, 390 px for Phone) and the labels (each section wrapped through `wrap` in an element with `data-type`, shown with a small mono tag) are a few Tailwind utilities in the dev page itself. Returns `notFound()` when `APP_ENV === "prod"`.
 
 ### 3.7 Tests (vitest)
+`vitest.config.mts` at the repo root (the first tests, so the config comes now), so tests resolve the app's `@/` imports:
+```ts
+import { fileURLToPath } from "node:url";
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  resolve: { alias: { "@": fileURLToPath(new URL(".", import.meta.url)) } },
+  test: { environment: "node", exclude: ["node_modules/**", ".next/**", "swarm/**"] },
+});
+```
+If the `.tsx` test fails on JSX, set the installed Vite's JSX transform to `automatic` in this file (check the installed `vite` docs); change nothing else.
+
 `lib/sections/schemas.test.ts`:
 - `REFERENCE_PAGE`, all five `SAMPLE_PAGES` and `HAND_BUILT_PAGE` pass `PageSchema`; every catalog `defaultProps` passes its schema
 - `Link` rejects `javascript:alert(1)`, `data:text/html,x`, `//evil.com`, `www.example.com` and `tel:+9771555`; accepts `https://a.co` and `mailto:a@b.co`
@@ -220,4 +238,5 @@ Next: `/clear`, then `/step 3`.
 - 10 portfolio section types with zod schemas (`lib/sections/schemas.ts`), a catalog with labels, icons, fields, defaults and AI hints (`lib/sections/catalog.ts`), and components in `components/site/` that render exactly the markup of `screens/site-render.js` (checked by `components/site/markup.test.tsx`).
 - 6 themes, 3 heading fonts (Sans, Serif, Techy) and 2 spacings (`lib/site/themes.ts`), all CSS variables in `app/site.css`.
 - Sample pages for the five kinds, the reference page and the hand-built page are in `lib/site/sample-pages.ts`; `/dev/sections` shows them.
+- `PageData` and `SectionData` are spelled out in `lib/site/types.ts` (not inferred from `PageSchema`); `toPage()` parses a stored page. `SiteRoot`'s optional `wrap` prop is only for `/dev/sections`. Tests run with `vitest.config.mts` (the `@/` alias).
 ```
