@@ -6,7 +6,7 @@
   with the same classes, swap each inline <svg> or data-ic icon for the lucide-react icon of the same name,
   and keep the copy word for word. Tailwind utilities are for small layout fixes only.
   Generated portfolios are styled by app/site.css, never by this file. This file's layer outranks site.css's,
-  so its bare element rules (the reset, a, button) skip anything inside .site; site.css has its own reset.
+  so its bare element rules (the reset, a, button, footer, section[id]) skip anything inside .site; site.css has its own reset.
 */
 :root{
   --page:#FFFFFF;
@@ -254,9 +254,9 @@ section.block{padding:96px 0}
 .final p{color:var(--mute);margin-top:12px}
 .final-form{display:flex;gap:8px;max-width:640px;margin:28px auto 0;background:#fff;border:1px solid var(--line);border-radius:18px;padding:6px;box-shadow:0 12px 30px -18px rgba(30,30,80,.3)}
 .final-form input{flex:1;border:0;outline:none;padding:0 12px;font-size:15.5px;min-width:0;background:transparent}
-footer{border-top:1px solid var(--line);padding:28px 0 40px;color:var(--mute);font-size:14px}
-footer .wrap{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
-footer nav{display:flex;gap:18px;margin-left:auto}
+footer:where(:not(.site *)){border-top:1px solid var(--line);padding:28px 0 40px;color:var(--mute);font-size:14px}
+footer:where(:not(.site *)) .wrap{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+footer:where(:not(.site *)) nav{display:flex;gap:18px;margin-left:auto}
 
 /* responsive */
 @media (max-width:1080px){
@@ -286,7 +286,7 @@ footer nav{display:flex;gap:18px;margin-left:auto}
 /* =========================================================
    APP SHELL
    ========================================================= */
-section[id]{scroll-margin-top:84px}
+section[id]:where(:not(.site *)){scroll-margin-top:84px}
 .appbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--line-2)}
 .appbar .wrap{display:flex;align-items:center;gap:22px;height:64px;max-width:1140px}
 .a-tabs{display:flex;gap:4px}
