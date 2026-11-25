@@ -11,7 +11,6 @@ import { CATALOG } from "@/lib/sections/catalog";
 import { toPage, type PageData } from "@/lib/site/types";
 import { sameWords } from "@/lib/site/words";
 import { isSimulatedEmail } from "@/lib/simulated";
-import { getAiUsage } from "@/lib/usage";
 import { costUsd } from "./cost";
 import { checkCanRun, type GuardFailure } from "./guards";
 import { EDIT_MODEL, getGenerationModel, languageModel, type ModelId } from "./models";
@@ -192,16 +191,6 @@ export async function startRun(input: StartRunInput): Promise<{ error: RunError 
         }
       };
 
-      // Usage for the reply; reading it must never change how the run ended.
-      const usageNow = async () => {
-        try {
-          return await getAiUsage(userId);
-        } catch (err) {
-          console.error("usage read failed", err);
-          return null;
-        }
-      };
-
       const fail = async (reason: FailReason, error: unknown, status: "failed" | "aborted" = "failed") => {
         const message = error instanceof Error ? error.message : String(error ?? reason);
         await finish(status, { error: `${reason}: ${message}`.slice(0, 1000) });
@@ -212,7 +201,7 @@ export async function startRun(input: StartRunInput): Promise<{ error: RunError 
             console.error("generation_failed capture failed", err);
           }
         }
-        send({ ok: false, reason, usage: await usageNow() });
+        send({ ok: false, reason });
       };
 
       try {
@@ -291,7 +280,7 @@ export async function startRun(input: StartRunInput): Promise<{ error: RunError 
         } catch (err) {
           console.error(`${kind} capture failed`, err);
         }
-        send({ ok: true, runId: run.id, page, name, sections: page.content.length, reply, usage: await usageNow() });
+        send({ ok: true, runId: run.id, page, name, sections: page.content.length, reply });
       } catch (err) {
         // After the commit the run has succeeded, whatever goes wrong while replying.
         if (committed) {

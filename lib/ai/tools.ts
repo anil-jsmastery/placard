@@ -13,9 +13,8 @@ const MAX_FAILURES = 3; // the original try plus 2 retries
 // never sent to the model), Prettify's change list (`data-changes`) and how the run ended (`data-result`).
 // An ok result carries the run's id (for "Undo AI change") and the model's final reply.
 export type RunResult =
-  | { ok: true; runId: string; page: PageData; name: string; sections: number; reply: string; usage: Usage | null }
-  | { ok: false; reason: string; usage: Usage | null };
-type Usage = { left: number; allowance: number };
+  | { ok: true; runId: string; page: PageData; name: string; sections: number; reply: string }
+  | { ok: false; reason: string };
 export type SiteUIMessage = UIMessage<never, { run: { runId: string }; page: PageData; changes: [string, string][]; result: RunResult }>;
 
 export type ToolState = {

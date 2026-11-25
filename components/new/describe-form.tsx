@@ -8,10 +8,12 @@ import { ChevronLeft, LayoutGrid, Sparkles } from "lucide-react";
 import { createSite } from "@/app/(main)/(app)/sites/actions";
 import { useToast } from "@/components/app/toast";
 import { usePaywall } from "@/components/billing/paywall-provider";
+import { LiveUsageRows } from "@/components/app/usage-meter-live";
 import { KIND_ICONS } from "@/components/onboarding/kind-cards";
 import { track } from "@/lib/analytics/client";
 import { resetDate } from "@/lib/plans";
 import { EXAMPLE_PROMPTS, KINDS, type Kind } from "@/lib/site/sample-pages";
+import type { LiveUsage } from "@/lib/usage";
 
 const TONES = ["Minimal", "Bold", "Playful", "Elegant"] as const;
 export type Tone = (typeof TONES)[number];
@@ -23,8 +25,19 @@ const MIN = 10;
 const fmt = (n: number) => n.toLocaleString("en-US");
 const label = (k: Kind) => KINDS.find((x) => x.key === k)!.label;
 
+type FormProps = {
+  useCase: Kind | "other";
+  sites: { count: number; limit: number };
+  proRequests: number;
+};
+
+// The cost line's requests left are live (the sealed `ai-used` query).
+export function DescribeForm({ usage, ...props }: FormProps & { usage: LiveUsage }) {
+  return <LiveUsageRows usage={usage}>{(left, allowance) => <Form {...props} left={left} allowance={allowance} />}</LiveUsageRows>;
+}
+
 // The prototype's .ds: the prompt box, name and tone, and the example prompts for what they do.
-export function DescribeForm({
+function Form({
   useCase, left, allowance, sites, proRequests,
 }: {
   useCase: Kind | "other";

@@ -12,7 +12,6 @@ import { CATALOG, SECTION_FIELDS } from "@/lib/sections/catalog";
 import { cleanPage } from "@/lib/sections/clean";
 import { SECTION_TYPES, type SectionType } from "@/lib/sections/schemas";
 import { toPage, type PageData } from "@/lib/site/types";
-import { getAiUsage } from "@/lib/usage";
 
 export type SaveResult = { ok: true } | { ok: false; message: string; path: string };
 
@@ -57,7 +56,7 @@ export async function saveDraft(siteId: string, data: unknown): Promise<SaveResu
 }
 
 // After a run whose result never arrived (a dropped connection): how that run ended (when the stream got as far as
-// its id), the draft the server has now and the usage, so the editor shows what was really saved instead of guessing.
+// its id) and the draft the server has now, so the editor shows what was really saved instead of guessing.
 export async function getSiteState(siteId: string, runId?: string | null) {
   const { userId } = await auth();
   if (!userId) throw new Error("Not signed in");
@@ -73,8 +72,7 @@ export async function getSiteState(siteId: string, runId?: string | null) {
       .limit(1);
     status = run?.status ?? null;
   }
-  const { left, allowance } = await getAiUsage(userId);
-  return { draft: toPage(site.draft), usage: { left, allowance }, status };
+  return { draft: toPage(site.draft), status };
 }
 
 // "Undo AI change" / "Undo Prettify": put back the page saved before that run (the newest ai_run snapshot taken no
