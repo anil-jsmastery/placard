@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
+// PostHog goes through our own domain (/ingest), so ad blockers don't drop events.
+const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://eu.i.posthog.com";
+const assetsHost = posthogHost.replace(".i.posthog.com", "-assets.i.posthog.com");
+
 const nextConfig: NextConfig = {
-  /* config options here */
   turbopack: {
     rules: {
       "*.css": {
@@ -10,6 +13,16 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  async rewrites() {
+    return [
+      { source: "/ingest/static/:path*", destination: `${assetsHost}/static/:path*` },
+      { source: "/ingest/:path*", destination: `${posthogHost}/:path*` },
+    ];
+  },
+  // PostHog's API paths end in a slash
+  skipTrailingSlashRedirect: true,
+  // The browser gets the same APP_ENV as the server (inlined at build time; each Vercel environment builds with its own)
+  env: { APP_ENV: process.env.APP_ENV ?? "dev" },
 };
 
 export default nextConfig;

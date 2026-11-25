@@ -52,7 +52,7 @@ Clerk Billing is set up in Clerk's dashboard, in the **Placard** application's d
   - Pro canceled (still active until the period ends) → `subscription_canceled` `{ plan: "pro" }`.
   - Pro ended → `personSet: { plan: "free" }`, and call `onDowngrade(userId)` in `lib/billing.ts` (empty for now; Step 10 adds to it).
 - On your machine there's no webhook, so when checkout completes and `APP_ENV` is `dev`, the client calls the server action `recordCheckout()`: if `has({ plan: "pro" })` is now true, it sends the same `subscription_started` with `personSet: { plan: "pro" }`. In production it does nothing (the webhook does it). This keeps the swarm's upgrades (Steps 13–15, on your machine) in the funnel.
-- The client identify (Step 1) also sets `plan` from `has({ plan: "pro" })`, and `sites_count` from the `/sites` query.
+- The PostHog provider (Step 1) also sends `plan` from `has({ plan: "pro" })` and `sites_count` from the `/sites` query with `posthog.setPersonProperties`, whenever they change.
 
 ### 3.5 Downgrade rules
 Portfolios stay live and editable. Users over the portfolio limit can't create new ones. The AI allowance goes back to Free. The badge comes back (Step 10).
