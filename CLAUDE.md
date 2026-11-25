@@ -106,6 +106,7 @@ Everyone uses exactly these, except Node.js, which can be any version in its ran
 
 - The AI never writes code or HTML. It changes the page only through its tools (the 6 in Step 4; Prettify's style-only 4 in Step 5), and every tool input is validated with the section's zod schema.
 - Prettify never changes text: the server compares `pageWords` before and after and fails the run if they differ.
+- Server actions called from the editor never call `revalidatePath` or `revalidateTag`: Next.js would refresh the editor from the server and throw away its state. The editor updates from the action's result; other pages call `router.refresh()` when they need fresh data.
 - The AI uses only facts the user gave: no invented numbers, clients, employers, quotes or testimonials, and nothing from `BANNED_PHRASES` (`lib/ai/banned.ts`).
 - Links in portfolios accept only `https://`, `http://` and `mailto:`. No custom HTML or script sections.
 - The plan is never stored in our database; read it from Clerk (`has()` on the server).
