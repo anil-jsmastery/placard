@@ -5,7 +5,7 @@ import { db, sites, users } from "@/lib/db";
 import { getPlanKey } from "@/lib/plan";
 import { PLANS } from "@/lib/plans";
 import { KINDS, type Kind } from "@/lib/site/sample-pages";
-import { getAiUsage } from "@/lib/usage";
+import { getLiveUsage } from "@/lib/usage";
 
 export const metadata = { title: "Describe your portfolio · Placard" };
 
@@ -14,7 +14,7 @@ export default async function NewPage() {
   const [[user], siteCount, usage, planKey] = await Promise.all([
     db.select({ useCase: users.useCase }).from(users).where(eq(users.id, userId)).limit(1),
     db.$count(sites, eq(sites.userId, userId)),
-    getAiUsage(userId),
+    getLiveUsage(userId),
     getPlanKey(),
   ]);
   const useCase: Kind | "other" = KINDS.some((k) => k.key === user?.useCase) ? (user!.useCase as Kind) : "other";
@@ -23,8 +23,7 @@ export default async function NewPage() {
   return (
     <DescribeForm
       useCase={useCase}
-      left={usage.left}
-      allowance={usage.allowance}
+      usage={usage}
       sites={{ count: siteCount, limit: plan.sites }}
       proRequests={PLANS.pro.aiRequests}
     />

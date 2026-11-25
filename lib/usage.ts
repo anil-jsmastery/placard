@@ -1,12 +1,13 @@
 import "server-only";
-import { and, eq, gte } from "drizzle-orm";
+import type { SealedLiveQuery } from "@neon/realtime/server";
 import { posthog } from "@/lib/analytics/server";
-import { aiRuns, db } from "@/lib/db";
 import { getPlanKey } from "@/lib/plan";
 import { PLANS } from "@/lib/plans";
+import { aiUsedQuery } from "@/lib/realtime/queries";
+import { sealOrNull } from "@/lib/realtime/server";
 
 // The 1st of the current month, 00:00 UTC.
-export function startOfMonthUtc(now = new Date()) {
+export function monthStartUtc(now = new Date()) {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
 }
 
@@ -22,13 +23,28 @@ async function freeAllowance(userId: string): Promise<number> {
   }
 }
 
-// AI requests used this month = successful ai_runs since the 1st (UTC). Failed runs never count.
 // The allowance is 300 on Pro and the flag's payload on Free.
+async function allowanceFor(userId: string) {
+  return (await getPlanKey()) === "pro" ? PLANS.pro.aiRequests : await freeAllowance(userId);
+}
+
+// AI requests used this month = successful ai_runs since the 1st (UTC). Failed runs never count.
 export async function getAiUsage(userId: string) {
-  const [used, plan] = await Promise.all([
-    db.$count(aiRuns, and(eq(aiRuns.userId, userId), eq(aiRuns.status, "succeeded"), gte(aiRuns.createdAt, startOfMonthUtc()))),
-    getPlanKey(),
-  ]);
-  const allowance = plan === "pro" ? PLANS.pro.aiRequests : await freeAllowance(userId);
+  const [[row], allowance] = await Promise.all([aiUsedQuery(userId, monthStartUtc()), allowanceFor(userId)]);
+  const used = row?.used ?? 0;
   return { used, allowance, left: Math.max(0, allowance - used) };
+}
+
+// The usage meter's data: the allowance (worked out here), the used count as of now and the same query sealed, so the
+// browser keeps `used` live (components/realtime/live-rows.tsx). `sealed` is null when Realtime is off.
+export type LiveUsage = { allowance: number; used: number; monthStart: string; sealed: SealedLiveQuery<{ used: number }> | null };
+
+export async function getLiveUsage(userId: string): Promise<LiveUsage> {
+  const monthStart = monthStartUtc();
+  const [[row], allowance, sealed] = await Promise.all([
+    aiUsedQuery(userId, monthStart),
+    allowanceFor(userId),
+    sealOrNull(aiUsedQuery(userId, monthStart)),
+  ]);
+  return { allowance, used: row?.used ?? 0, monthStart: monthStart.toISOString(), sealed };
 }

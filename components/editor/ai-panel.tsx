@@ -129,7 +129,7 @@ function Steps({ rows }: { rows: Row[] }) {
 // The AI tab: the conversation (builds, edits and Prettify), the selection chip, the composer and the usage line.
 // The conversation lives in the browser for this editor session.
 export function AiPanel({
-  siteId, usage: initialUsage, running, onRunning, beforeRun, onSaved, onTab, undoRun, setUndoRun, actionsRef, blankStart,
+  siteId, usage, running, onRunning, beforeRun, onSaved, onTab, undoRun, setUndoRun, actionsRef, blankStart,
 }: {
   siteId: string;
   usage: Usage;
@@ -145,7 +145,6 @@ export function AiPanel({
 }) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [text, setText] = useState("");
-  const [usage, setUsage] = useState(initialUsage);
   const [showBlank, setShowBlank] = useState(false);
   const theme = usePuck((s) => s.appState.data.root.props?.theme as keyof typeof THEME_META | undefined);
   const selected = usePuck((s) => s.selectedItem);
@@ -218,10 +217,9 @@ export function AiPanel({
         await new Promise((r) => setTimeout(r, 2000));
         state = await getSiteState(siteId, id);
       }
-      setUsage(state.usage);
       if (id && state.status === "succeeded") {
         const result: RunResult = {
-          ok: true, runId: id, page: state.draft, name: state.draft.root.props.title, sections: state.draft.content.length, reply: "", usage: state.usage,
+          ok: true, runId: id, page: state.draft, name: state.draft.root.props.title, sections: state.draft.content.length, reply: "",
         };
         show(state.draft);
         const turn = current.current;
@@ -251,7 +249,6 @@ export function AiPanel({
         patchLast({ changes: part.data });
       } else if (part.type === "data-result") {
         const result = part.data;
-        if (result.usage) setUsage(result.usage);
         if (result.ok) show(result.page);
         else if (before.current) show(before.current);
         const wasOpen = !finished.current;

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Puck, useGetPuck, type Data, type OnAction, type Overrides } from "@puckeditor/core";
 import { publishSite, saveDraft } from "@/app/(main)/sites/[id]/edit/actions";
 import { useToast } from "@/components/app/toast";
+import { LiveUsageRows } from "@/components/app/usage-meter-live";
 import { track } from "@/lib/analytics/client";
 import { siteHost, siteUrl } from "@/lib/config";
 import { CATALOG } from "@/lib/sections/catalog";
@@ -11,17 +12,18 @@ import type { SectionType } from "@/lib/sections/schemas";
 import { puckConfig } from "@/lib/site/puck-config";
 import type { EditorMetadata } from "@/lib/site/puck-config";
 import type { PageData, SectionData } from "@/lib/site/types";
+import type { LiveUsage } from "@/lib/usage";
 import { ActionBar, ComponentOverlay } from "./action-bar";
 import { DrawerItem } from "./add-panel";
 import { Canvas, CanvasFrame } from "./canvas";
-import type { AiActions, RunKind, UndoRun, Usage } from "./ai-panel";
+import type { AiActions, RunKind, UndoRun } from "./ai-panel";
 import { FieldsPanel } from "./fields-panel";
 import { LeftPanel, type Tab } from "./left-panel";
 import { ROOT_ZONE } from "./puck";
 import { TopBar, type Device, type SaveState } from "./top-bar";
 
 export type EditorSite = { id: string; name: string; slug: string | null; draft: PageData; live: boolean; publishedAt: string | null; aiRuns: number };
-export type EditorUser = { useCase: string; usage: Usage };
+export type EditorUser = { useCase: string; usage: LiveUsage };
 
 const DEBOUNCE_MS = 800;
 const RETRY_MS = 3000;
@@ -263,15 +265,20 @@ export function Editor({ site, user }: { site: EditorSite; user: EditorUser }) {
           publishing={publishing} onPublish={() => void publish()}
         />
         <div className="ed-body">
-          <LeftPanel
-            tab={tab}
-            setTab={setTab}
-            ai={{
-              siteId: site.id, usage: user.usage, running, onRunning,
-              beforeRun: flush, onSaved: markSaved, onTab: setTab, undoRun, setUndoRun, actionsRef: aiActions,
-              blankStart: site.draft.content.length === 0 && site.aiRuns === 0,
-            }}
-          />
+          {/* The composer's requests left are live (the sealed `ai-used` query). */}
+          <LiveUsageRows usage={user.usage}>
+            {(left, allowance) => (
+              <LeftPanel
+                tab={tab}
+                setTab={setTab}
+                ai={{
+                  siteId: site.id, usage: { left, allowance }, running, onRunning,
+                  beforeRun: flush, onSaved: markSaved, onTab: setTab, undoRun, setUndoRun, actionsRef: aiActions,
+                  blankStart: site.draft.content.length === 0 && site.aiRuns === 0,
+                }}
+              />
+            )}
+          </LiveUsageRows>
           <Canvas device={device} prettifying={runKind === "prettify"} live={live ? address : null} />
           <FieldsPanel disabled={running} />
         </div>

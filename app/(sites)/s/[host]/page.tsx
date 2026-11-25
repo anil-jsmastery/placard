@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { Render } from "@puckeditor/core/rsc";
+import { ViewBeacon } from "@/components/site/view-beacon";
 import { siteUrl } from "@/lib/config";
 import { renderConfig } from "@/lib/site/render-config";
 import { tabIconDataUrl } from "@/lib/site/tab-icons";
@@ -49,5 +50,10 @@ export default async function LivePage({ params }: Props) {
   if (!site) notFound();
   // root.render builds the nav (and the sections their anchors) from the visible sections in `metadata`.
   const visible = site.published.content.filter((s) => !s.props.hidden);
-  return <Render config={renderConfig} data={site.published} metadata={{ content: visible }} />;
+  return (
+    <>
+      <Render config={renderConfig} data={site.published} metadata={{ content: visible }} />
+      <ViewBeacon siteId={site.id} />
+    </>
+  );
 }

@@ -5,7 +5,9 @@ import { z } from "zod";
 import { Editor } from "@/components/editor/editor";
 import { aiRuns, db, sites, users } from "@/lib/db";
 import { toPage } from "@/lib/site/types";
-import { getAiUsage } from "@/lib/usage";
+import { RealtimeRoot } from "@/components/realtime/realtime-root";
+import { realtimeUrl } from "@/lib/realtime/server";
+import { getLiveUsage } from "@/lib/usage";
 import "@puckeditor/core/no-external.css";
 import "../../../../puck.css";
 
@@ -22,13 +24,15 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
   if (!site) notFound();
   const [[user], usage, runs] = await Promise.all([
     db.select({ useCase: users.useCase }).from(users).where(eq(users.id, userId)).limit(1),
-    getAiUsage(userId),
+    getLiveUsage(userId),
     db.$count(aiRuns, eq(aiRuns.siteId, site.id)),
   ]);
   return (
-    <Editor
-      site={{ id: site.id, name: site.name, slug: site.slug, draft: toPage(site.draft), live: site.published !== null, publishedAt: site.publishedAt?.toISOString() ?? null, aiRuns: runs }}
-      user={{ useCase: user?.useCase ?? "other", usage: { left: usage.left, allowance: usage.allowance } }}
-    />
+    <RealtimeRoot url={realtimeUrl()}>
+      <Editor
+        site={{ id: site.id, name: site.name, slug: site.slug, draft: toPage(site.draft), live: site.published !== null, publishedAt: site.publishedAt?.toISOString() ?? null, aiRuns: runs }}
+        user={{ useCase: user?.useCase ?? "other", usage }}
+      />
+    </RealtimeRoot>
   );
 }

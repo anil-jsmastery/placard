@@ -6,7 +6,7 @@ import { ManageBillingButton, ProfileActions } from "@/components/account/accoun
 import { db, sites, uploads } from "@/lib/db";
 import { getPlanKey } from "@/lib/plan";
 import { formatBytes, PLANS, resetDate } from "@/lib/plans";
-import { getAiUsage, startOfMonthUtc } from "@/lib/usage";
+import { getAiUsage, monthStartUtc } from "@/lib/usage";
 
 export const metadata = { title: "Account · Placard" };
 
@@ -63,7 +63,7 @@ export default async function AccountPage() {
   ]);
   const bytes = Number(stored?.bytes ?? 0);
 
-  const monthStart = startOfMonthUtc();
+  const monthStart = monthStartUtc();
   const monthEnd = new Date(Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 0));
   const siteFull = siteCount >= plan.sites;
   const pct = (n: number, of: number) => `${of > 0 ? Math.min(100, (n / of) * 100) : 100}%`;

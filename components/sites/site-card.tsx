@@ -10,6 +10,7 @@ import { Status } from "@/components/app/status";
 import { useToast } from "@/components/app/toast";
 import { SiteFrame } from "@/components/site/site-frame";
 import { DropdownMenu, DropdownMenuPortal, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useSiteViews, viewsLabel } from "./visitors-panel";
 import { siteHost, siteUrl } from "@/lib/config";
 import type { PageData } from "@/lib/site/types";
 
@@ -19,6 +20,7 @@ export type SiteCardData = { id: string; name: string; slug: string | null; live
 export function SiteCard({ site }: { site: SiteCardData }) {
   const router = useRouter();
   const toast = useToast();
+  const { views } = useSiteViews();
   const [sure, setSure] = useState(false);
   const [, startTransition] = useTransition();
   const href = `/sites/${site.id}/edit`;
@@ -106,8 +108,7 @@ export function SiteCard({ site }: { site: SiteCardData }) {
           ) : (
             <div className="s-url">Not published yet, edited {site.edited}</div>
           )}
-          {/* Step 9 counts views. */}
-          <div className="r3"><Eye />No views yet</div>
+          <div className="r3"><Eye />{viewsLabel(views.get(site.id) ?? 0)}</div>
         </div>
       </div>
     </article>
