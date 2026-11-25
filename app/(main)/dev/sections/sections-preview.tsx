@@ -15,7 +15,7 @@ function Group({ label, options, value, onChange }: { label: string; options: Op
       <span className="text-xs text-muted-foreground">{label}</span>
       <div className="seg flex-wrap">
         {options.map((o) => (
-          <button key={o.value} type="button" className={cn(value === o.value && "on")} aria-pressed={value === o.value} onClick={() => onChange(o.value)}>
+          <button key={o.value} type="button" aria-pressed={value === o.value} onClick={() => onChange(o.value)}>
             {o.label}
           </button>
         ))}
